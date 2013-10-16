@@ -316,9 +316,9 @@ void Unfold_RpPb_V2(int method,int algo,int isMC = 0){
 
   // for the merged file:
   //infData = new TFile("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/pPb/pPb_meas_pt_histos.root");
-  infData = new TFile("merge_test_output.root");
+  infData = TFile::Open("merge_test_output.root");
   //for this file pPb_meas_pt.root the total number of events = 4825168, total no of events with selection cuts - 1265115
-  
+  infData->ls();
   TH1F *htemp = (TH1F*)infData->Get("hCombined");
   //uhist[nbins_cent-1]->hMeas = rebin(htemp,Form("hMeas_cent%d",nbins_cent-1));
   uhist[nbins_cent-1]->hMeasMatch = 0;
