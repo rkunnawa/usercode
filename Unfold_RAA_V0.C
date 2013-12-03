@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <stdio.h>
 
@@ -360,7 +361,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   //*************************************************************************
 	
   // Output file
-  TFile *pbpb_Unfo = new TFile(Form("result-%d-%s-cent-%d-isFineBin-%d/pbpb_pp_chmx_pt_Unfo_%d_%s_cent_%d_isFineBin_%d.root",year,algoName[algo],nbins_cent,isFineBin,year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+  TFile *pbpb_Unfo = new TFile(Form("result-%d-%s-cent-%d-isFineBin-%d/pbpb_pp_merged_chmx_pt_Unfo_%d_%s_cent_%d_isFineBin_%d.root",year,algoName[algo],nbins_cent,isFineBin,year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
 	
   // Histograms used by RooUnfold
   UnfoldingHistos *uhist[nbins_cent+1];
@@ -374,7 +375,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     uhist[i] = new UnfoldingHistos(i);
     response[i] = new RooUnfoldResponse(uhist[i]->hResMeas,uhist[i]->hResTrue);
   }
-	
+  
 	
   // Initialize reweighting functions
 	
@@ -475,7 +476,8 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       if(year == 2011){
 	infPP = new TFile("/d102/yjlee/hiForest2PP/pp_merged_full.root");
       }else if(year == 2013){
-	infPP = new TFile("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80.root");
+	//infPP = new TFile("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80.root");
+	infPP = new TFile("merge_HLT_V2.root");
       }
     }   
 
@@ -484,7 +486,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   TTree *tPPJet = 0; 
 
   if(year == 2013){
-    tPPJet = (TTree*)infPP->Get("ntjet");
+    //tPPJet = (TTree*)infPP->Get("ntjet");
   }else if(year == 2011){
     tPPJet  = (TTree*)infPP->Get(Form("%sJetAnalyzer/t",algoNamePP[algo]));
     TTree *tPPEvt = (TTree*)infPP->Get("hiEvtAnalyzer/HiTree");
@@ -552,7 +554,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   */
   // Get Jet spectra from data file
   cout <<"Reading data..."<<endl;
-	
+  
   TCanvas * cInput = new TCanvas("cInput","Input",1200,800);
   cInput->Divide(3,3);
 	
@@ -615,8 +617,10 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 	
   if (!isMC) {
     if(year == 2013){
-      tPPJet->Project(Form("hMeas_cent%d",nbins_cent),"pt",dataSelectionPP&&TriggerSelectionPP);
-      tPPJet->Project("hVzPPData","vz",dataSelectionPP&&TriggerSelectionPP);
+      //tPPJet->Project(Form("hMeas_cent%d",nbins_cent),"pt",dataSelectionPP&&TriggerSelectionPP);
+      //tPPJet->Project("hVzPPData","vz",dataSelectionPP&&TriggerSelectionPP);
+      uhist[nbins_cent]->hMeas = (TH1F*)infPP->Get("hppComb");
+      uhist[nbins_cent]->hMeas->Print("base");
     }else if(year == 2011){
       tPPJet->Project(Form("hMeas_cent%d",nbins_cent),"jtpt",dataSelectionPP&&TriggerSelectionPP);
       tPPJet->Project("hVzPPData","vz",dataSelectionPP&&TriggerSelectionPP);
@@ -657,7 +661,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 	data[i]->tEvt->GetEntry(jentry2);
 	data[i]->tJet->GetEntry(jentry2);
 	data[i]->tGenJet->GetEntry(jentry2);
-	//if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
+	if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
 	int pthatBin = hPtHat->FindBin(data[i]->pthat);
 	float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRaw->GetBinContent(pthatBin);
 	if(fabs(data[i]->vz)>15) continue;
@@ -1329,12 +1333,12 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       TF1 *fPowerLaw1 = new TF1("fPowerLaw1","[0]/(pow(x,[1]))");
       //fPowerLaw1->SetParameters(1e14,-5,0);
       //fPowerLaw->SetParameters(1e10,-8.8,40);
-      hTempData->Fit("fPowerLaw1","","",100,330);
-      hTempData->Fit("fPowerLaw1","","",100,330);
-      hTempData->Fit("fPowerLaw1","","",100,330);
-      hTempData->Fit("fPowerLaw1","","",100,330);
-      hTempData->Fit("fPowerLaw1","","",100,330);
-      hTempData->Fit("fPowerLaw1","","",100,330);
+      hTempData->Fit("fPowerLaw1","","",50,330);
+      hTempData->Fit("fPowerLaw1","","",50,330);
+      hTempData->Fit("fPowerLaw1","","",50,330);
+      hTempData->Fit("fPowerLaw1","","",50,330);
+      hTempData->Fit("fPowerLaw1","","",50,330);
+      hTempData->Fit("fPowerLaw1","","",50,330);
       TH1F *hFuncData = (TH1F*)functionHist(fPowerLaw1,hTempData,"Fit function Pt data PP");
       hTempData->SetXTitle("Jet p_{T} GeV/c");
       fPowerLaw1->SetMarkerStyle(8);
@@ -1367,12 +1371,12 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       //fPowerLaw2->SetParLimits(0,1e-5,1e-2);
       //fPowerLaw2->SetParLimits(1,-5,0);
       //fPowerLaw2->SetParLimits(2,-10,0);
-      hTempMC->Fit("fPowerLaw2","","",100,330);
-      hTempMC->Fit("fPowerLaw2","","",100,330);
-      hTempMC->Fit("fPowerLaw2","","",100,330);
-      hTempMC->Fit("fPowerLaw2","","",100,330);
-      hTempMC->Fit("fPowerLaw2","","",100,330);
-      hTempMC->Fit("fPowerLaw2","","",100,330);
+      hTempMC->Fit("fPowerLaw2","","",50,330);
+      hTempMC->Fit("fPowerLaw2","","",50,330);
+      hTempMC->Fit("fPowerLaw2","","",50,330);
+      hTempMC->Fit("fPowerLaw2","","",50,330);
+      hTempMC->Fit("fPowerLaw2","","",50,330);
+      hTempMC->Fit("fPowerLaw2","","",50,330);
       TH1F *hFuncMC = (TH1F*)functionHist(fPowerLaw2,hTempMC,"Fit function Pt MC PP");
       hTempMC->SetXTitle("Jet p_{T} GeV/c");
       fPowerLaw2->SetMarkerStyle(8);
@@ -1402,12 +1406,12 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       TF1 *fPowerLaw3 = new TF1("fPowerLaw3","[0]/(pow(x,[1]))");
       //fPowerLaw3->SetParameters(1e14,-5,0);
       //fPowerLaw->SetParameters(1e10,-8.8,40);
-      hTempReco->Fit("fPowerLaw3","","",100,330);
-      hTempReco->Fit("fPowerLaw3","","",100,330);
-      hTempReco->Fit("fPowerLaw3","","",100,330);
-      hTempReco->Fit("fPowerLaw3","","",100,330);
-      hTempReco->Fit("fPowerLaw3","","",100,330);
-      hTempReco->Fit("fPowerLaw3","","",100,330);
+      hTempReco->Fit("fPowerLaw3","","",50,330);
+      hTempReco->Fit("fPowerLaw3","","",50,330);
+      hTempReco->Fit("fPowerLaw3","","",50,330);
+      hTempReco->Fit("fPowerLaw3","","",50,330);
+      hTempReco->Fit("fPowerLaw3","","",50,330);
+      hTempReco->Fit("fPowerLaw3","","",50,330);
       TH1F *hFuncReco = (TH1F*)functionHist(fPowerLaw1,hTempReco,"Fit function Pt Reco PP");
       hTempReco->SetXTitle("Jet p_{T} GeV/c");
       fPowerLaw3->SetMarkerStyle(8);

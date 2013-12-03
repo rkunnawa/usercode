@@ -62,8 +62,9 @@ void Unfold_RAA_V1(int method = 1,int algo = 3,int isMC = 0){
 
   cout<<" ------------         Unfolding - Raghav 10 09 13          ----------           "<<endl;
   cout<<" ==============================================================================="<<endl;
-	
-  int nBayesianIter = 4;
+
+
+  int nBayesianIter = 6;
   char chmet1[100];
   if(method==1) {
     sprintf(chmet1,"Bayes_unfo");
@@ -468,14 +469,52 @@ void Unfold_RAA_V1(int method = 1,int algo = 3,int isMC = 0){
   cout<<endl<<endl<<endl<<"finished loading PP mc"<<endl<<endl<<endl;
 
 
+  // this data file is without  the duplicate events (From the macro that Pawan created and I modified) in the HLT_80 HLT_fix file  
+  //TFile *infPbPb = TFile::Open("/net/hidsk0001/d00/scratch/rkunnawa/pbpb_jet80_pt_dup_removed.root");
+  //cout<<"loading PbPb Data"<<endl;
+  //uhist[nbins_cent-1]->hMeas = (TH1F*)infPbPb->Get("h");
 
-  TFile *infPbPb = TFile::Open("/net/hidsk0001/d00/scratch/rkunnawa/pbpb_jet80_pt_dup_removed.root");
-  cout<<"loading PbPb Data"<<endl;
-  uhist[nbins_cent-1]->hMeas = (TH1F*)infPbPb->Get("h");
+  /*
+  // try with the duplicate events, maybe thats messing up my unfolding. 
+  TFile *infPbPb = TFile::Open("/mnt/hadoop/cms/store/user/ymao/hiForest/PbPb2011/HITracking2011_HiForest-promptskim-hiForest2_v21_HLTFix.root");
+  TTree *tDataEvt = (TTree*)infPbPb->Get("hiEvtAnalyzer/HiTree");
+  TTree *tDataSkim = (TTree*)infPbPb->Get("skimanalysis/HltTree");
+  TTree *tDataHlt = (TTree*)infPbPb->Get("hltanalysis/HltTree");
+  TTree *tDataJet  = (TTree*)infPbPb->Get(Form("%sJetAnalyzer/t",algoName[algo]));
+  tDataJet->AddFriend(tDataEvt);
+  tDataJet->AddFriend(tDataSkim);
+  tDataJet->AddFriend(tDataHlt);
+
+  TCut dataSelectionPbPb;
+  TCut TriggerSelectionPbPb;
+  dataSelectionPbPb = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2";
+  TriggerSelectionPbPb ="HLT_HIJet80_v1";
+  TCut centCut = Form("hiBin<%.0f&&hiBin>=%.0f",boundaries_cent[1],boundaries_cent[0]);
+
+  tDataJet->Project(Form("hMeas_cent%d",0),"jtpt", dataSelectionPbPb&&centCut&&TriggerSelectionPbPb);
+
  
   TFile *infPP = TFile::Open("/net/hidsk0001/d00/scratch/rkunnawa/pp_jet80_pt_dup_removed.root");
   cout<<"loading PP data"<<endl;
   uhist[nbins_cent]->hMeas = (TH1F*)infPP->Get("h");
+
+  */
+
+
+  TFile *fpbpb = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet80.root");
+  TTree *jetpbpb80 = (TTree*)fpbpb->Get("ntjet");
+  TH1F *hpbpbtemp = new TH1F("hpbpbtemp","",nbins_rec,boundaries_rec);
+  jetpbpb80->Project("hpbpbtemp","pt","abs(eta)<2&&jet80");
+  uhist[nbins_cent-1]->hMeas = (TH1F*)hpbpbtemp->Clone(Form("hMeas_cent%d",0));
+
+  TFile *fpp = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80.root");
+  TTree *jetpp80 = (TTree*)fpp->Get("ntjet");
+  TH1F *hpptemp = new TH1F("hpptemp","",nbins_rec,boundaries_rec);
+  jetpp80->Project("hpptemp","pt","abs(eta)<2&&jet80");
+  uhist[nbins_cent]->hMeas = (TH1F*)hpptemp->Clone(Form("hMeas_cent%d",1));
+
+  
+  
 
   uhist[nbins_cent-1]->hMeas->Print("base");
   uhist[nbins_cent]->hMeas->Print("base");
@@ -709,9 +748,9 @@ void Unfold_RAA_V1(int method = 1,int algo = 3,int isMC = 0){
 
   // Scale PP histograms - 1./pplumi - lumiosity /64 - sigma inelastic /1000000 / 0.989 percentage of events which have |vz|<15. for this dup events removed it 1. 
 
-  hRecoPP                ->Scale(1./pplumi/1000000);
-  hRecoBinByBinPP       ->Scale(1./pplumi/1000000);
-  hMeasPP                ->Scale(1./pplumi/1000000);
+  hRecoPP                ->Scale(1./(pplumi*64*1000000));
+  hRecoBinByBinPP       ->Scale(1./(pplumi*64*1000000));
+  hMeasPP                ->Scale(1./(pplumi*64*1000000));
 	
   //float CorFac[6] = {1.0331,1.0331,1.0300,1.0259,1.0217,1.0114};
 	
@@ -750,8 +789,7 @@ void Unfold_RAA_V1(int method = 1,int algo = 3,int isMC = 0){
   //hRecoRAA             ->Scale(1./5.67/0.025/40/1147500000);
   //hMeasRAA             ->Scale(1./5.67/0.025/40/1147500000);
 
-
-  hRecoBinByBinRAA->Scale(1./(362.24*1147500000));
+  hRecoBinByBinRAA->Scale(1./(pbpblumi*7.65*1000000*362.34));
   hRecoRAA->Scale(1./(362.24*1147500000));
   hMeasRAA->Scale(1./(362.24*1147500000)); // ncoll * total min bias events. 
 
