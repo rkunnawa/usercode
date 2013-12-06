@@ -100,27 +100,35 @@ TLegend *myLegend(double x1,double y1,double x2, double y2)
 void merge_pbpb_pp_HLT(){
   
   TH1::SetDefaultSumw2();
-  /*
-  TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet80.root");
-  TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet65.root");
-  TFile *fpbpb3 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet55.root");
-  */
+  
+  TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet80_v2.root");
+  TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet65_v2.root");
+  TFile *fpbpb3 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet55_v2.root");
+  
   //TFile *fpp1 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80.root");
   //TFile *fpp2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet40.root");
   
   TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80_v2.root");
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet40_v2.root");
 
-  /*
-  TTree *jetpbpb1 = (TTree*)fpbpb1->Get("ntjet");
-  TTree *jetpbpb2 = (TTree*)fpbpb2->Get("ntjet");
-  TTree *jetpbpb3 = (TTree*)fpbpb3->Get("ntjet");
-  */
+  
+  TTree *jetpbpb1_v2 = (TTree*)fpbpb1->Get("jet");
+  TTree *jetpbpb2_v2 = (TTree*)fpbpb2->Get("jet");
+  TTree *jetpbpb3_v2 = (TTree*)fpbpb3->Get("jet");
+
+  TTree *evtpbpb1_v2 = (TTree*)fpbpb1->Get("evt");
+  TTree *evtpbpb2_v2 = (TTree*)fpbpb2->Get("evt");
+  TTree *evtpbpb3_v2 = (TTree*)fpbpb3->Get("evt");  
+
+  jetpbpb1_v2->AddFriend(evtpbpb1_v2);
+  jetpbpb2_v2->AddFriend(evtpbpb2_v2);
+  jetpbpb3_v2->AddFriend(evtpbpb3_v2);
+  
   //TTree *jetpp1 = (TTree*)fpp1->Get("ntjet");
   // TTree *jetpp2 = (TTree*)fpp2->Get("ntjet");
 
-  TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get("jet");
-  TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get("jet");
+  TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get("jetR3");
+  TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get("jetR3");
 
   TTree *evtpp1_v2 = (TTree*)fpp1_v2->Get("evt");
   TTree *evtpp2_v2 = (TTree*)fpp2_v2->Get("evt");
@@ -128,35 +136,35 @@ void merge_pbpb_pp_HLT(){
   jetpp1_v2->AddFriend(evtpp1_v2);
   jetpp2_v2->AddFriend(evtpp2_v2);
 
-  //TCut pbpb3 = "abs(eta)<2&&jet55&&!jet65&&!jet80";
+  TCut pbpb3 = "abs(eta)<2&&jet55&&!jet65&&!jet80&&chMax/pt>0.01";
   TCut pp3 = "abs(eta)<2&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
-  /*
+  
   TH1F *hpbpb1 = new TH1F("hpbpb1","",50,0,500);
   TH1F *hpbpb2 = new TH1F("hpbpb2","",50,0,500);
   TH1F *hpbpb3 = new TH1F("hpbpb3","",50,0,500);
   TH1F *hpbpbComb = new TH1F("hpbpbComb","",50,0,500);
-  */
+  
   TH1F *hpp1 = new TH1F("hpp1","",50,0,500);
   TH1F *hpp2 = new TH1F("hpp2","",50,0,500);
   TH1F *hpp3 = new TH1F("hpp3","",50,0,500);
   TH1F *hppComb = new TH1F("hppComb","",50,0,500);
 
   //get the prescl factor information. 
-  //Float_t presclpbpb3 = (Float_t)jetpbpb1->GetEntries("abs(eta)<2")/jetpbpb1->GetEntries("abs(eta)<2&&jet55");
-  //cout<<"pbpb prescl3 = "<<presclpbpb3<<endl;
+  Float_t presclpbpb3 = (Float_t)jetpbpb1_v2->GetEntries("abs(eta)<2")/jetpbpb1_v2->GetEntries("abs(eta)<2&&jet55");
+  cout<<"pbpb prescl3 = "<<presclpbpb3<<endl;//1.99871
   Float_t presclpp3 = (Float_t)jetpp1_v2->GetEntries("abs(eta)<2")/jetpp1_v2->GetEntries("abs(eta)<2&&jet40");
   cout<<"pp prescl3 = "<<presclpp3<<endl; //9.24968
   
-  //jetpbpb1->Project("hpbpb1","pt","abs(eta)<2&&jet80");
-  //hpbpb1->Print("base");
+  jetpbpb1_v2->Project("hpbpb1","pt","abs(eta)<2&&jet80");
+  hpbpb1->Print("base");
   //divideBinWidth(hpbpb1);
 
-  //jetpbpb2->Project("hpbpb2","pt","abs(eta)<2&&jet65&&!jet80");
-  //hpbpb2->Print("base");
+  jetpbpb2_v2->Project("hpbpb2","pt","abs(eta)<2&&jet65&&!jet80");
+  hpbpb2->Print("base");
   //divideBinWidth(hpbpb2);
 
-  //jetpbpb3->Project("hpbpb3","pt","1.99942"*pbpb3);
-  //hpbpb3->Print("base");
+  jetpbpb3_v2->Project("hpbpb3","pt","1.99871"*pbpb3);
+  hpbpb3->Print("base");
   //divideBinWidth(hpbpb3);
 
   jetpp1_v2->Project("hpp1","pt","abs(eta)<2&&jet80&&chMax/pt>0.01");
@@ -178,13 +186,12 @@ void merge_pbpb_pp_HLT(){
   //hpp3->Scale(1./4);
 
   //add the histograms
-  /*
+  
   hpbpbComb->Add(hpbpb1,1);
   hpbpbComb->Add(hpbpb2,1);
   hpbpbComb->Add(hpbpb3,1);
-
   hpbpbComb->Print("base");
-  */
+  
   hppComb->Add(hpp1,1);
   hppComb->Add(hpp2,1);
   hppComb->Add(hpp3,1);
@@ -284,13 +291,13 @@ void merge_pbpb_pp_HLT(){
 
   //Create output file and save them. 
   TFile f("merge_HLT_V2.root","RECREATE");
-  //hpbpb1->Write();
-  //hpbpb2->Write();
-  //hpbpb3->Write();
+  hpbpb1->Write();
+  hpbpb2->Write();
+  hpbpb3->Write();
   hpp1->Write();
   hpp2->Write();
   hpp3->Write();
-  //hpbpbComb->Write();
+  hpbpbComb->Write();
   hppComb->Write();
   hPPComb->Write();
   f.Close();
