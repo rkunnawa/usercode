@@ -1,0 +1,21 @@
+ ************* Raghav Kunnawalkam Elayavalli *****************
+ ********* Rutgers University - Graduate Student *************
+ ************ CMS Heavy Ion - Dr. Sevil Salur ****************
+
+Readme file for Unfolding/Merging/RAA/RpPb calculations and log. 
+
+$$ Sept 10th 2013
+	- Set up the required macros and header files copied from my directories at UMD server. 
+
+$$ Sept 15th 2013
+	- Set up RooUnfold-1.1.1 from the package: RooUnfold-1.1.1.tar.gz by the following commands: 
+		- tar zxf RooUnfold-1.1.1.tar.gz
+		- cd RooUnfold-1.1.1
+		- make. 
+		- (Check example)
+		- root -l
+		$ gSystem->Load("RooUnfold-1.1.1/libRooUnfold");
+		$ .x examples/RooUnfoldExample.cxx 
+
+	- 
+
