@@ -105,8 +105,8 @@ void merge_pbpb_pp_HLT(){
   TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet65.root");
   TFile *fpbpb3 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PbPb/2011/data/ntuple_2011_pbpbJet55.root");
   */
-  TFile *fpp1 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80.root");
-  TFile *fpp2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet40.root");
+  //TFile *fpp1 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80.root");
+  //TFile *fpp2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet40.root");
   
   TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet80_v2.root");
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_ppJet40_v2.root");
@@ -116,17 +116,17 @@ void merge_pbpb_pp_HLT(){
   TTree *jetpbpb2 = (TTree*)fpbpb2->Get("ntjet");
   TTree *jetpbpb3 = (TTree*)fpbpb3->Get("ntjet");
   */
-  TTree *jetpp1 = (TTree*)fpp1->Get("ntjet");
-  TTree *jetpp2 = (TTree*)fpp2->Get("ntjet");
+  //TTree *jetpp1 = (TTree*)fpp1->Get("ntjet");
+  // TTree *jetpp2 = (TTree*)fpp2->Get("ntjet");
 
-  TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get("ntjet");
-  TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get("ntjet");
+  TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get("jet");
+  TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get("jet");
 
-  TTree *evtpp1_v2 = (TTree*)fpp1_v2->Get("ntevt");
-  TTree *evtpp2_v2 = (TTree*)fpp2_v2->Get("ntevt");
+  TTree *evtpp1_v2 = (TTree*)fpp1_v2->Get("evt");
+  TTree *evtpp2_v2 = (TTree*)fpp2_v2->Get("evt");
 
-  evtpp1_v2->AddFriend(jetpp1_v2);
-  evtpp2_v2->AddFriend(jetpp2_v2);
+  jetpp1_v2->AddFriend(evtpp1_v2);
+  jetpp2_v2->AddFriend(evtpp2_v2);
 
   //TCut pbpb3 = "abs(eta)<2&&jet55&&!jet65&&!jet80";
   TCut pp3 = "abs(eta)<2&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
@@ -144,8 +144,8 @@ void merge_pbpb_pp_HLT(){
   //get the prescl factor information. 
   //Float_t presclpbpb3 = (Float_t)jetpbpb1->GetEntries("abs(eta)<2")/jetpbpb1->GetEntries("abs(eta)<2&&jet55");
   //cout<<"pbpb prescl3 = "<<presclpbpb3<<endl;
-  Float_t presclpp3 = (Float_t)evtpp1_v2->GetEntries("abs(eta)<2")/evtpp1_v2->GetEntries("abs(eta)<2&&jet40");
-  cout<<"pp prescl3 = "<<presclpp3<<endl;
+  Float_t presclpp3 = (Float_t)jetpp1_v2->GetEntries("abs(eta)<2")/jetpp1_v2->GetEntries("abs(eta)<2&&jet40");
+  cout<<"pp prescl3 = "<<presclpp3<<endl; //9.24968
   
   //jetpbpb1->Project("hpbpb1","pt","abs(eta)<2&&jet80");
   //hpbpb1->Print("base");
@@ -159,23 +159,23 @@ void merge_pbpb_pp_HLT(){
   //hpbpb3->Print("base");
   //divideBinWidth(hpbpb3);
 
-  jetpp1->Project("hpp1","pt","abs(eta)<2&&jet80&&chMax/pt>0.01");
+  jetpp1_v2->Project("hpp1","pt","abs(eta)<2&&jet80&&chMax/pt>0.01");
   hpp1->Print("base");
-  divideBinWidth(hpp1);
-  hpp1->Scale(1./3.083e11);
-  hpp1->Scale(1./4);
+  //divideBinWidth(hpp1);
+  //hpp1->Scale(1./3.083e11);
+  //hpp1->Scale(1./4);
 
-  jetpp2->Project("hpp2","pt","abs(eta)<2&&jet60&&!jet80&&chMax/pt>0.01");
+  jetpp2_v2->Project("hpp2","pt","abs(eta)<2&&jet60&&!jet80&&chMax/pt>0.01");
   hpp2->Print("base");
-  divideBinWidth(hpp2);
-  hpp2->Scale(1./3.083e11);
-  hpp2->Scale(1./4);
+  //divideBinWidth(hpp2);
+  //hpp2->Scale(1./3.083e11);
+  //hpp2->Scale(1./4);
 
-  jetpp2->Project("hpp3","pt","9.25121"*pp3);
+  jetpp2_v2->Project("hpp3","pt","9.24968"*pp3);
   hpp3->Print("base");
-  divideBinWidth(hpp3);
-  hpp3->Scale(1./3.083e11);
-  hpp3->Scale(1./4);
+  //divideBinWidth(hpp3);
+  //hpp3->Scale(1./3.083e11);
+  //hpp3->Scale(1./4);
 
   //add the histograms
   /*
@@ -189,7 +189,7 @@ void merge_pbpb_pp_HLT(){
   hppComb->Add(hpp2,1);
   hppComb->Add(hpp3,1);
   hppComb->Print("base");
-
+  /*
   TCanvas *c1 = new TCanvas("c1","",800,600);
   c1->SetLogy();
   hppComb->SetMarkerStyle(29);
@@ -221,8 +221,8 @@ void merge_pbpb_pp_HLT(){
   title->AddEntry(hpp1,"PP HLT_80","pl");
   title->SetTextSize(0.06);
   title->Draw();
-  drawText("PP 2013 Data PromptReco, pptracking and 2013 pp JEC",0.5,0.23,20);  
-  drawText("Anti-k_{T} Particle Flow Jets R = 0.3, |#eta|<2, |vz|<15",0.7,0.4,22);
+  drawText("PP 2013 Data PromptReco, pptracking and 2013 pp JEC",0.3,0.65,20);  
+  drawText("Anti-k_{T} Particle Flow Jets R = 0.3, |#eta|<2, |vz|<15",0.3,0.56,20);
   c1->SaveAs("pp_2013_pt_combined.gif","RECREATE");
 
   TCanvas *c5 = new TCanvas("c5","",800,600);
@@ -237,8 +237,8 @@ void merge_pbpb_pp_HLT(){
   hPPRatio->Draw();
   c5->SaveAs("pp_2013_merged_spectra_fit_comp.gif","RECREATE");
     
-
-  /*
+  */
+  
   TCanvas c2;
   c2.SetLogy();
   TH1F* hPPComb = (TH1F*)hppComb->Clone("hPPComb");
@@ -258,6 +258,30 @@ void merge_pbpb_pp_HLT(){
 
   c2.SaveAs("pp_2013_pt_evt_frac_merged.gif","RECREATE");
   
+  TFile *fpbpbunfo = TFile::Open("result-2013-akPu3PF-cent-6-isFineBin-0/pbpb_pp_merged_chmx_pt_Unfo_2013_akPu3PF_cent_6_isFineBin_0.root");
+  TH1F* hppUnfo = (TH1F*)fpbpbunfo->Get("Unfolded_cent6");
+  hppUnfo->Print("base");
+  
+  TCanvas *c7 = new TCanvas("c7","",800,600);
+  c7->SetLogy();
+  hppComb->Draw();
+  hppComb->SetYTitle("counts");
+  hppComb->SetXTitle("p_{T} GeV/c");
+  hppComb->SetTitle("PP 2013 2.76 TeV ak3PF measured vs unfolded");
+  hppComb->SetMarkerStyle(23);
+  hppComb->SetMarkerColor(kBlue);
+  hppUnfo->SetAxisRange(10,500,"X");
+  hppUnfo->SetMarkerStyle(24);
+  hppUnfo->SetMarkerColor(kRed);
+  hppUnfo->Draw("same");
+  TLegend *title5 = myLegend(0.54,0.65,0.85,0.9);
+  title5->AddEntry(hppComb,"Measured","pl");
+  title5->AddEntry(hppUnfo,"Bayesian iter = 4","pl");
+  title5->SetTextSize(0.06);
+  title5->Draw();
+  gStyle->SetOptStat(0);
+  c7->SaveAs("PP2013_measured_vs_unfolded.gif","RECREATE");
+
   //Create output file and save them. 
   TFile f("merge_HLT_V2.root","RECREATE");
   //hpbpb1->Write();
@@ -271,7 +295,7 @@ void merge_pbpb_pp_HLT(){
   hPPComb->Write();
   f.Close();
   
-  */
+  
 
 
 }
