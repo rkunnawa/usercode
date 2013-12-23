@@ -190,7 +190,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //*************************************************************************
 	
   // Output file
-  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_60_lowest_pp_mc_Unfo_%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
+  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_MB_eta_CM_1_lowest_pp_mc_Unfo_%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
   // Histograms used by RooUnfold
   UnfoldingHistos *uhist[nbins_cent+1];
 	
@@ -232,7 +232,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     //TriggerSelectionPP = "HLT_PAJet80_NoJetID_v1";
     //TriggerSelectionPbPb ="HLT_HIJet80_v1";
 		
-    dataSelectionPPb = "abs(eta)<2";
+    dataSelectionPPb = "abs(eta)<2";//not used here since we are taking it form the merging file 
     dataSelectionPP = "abs(eta)<2";
 		
     TriggerSelectionPP = "jet80";
@@ -247,9 +247,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
    	
   // Read data file
   TFile *infData;
-  infData = new TFile("merge_ppb_60_lowest_HLT_V2.root");
+  infData = new TFile("merge_ppb_MB_eta_CM_1_lowest_HLT_V2.root");
   TH1F *htest = (TH1F*)infData->Get("hppbComb");
-  uhist[nbins_cent-1]->hMeas = (TH1F*)htest->Clone("hMeas_cent0");
+  uhist[nbins_cent-1]->hMeas = rebin2(htest,"hMeas_cent0");
   uhist[nbins_cent-1]->hMeas->Print("base");
 
 	
@@ -369,8 +369,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	*/
 	for (int k= 0; k < data[i]->njets; k++) {
 	  int subEvt=-1;
-	  if ( data[i]->refpt[k]  < 30. ) continue;
-	  if ( data[i]->jteta[k]  > 2 || data[i]->jteta[k] < -2 ) continue; //eta CM assuming that pPb MC is forward beam
+	  if ( data[i]->refpt[k]  < 15. ) continue;
+	  if ( data[i]->jteta[k]  > 1.465 || data[i]->jteta[k] < -0.535 ) continue; //eta CM assuming that pPb MC is forward beam
 	  if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
 	  for (int l= 0; l< data[i]->ngen;l++) {
 	    if (data[i]->refpt[k]==data[i]->genpt[l]) {
@@ -485,8 +485,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	*/
 	for (int k= 0; k < dataPP[i]->njets; k++) {
 	  int subEvt=-1;
-	  if ( dataPP[i]->refpt[k]  < 30. ) continue;
-	  if ( dataPP[i]->jteta[k]  > 2. || dataPP[i]->jteta[k] < -2. ) continue;
+	  if ( dataPP[i]->refpt[k]  < 15. ) continue;
+	  if ( dataPP[i]->jteta[k]  > 1. || dataPP[i]->jteta[k] < -1. ) continue;
 	  if ( dataPP[i]->chargedMax[k]/dataPP[i]->jtpt[k]<0.01) continue;
 	  //if (uhist[nbins_cent]->hMeasMatch!=0) {
 	  //   int ptBinNumber = uhist[nbins_cent]->hMeasMatch->FindBin(dataPP[i]->jtpt[k]);
@@ -1487,7 +1487,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 		
   } else {
 		
-		
+    /*
    
     cPPb->Update();
     cPPb->SaveAs(Form("result-2013-ppb-%s-cent-%d/data_vs_unfo.gif",algoName[algo],nbins_cent),"RECREATE");
@@ -1507,7 +1507,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     cData->SaveAs(Form("result-2013-ppb-%s-cent-%d/Data.C",algoName[algo],nbins_cent),"RECREATE");
     cData->SaveAs(Form("result-2013-ppb-%s-cent-%d/Data.pdf",algoName[algo],nbins_cent),"RECREATE");
     */
+    
     cMatrix->Update();
+   
     cMatrix->SaveAs(Form("result-2013-ppb-%s-cent-%d/ResponseMatrix.gif",algoName[algo],nbins_cent),"RECREATE");
     cMatrix->SaveAs(Form("result-2013-ppb-%s-cent-%d/ResponseMatrix.C",algoName[algo],nbins_cent),"RECREATE");
     cMatrix->SaveAs(Form("result-2013-ppb-%s-cent-%d/ResponseMatrix.pdf",algoName[algo],nbins_cent),"RECREATE");
@@ -1515,7 +1517,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.gif",algoName[algo],nbins_cent),"RECREATE");
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.C",algoName[algo],nbins_cent),"RECREATE");
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.pdf",algoName[algo],nbins_cent),"RECREATE");
-		
+    
 		
   }
   divideBinWidth(hCent);

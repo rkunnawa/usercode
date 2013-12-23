@@ -66,6 +66,34 @@ void cleanup(TH1F *h)
 	
 }
 
+static const int nbins_rec = 50;
+static const double boundaries_rec[nbins_rec+1] = {
+  0,10,20,30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170,
+	180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310,
+	320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450,
+	460, 470, 480, 490, 500
+	};
+
+
+// rebin the spectra
+TH1F *rebin0(TH1F *h, char *histName)
+{
+  TH1F *hRebin = new TH1F(Form("%s_rebin",h->GetName()),Form("rebin %s",h->GetTitle()),nbins_rec,boundaries_rec);
+  for (int i=1;i<=h->GetNbinsX();i++)
+    {
+      double val=h->GetBinContent(i);
+      double valErr=h->GetBinError(i);
+      int binNum = hRebin->FindBin(h->GetBinCenter(i));
+      double val1 = hRebin->GetBinContent(binNum);
+      double valErr1 = hRebin->GetBinError(binNum);
+      hRebin->SetBinContent(binNum,val+val1);
+      hRebin->SetBinError(binNum,sqrt(valErr1*valErr1+valErr*valErr));
+    }
+  cleanup(hRebin);
+  hRebin->SetName(histName);
+  return hRebin;
+}
+
 // rebin the spectra
 TH1F *rebin(TH1F *h, char *histName)
 {
@@ -171,8 +199,8 @@ void RpA_calculation(){
 
   TH1::SetDefaultSumw2();
 
-  TFile* fin = TFile::Open("result-2013-ppb-akPu3PF-cent-1/ppb_merge_60_lowest_pp_mc_Unfo_akPu3PF_cent_1.root");
-  TFile* fin_2 = TFile::Open("merge_ppb_60_lowest_HLT_V2.root");
+  TFile* fin = TFile::Open("result-2013-ppb-akPu3PF-cent-1/ppb_merge_MB_eta_CM_1_lowest_pp_mc_Unfo_akPu3PF_cent_1.root");
+  TFile* fin_2 = TFile::Open("merge_ppb_MB_eta_CM_1_lowest_HLT_V2.root");
   //TFile* fin_3 = TFile::Open("pPb_MB_pt.root");
 
   //get the required histograms.
@@ -186,7 +214,9 @@ void RpA_calculation(){
 
   // the pPb histogram from the file is already scaled with these factors 
 
-  TH1F* hRpA_Meas = (TH1F*)fin_2->Get("hPPbComb_2");
+  TH1F* hRpA_Meas_test = (TH1F*)fin_2->Get("hPPbComb_2");
+  TH1F* hRpA_Meas = rebin0(hRpA_Meas_test,"hRpA_Meas");
+  divideBinWidth(hRpA_Meas);
   TH1F* hRpA_Unfo = (TH1F*)fin_2->Get("hPPb_Unfo_2");
   //TH1F* hpPb_MB = (TH1F*)fin_3->Get("hpPb_MB");
 
@@ -238,7 +268,7 @@ void RpA_calculation(){
   titl->SetTextSize(0.03);
   titl->Draw();
   drawText("Anti-k_{T}Pu PF R = 0.3",0.43,0.6,22);
-  drawText("|#eta|<2, |vz|<15",0.47,0.5,22);
+  drawText("|#eta_CM|<1, |vz|<15",0.47,0.5,22);
   
   c->cd(2);
   TH1F* hpPbRatio = (TH1F*)hpPbmeas->Clone("hpPbRatio");
@@ -248,7 +278,7 @@ void RpA_calculation(){
   hpPbRatio->SetTitle("pPb2013 akPu3PF merged");
   hpPbRatio->GetYaxis()->SetRangeUser(0,2);
   hpPbRatio->Draw();
-  c->SaveAs("pPb_2013_akPu3PF_merged_unfolded_pt.gif","RECREATE");
+  c->SaveAs("pPb_2013_akPu3PF_merged_MB_lowest_eta_CM_1_unfolded_pt.gif","RECREATE");
 
   TH1F* hPP_Refe = (TH1F*)fin->Get("hGen_cent1");
   hPP_Refe->Print("base");
@@ -272,11 +302,17 @@ void RpA_calculation(){
   hRpA_Unfo->SetMarkerColor(kRed);
 
   hRpA_Meas->SetYTitle("RpA");
-  hRpA_Meas->SetXTitle("Jet p_{T} GeV");
+  hRpA_Meas->SetXTitle("Jet p_{T} GeV/c");
   hRpA_Meas->Draw();
   hRpA_Unfo->Draw("same");
 
-  c1->SaveAs("RpA_merge_60_lowest_calculation_bin_v0.gif","RECREATE");
+  TLegend *title2 = myLegend(0.54,0.65,0.85,0.9);
+  title2->AddEntry(hRpA_Meas,"Measured","pl");
+  title2->AddEntry(hRpA_Unfo,"Bayesian Unfolded","pl");
+  title2->SetTextSize(0.03);
+  title2->Draw();
+
+  c1->SaveAs("RpA_merge_MB_lowest_calculation_bin_v0.gif","RECREATE");
 
   TCanvas *c2 = new TCanvas("c2","",800,600);
   hRpA_Meas_rebin->Divide(hPP_Refe_rebin);
@@ -289,11 +325,11 @@ void RpA_calculation(){
   hRpA_Unfo_rebin->SetMarkerColor(kRed);
 
   hRpA_Meas_rebin->SetYTitle("RpA");
-  hRpA_Meas_rebin->SetXTitle("Jet p_{T} GeV");
+  hRpA_Meas_rebin->SetXTitle("Jet p_{T} GeV/c");
   hRpA_Meas_rebin->Draw();
   hRpA_Unfo_rebin->Draw("same");
 
-  c2->SaveAs("RpA_merge_60_lowest_calculation_bin_v1.gif","RECREATE");
+  c2->SaveAs("RpA_merge_MB_lowest_eta_CM_1_calculation_bin_v1.gif","RECREATE");
 
   TCanvas *c3 = new TCanvas("c3","",800,600);
   hRpA_Meas_rebin2->Divide(hPP_Refe_rebin2);
@@ -310,7 +346,7 @@ void RpA_calculation(){
   hRpA_Meas_rebin2->Draw();
   hRpA_Unfo_rebin2->Draw("same");
 
-  c3->SaveAs("RpA_merge_60_lowest_calculation_bin_v2.gif","RECREATE");
+  c3->SaveAs("RpA_merge_MB_lowest_eta_CM_1_calculation_bin_v2.gif","RECREATE");
 
 
 
