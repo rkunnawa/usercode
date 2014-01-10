@@ -190,6 +190,8 @@ void merge_ppb_HLT(){
   TH1F* hHLT_40 = new TH1F("hHLT_40","",50,0,500);
   TH1F* hHLT_20 = new TH1F("hHLT_20","",50,0,500);
   TH1F* hMB = new TH1F("hMB","",50,0,500);
+  TH1F* hMB_0 = new TH1F("hMB_0","",50,0,500);
+  TH1F* hMB_1 = new TH1F("hMB_1","",50,0,500);
   TH1F* hMB_2 = new TH1F("hMB_2","",50,0,500);
   TH1F* hBase_100 = new TH1F("hBase_100","",50,0,500);
   TH1F* hBase_40 = new TH1F("hBase_40","",50,0,500);
@@ -290,7 +292,7 @@ void merge_ppb_HLT(){
   TCut turnon_80 = "jet80";
   TCut turnon_100 = "jet100";
   //TCut turnon_120 = "jet120";
-
+  /*
   jetppb0_v2->Project("hMB","pt","2202.2"*turnon_MB);
   hMB->Print("base");
   jetppb0_v2->Project("hMB_2","pt","abs(eta_CM)<1&&chMax/pt>0.01");
@@ -311,6 +313,21 @@ void merge_ppb_HLT(){
   jetppb1_v2->Project("hBase_40","pt");
   hBase_40->Print("base");
   //jetppb2_v2->Project("h120","pt",""*turnon_120);
+  */
+
+  jetppb0_v2->Project("hMB","pt","jetMB");
+  jetppb1_v2->Project("hMB_1","pt","jetMB");
+  jetppb2_v2->Project("hMB_2","pt","jetMB");
+  jetppb1_v2->Project("hHLT_20","pt","jetMB&&jet20");
+  jetppb1_v2->Project("hHLT_40","pt","jetMB&&jet40");
+  jetppb1_v2->Project("hHLT_60","pt","jetMB&&jet60");
+  jetppb2_v2->Project("hHLT_80","pt","jetMB&&jet80");
+  
+  
+  jetppb2_v2->Project("hHLT_100","pt","1"*turnon_100);
+  hHLT_100->Print("base");
+  jetppb2_v2->Project("hBase_100","pt");
+  hBase_100->Print("base");
 
   TH1F* hTurnon_20 = (TH1F*)hHLT_20->Clone("hTurnon_20");
   TH1F* hTurnon_40 = (TH1F*)hHLT_40->Clone("hTurnon_40");
@@ -318,10 +335,10 @@ void merge_ppb_HLT(){
   TH1F* hTurnon_80 = (TH1F*)hHLT_80->Clone("hTurnon_80");
   TH1F* hTurnon_100 = (TH1F*)hHLT_100->Clone("hTurnon_100");
 
-  hTurnon_20->Divide(hBase_40);
-  hTurnon_40->Divide(hBase_40);
-  hTurnon_60->Divide(hBase_40);
-  hTurnon_80->Divide(hBase_100);
+  hTurnon_20->Divide(hMB_1);
+  hTurnon_40->Divide(hMB_1);
+  hTurnon_60->Divide(hMB_1);
+  hTurnon_80->Divide(hMB_2);
   hTurnon_100->Divide(hBase_100);
   
   TFile fout("ppb_turnon_HLT.root","RECREATE");
