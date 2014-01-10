@@ -173,24 +173,26 @@ void merge_ppb_HLT(){
   
 
   //these histograms are only for merging. 
-  TH1F *hppb0 = new TH1F("hppb0","",500,0,500);
-  TH1F *hppb1 = new TH1F("hppb1","",500,0,500);
-  TH1F *hppb2 = new TH1F("hppb2","",500,0,500);
-  TH1F *hppb3 = new TH1F("hppb3","",500,0,500);
-  TH1F *hppb4 = new TH1F("hppb4","",500,0,500);
-  TH1F *hppb5 = new TH1F("hppb5","",500,0,500);
-  TH1F *hppb6 = new TH1F("hppb6","",500,0,500);
-  TH1F *hppbComb = new TH1F("hppbComb","",500,0,500);
+  TH1F *hppb0 = new TH1F("hppb0","",50,0,500);
+  TH1F *hppb1 = new TH1F("hppb1","",50,0,500);
+  TH1F *hppb2 = new TH1F("hppb2","",50,0,500);
+  TH1F *hppb3 = new TH1F("hppb3","",50,0,500);
+  TH1F *hppb4 = new TH1F("hppb4","",50,0,500);
+  TH1F *hppb5 = new TH1F("hppb5","",50,0,500);
+  TH1F *hppb6 = new TH1F("hppb6","",50,0,500);
+  TH1F *hppbComb = new TH1F("hppbComb","",50,0,500);
   
   //define histograms which are used for trigger turn on curves. 
-  TH1F* hHLT_120 = new TH1F("hHLT_120","",500,0,500);
-  TH1F* hHLT_100 = new TH1F("hHLT_100","",500,0,500);
-  TH1F* hHLT_80 = new TH1F("hHLT_80","",500,0,500);
-  TH1F* hHLT_60 = new TH1F("hHLT_60","",500,0,500);
-  TH1F* hHLT_40 = new TH1F("hHLT_40","",500,0,500);
-  TH1F* hHLT_20 = new TH1F("hHLT_20","",500,0,500);
-  TH1F* hMB = new TH1F("hMB","",500,0,500);
-  TH1F* hMB_2 = new TH1F("hMB_2","",500,0,500);
+  TH1F* hHLT_120 = new TH1F("hHLT_120","",50,0,500);
+  TH1F* hHLT_100 = new TH1F("hHLT_100","",50,0,500);
+  TH1F* hHLT_80 = new TH1F("hHLT_80","",50,0,500);
+  TH1F* hHLT_60 = new TH1F("hHLT_60","",50,0,500);
+  TH1F* hHLT_40 = new TH1F("hHLT_40","",50,0,500);
+  TH1F* hHLT_20 = new TH1F("hHLT_20","",50,0,500);
+  TH1F* hMB = new TH1F("hMB","",50,0,500);
+  TH1F* hMB_2 = new TH1F("hMB_2","",50,0,500);
+  TH1F* hBase_100 = new TH1F("hBase_100","",50,0,500);
+  TH1F* hBase_40 = new TH1F("hBase_40","",50,0,500);
 
   /*
   Float_t MB_count = (Float_t)jetppb0_v2->GetEntries();
@@ -304,6 +306,10 @@ void merge_ppb_HLT(){
   hHLT_80->Print("base");
   jetppb2_v2->Project("hHLT_100","pt","1"*turnon_100);
   hHLT_100->Print("base");
+  jetppb2_v2->Project("hBase_100","pt");
+  hBase_100->Print("base");
+  jetppb1_v2->Project("hBase_40","pt");
+  hBase_40->Print("base");
   //jetppb2_v2->Project("h120","pt",""*turnon_120);
 
   TH1F* hTurnon_20 = (TH1F*)hHLT_20->Clone("hTurnon_20");
@@ -312,11 +318,11 @@ void merge_ppb_HLT(){
   TH1F* hTurnon_80 = (TH1F*)hHLT_80->Clone("hTurnon_80");
   TH1F* hTurnon_100 = (TH1F*)hHLT_100->Clone("hTurnon_100");
 
-  hTurnon_20->Divide(hMB);
-  hTurnon_40->Divide(hHLT_20);
-  hTurnon_60->Divide(hHLT_40);
-  hTurnon_80->Divide(hHLT_60);
-  hTurnon_100->Divide(hHLT_80);
+  hTurnon_20->Divide(hBase_40);
+  hTurnon_40->Divide(hBase_40);
+  hTurnon_60->Divide(hBase_40);
+  hTurnon_80->Divide(hBase_100);
+  hTurnon_100->Divide(hBase_100);
   
   TFile fout("ppb_turnon_HLT.root","RECREATE");
   hTurnon_20->Write();
@@ -365,7 +371,7 @@ void merge_ppb_HLT(){
   drawText("PPb 2013 Data Prompt Reco",0.15,0.8,20);
   drawText("Anti-k_{T} PU PF Jets R = 0.3,|vz|<15",0.15,0.7,20);
 
-  c1->SaveAs("ppb_2013_HLT_turn_on_curve.gif","RECREATE");
+  c1->SaveAs("ppb_2013_HLT_turn_on_curve.jpg","RECREATE");
 
   //
   TCanvas* c2 = new TCanvas("c2","",800,600);
@@ -412,7 +418,7 @@ void merge_ppb_HLT(){
   drawText("Anti-k_{T} PU PF Jets R = 0.3, |#eta_{CM}|<1, |vz|<15",0.3,0.56,20);
 
   //c2->SaveAs("ppb_2013_pt_merged_60_lowest.gif","RECREATE");
-  c2->SaveAs("ppb_2013_pt_merged_MB_lowest_eta_CM_1_lowest.gif","RECREATE");
+  c2->SaveAs("ppb_2013_pt_merged_MB_lowest_eta_CM_1_lowest.jpg","RECREATE");
 
 
   
@@ -465,7 +471,7 @@ void merge_ppb_HLT(){
   title1->SetTextSize(0.04);
   title1->Draw();
   //c3->SaveAs("ppb_merged_60_lowest_measured_vs_unfolded.gif","RECREATE");
-  c3->SaveAs("ppb_merged_MB_eta_cm_1_lowest_measured_vs_unfolded.gif","RECREATE");
+  c3->SaveAs("ppb_merged_MB_eta_cm_1_lowest_measured_vs_unfolded.jpg","RECREATE");
 
   //create the spectra with event fraction. 
   hPPbComb_2->Scale(1./6.53104e10);
@@ -499,7 +505,7 @@ void merge_ppb_HLT(){
   title2->SetTextSize(0.04);
   title2->Draw();
   //c4->SaveAs("ppb_merged_60_lowest_evtfrac_measured_vs_unfolded.gif","RECREATE");  
-  c4->SaveAs("ppb_merged_MB_eta_CM_1_lowest_evtfrac_measured_vs_unfolded.gif","RECREATE");  
+  c4->SaveAs("ppb_merged_MB_eta_CM_1_lowest_evtfrac_measured_vs_unfolded.jpg","RECREATE");  
 
   //create the spectra with cross section: 
   hPPbComb_3->Scale(1./30.9);
@@ -527,7 +533,7 @@ void merge_ppb_HLT(){
   title3->SetTextSize(0.04);
   title3->Draw();
   //c5->SaveAs("ppb_merged_60_lowest_crosssection_measured_vs_unfolded.gif","RECREATE");  
-  c5->SaveAs("ppb_merged_MB_eta_CM_1_lowest_crosssection_measured_vs_unfolded.gif","RECREATE");  
+  c5->SaveAs("ppb_merged_MB_eta_CM_1_lowest_crosssection_measured_vs_unfolded.jpg","RECREATE");  
 
 
   //compare the MC reco and Gen for pPb used to create the unfolding matrix. 
@@ -556,7 +562,7 @@ void merge_ppb_HLT(){
 
   drawText("PPb 2013 MC",0.3,0.65,20);
   drawText("|eta_CM|<1, refpt>=15, chMax/jtpt>0.01, akPu3PF",0.3,0.75,20);
-  c6->SaveAs("ppb_2013_mc_reco_gen_eta_CM_1.gif","RECREATE");
+  c6->SaveAs("ppb_2013_mc_reco_gen_eta_CM_1.jpg","RECREATE");
 
 
   //TFile f("merge_ppb_60_lowest_HLT_V2.root","RECREATE");
