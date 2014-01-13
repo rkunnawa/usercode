@@ -87,8 +87,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //fileName_pthat_pq="/hadoop/store/user/belt/hiForest2/pyquen_hydjet_hiforest_test.root";
 	
 	
-  ////// New MC samples
-	
+  ////// New MC sample
+  //this MC is without the PU subtraction, but the data we are using is akPu3PF, 
+  /*
   if (!yinglu){
 		
     boundaries_pthat[0] = 15;
@@ -132,7 +133,53 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 		
 
   }
-	
+  */
+
+
+  //MC JEC with PU subtraction algorithm
+
+  if(!yinglu){
+    boundaries_pthat[0] = 15;
+    fileName_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt15_HP04_prod25_v85_merged_forest_0.root";
+    xsection[0] = 5.335e-01;
+
+    boundaries_pthat[1] = 30;
+    fileName_pthat[1] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt30_HP04_prod25_v85_merged_forest_0.root";
+    xsection[1] = 3.378e-02;
+
+    boundaries_pthat[2] = 50;
+    fileName_pthat[2] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt50_HP04_prod25_v85_merged_forest_0.root";
+    xsection[2] = 3.778e-02;
+
+    boundaries_pthat[3] = 80;
+    fileName_pthat[3] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt80_HP04_prod25_v85_merged_forest_0.root";
+    xsection[3] = 4.412e-04;
+
+    boundaries_pthat[4] = 120;
+    fileName_pthat[4] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt120_HP04_prod25_v85_merged_forest_0.root";
+    xsection[4] = 6.147e-05;
+
+    boundaries_pthat[5] = 170;
+    fileName_pthat[5] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt170_HP04_prod25_v85_merged_forest_0.root";
+    xsection[5] = 1.018e-05;
+
+    boundaries_pthat[6] = 220;
+    fileName_pthat[6] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt220_HP04_prod25_v85_merged_forest_0.root";
+    xsection[6] = 2.477e-06;
+
+    boundaries_pthat[7] = 280;
+    fileName_pthat[7] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt280_HP04_prod25_v85_merged_forest_0.root";
+    xsection[7] = 6.160e-07;
+
+    boundaries_pthat[8] = 370;
+    fileName_pthat[8] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt370_HP04_prod25_v85_merged_forest_0.root";
+    xsection[8] = 1.088e-07;
+
+    boundaries_pthat[9] = 1000;
+    xsection[9] = 0;
+
+  }
+       
 	
 	
 	
@@ -363,15 +410,17 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  hasLeadingJet = 1;
 	  }
 	  break;
-				 
+	  
 	  }
 	  if (hasLeadingJet == 0) continue;
 	*/
+	
 	for (int k= 0; k < data[i]->njets; k++) {
 	  int subEvt=-1;
 	  if ( data[i]->refpt[k]  < 15. ) continue;
 	  if ( data[i]->jteta[k]  > 1.465 || data[i]->jteta[k] < -0.535 ) continue; //eta CM assuming that pPb MC is forward beam
 	  if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
+	  if (  ) continue;
 	  for (int l= 0; l< data[i]->ngen;l++) {
 	    if (data[i]->refpt[k]==data[i]->genpt[l]) {
 	      subEvt = data[i]->gensubid[l];
@@ -574,9 +623,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   cout <<"Response Matrix..."<<endl;
 	
   TCanvas * cMatrix = new TCanvas("cMatrix","Matrix",1200,800);
-  cMatrix->Divide(3,3);
+  cMatrix->Divide(1,2);
   TCanvas* cResponseNorm = new TCanvas("cResponseNorm","Normalized Response Matrix",1200,800);
-  cResponseNorm->Divide(3,3);
+  cResponseNorm->Divide(1,2);
   for (int i=0;i<=nbins_cent;i++){
     cMatrix->cd(i+1);
     if (!useMatrixFromFile) {
@@ -1116,7 +1165,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
       } else {
 	hRecoRpAIterSys[j]->Draw("same");
       }
-			
+      
       checkMaximumSys(systematics.hSysIter[i],hRecoRpAIterSys[j],0,1.1);
       legBayesianIter->AddEntry(hRecoRpAIterSys[j],Form("Iteration %d",j),"pl");
     }
@@ -1510,11 +1559,11 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     
     cMatrix->Update();
    
-    cMatrix->SaveAs(Form("result-2013-ppb-%s-cent-%d/ResponseMatrix.gif",algoName[algo],nbins_cent),"RECREATE");
+    cMatrix->SaveAs(Form("result-2013-ppb-%s-cent-%d/ResponseMatrix.jpg",algoName[algo],nbins_cent),"RECREATE");
     cMatrix->SaveAs(Form("result-2013-ppb-%s-cent-%d/ResponseMatrix.C",algoName[algo],nbins_cent),"RECREATE");
     cMatrix->SaveAs(Form("result-2013-ppb-%s-cent-%d/ResponseMatrix.pdf",algoName[algo],nbins_cent),"RECREATE");
     cResponseNorm->Update();
-    cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.gif",algoName[algo],nbins_cent),"RECREATE");
+    cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.jpg",algoName[algo],nbins_cent),"RECREATE");
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.C",algoName[algo],nbins_cent),"RECREATE");
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.pdf",algoName[algo],nbins_cent),"RECREATE");
     

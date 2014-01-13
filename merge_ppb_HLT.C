@@ -284,7 +284,7 @@ void merge_ppb_HLT(){
   //TCut turnon_80 = "abs(eta_CM)<1&&jet80&&chMax/pt>0.01";
   //TCut turnon_100 = "abs(eta_CM)<1&&jet100&&chMax/pt>0.01";
   //TCut turnon_120 = "abs(eta_CM)<1&&jet120&&chMax/pt>0.01";
-
+  /*
   TCut turnon_MB = "jetMB";
   TCut turnon_20 = "jet20";
   TCut turnon_40 = "jet40";
@@ -292,7 +292,7 @@ void merge_ppb_HLT(){
   TCut turnon_80 = "jet80";
   TCut turnon_100 = "jet100";
   //TCut turnon_120 = "jet120";
-  /*
+  
   jetppb0_v2->Project("hMB","pt","2202.2"*turnon_MB);
   hMB->Print("base");
   jetppb0_v2->Project("hMB_2","pt","abs(eta_CM)<1&&chMax/pt>0.01");
@@ -315,18 +315,18 @@ void merge_ppb_HLT(){
   //jetppb2_v2->Project("h120","pt",""*turnon_120);
   */
 
-  jetppb0_v2->Project("hMB","pt","jetMB");
-  jetppb1_v2->Project("hMB_1","pt","jetMB");
-  jetppb2_v2->Project("hMB_2","pt","jetMB");
-  jetppb1_v2->Project("hHLT_20","pt","jetMB&&jet20");
-  jetppb1_v2->Project("hHLT_40","pt","jetMB&&jet40");
-  jetppb1_v2->Project("hHLT_60","pt","jetMB&&jet60");
-  jetppb2_v2->Project("hHLT_80","pt","jetMB&&jet80");
+  jetppb0_v2->Project("hMB","ptlead","jetMB");
+  jetppb1_v2->Project("hMB_1","ptlead","jetMB");
+  jetppb2_v2->Project("hMB_2","ptlead","jetMB");
+  jetppb1_v2->Project("hHLT_20","ptlead","jetMB&&jet20");
+  jetppb1_v2->Project("hHLT_40","ptlead","jetMB&&jet40");
+  jetppb1_v2->Project("hHLT_60","ptlead","jetMB&&jet60");
+  jetppb2_v2->Project("hHLT_80","ptlead","jetMB&&jet80");
   
   
-  jetppb2_v2->Project("hHLT_100","pt","1"*turnon_100);
+  jetppb2_v2->Project("hHLT_100","ptlead","1"*turnon_100);
   hHLT_100->Print("base");
-  jetppb2_v2->Project("hBase_100","pt");
+  jetppb2_v2->Project("hBase_100","ptlead");
   hBase_100->Print("base");
 
   TH1F* hTurnon_20 = (TH1F*)hHLT_20->Clone("hTurnon_20");
