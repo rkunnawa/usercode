@@ -198,6 +198,8 @@ void merge_ppb_HLT(){
   TFile *fppb2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/pPb/2013/data/ntuple_2013_JEC_applied_ppb_ppbJet80_v2.root");
   //TFile *fppb2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/pPb/2013/data/ntuple_2013_JEC_applied_ppb_pbp_ppbJet80_v2.root");
 
+  
+
   //Number convention Files  - 0 - MB, 1- 40_60, 2- 80_100 
 
   TTree *jetppb0_v2 = (TTree*)fppb0_v2->Get("jetR3");
@@ -211,6 +213,20 @@ void merge_ppb_HLT(){
   jetppb0_v2->AddFriend(evtppb0_v2);
   jetppb1_v2->AddFriend(evtppb1_v2);
   jetppb2_v2->AddFriend(evtppb2_v2);
+
+
+  //If we are running on HiForests then include these trees:
+  /*
+    TTree* jetppb0_v2 = (TTree*)fppb0_v2->Get("akPu3PFJetAnalyzer/t");
+    TTree* evtppb0_v2 = (TTree*)fppb0_v2->Get("hiEvtAnalyzer/HiTree");
+    TTree* hltppb0_v2 = (TTree*)fppb0_v2->Get("hltanalysis/HltTree");
+    TTree* skimppb0_v2 = (TTree*)fppb0_v2->Get("skimanalysis/HltTree");
+    
+    jetppb0_v2->AddFriend(evtppb0_v2);
+    jetppb0_v2->AddFriend(hltppb0_v2);
+    jetppb0_v2->AddFriend(skimppb0_v2);
+
+  */
 
   //number convention is going to change here to better understand the merging. 
   // 0 - MB
@@ -267,14 +283,16 @@ void merge_ppb_HLT(){
   Float_t MB_count = (Float_t)jetppb0_v2->GetEntries();
   cout<<"MB_count = "<<MB_count<<endl; //2.89687e07
     
-  
+  //the following is how the prescl factor was calculated in 12-003 
   Float_t presclppb0 = (Float_t)jetppb2_v2->GetEntries("jet100&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jetMB&&jet100&&raw>20&&run>210658");
   Float_t presclppb1 = (Float_t)jetppb2_v2->GetEntries("jet100&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet20&&jet100&&raw>20&&run>210658");
   Float_t presclppb2 = (Float_t)jetppb2_v2->GetEntries("jet100&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet40&&jet100&&raw>20&&run>210658");
   Float_t presclppb3 = (Float_t)jetppb2_v2->GetEntries("jet100&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet60&&jet100&&raw>20&&run>210658");
   Float_t presclppb4 = (Float_t)jetppb2_v2->GetEntries("jet100&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet80&&jet100&&raw>20&&run>210658");
   //Float_t presclppb5 = (Float_t)jetppb1_v2->GetEntries("jet100")/jetppb1_v2->GetEntries("jet100&&jet100");
-
+  
+  //using a different way to calculate the prescl factor using the prescl - this i understand now is wrong. 
+  /*
   Float_t Presclppb0 = (Float_t)jetppb2_v2->GetEntries("jetMB_p&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jetMB&&raw>20&&run>210658");
   Float_t Presclppb1 = (Float_t)jetppb2_v2->GetEntries("jet20_p&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet20&&raw>20&&run>210658");
   Float_t Presclppb2 = (Float_t)jetppb2_v2->GetEntries("jet40_p&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet40&&raw>20&&run>210658");
@@ -282,13 +300,14 @@ void merge_ppb_HLT(){
   Float_t Presclppb4 = (Float_t)jetppb2_v2->GetEntries("jet80_p&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet80&&raw>20&&run>210658");
   Float_t Presclppb5 = (Float_t)jetppb2_v2->GetEntries("jet100_p&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet100&&raw>20&&run>210658");
   Float_t Presclppb6 = (Float_t)jetppb2_v2->GetEntries("jet120_p&&raw>20&&run>210658")/jetppb2_v2->GetEntries("jet120&&raw>20&&run>210658");
-
+  */
   cout<<"ppb prescl0 = "<<presclppb0<<endl;//2202.28
   cout<<"ppb prescl1 = "<<presclppb1<<endl;//1163.58
   cout<<"ppb prescl2 = "<<presclppb2<<endl;//40.9373
   cout<<"ppb prescl3 = "<<presclppb3<<endl;//4.46062
   cout<<"ppb prescl4 = "<<presclppb4<<endl;//1.41429
 
+  /*
   cout<<"ppb Prescl0 = "<<Presclppb0<<endl;//
   cout<<"ppb Prescl1 = "<<Presclppb1<<endl;//
   cout<<"ppb Prescl2 = "<<Presclppb2<<endl;//
@@ -296,7 +315,7 @@ void merge_ppb_HLT(){
   cout<<"ppb Prescl4 = "<<Presclppb4<<endl;//
   cout<<"ppb Prescl5 = "<<Presclppb5<<endl;//
   cout<<"ppb Prescl6 = "<<Presclppb6<<endl;//
-
+  */
   /*
     When we have the file with ppb and pbp
     prescl0 = 2202.28
@@ -375,9 +394,14 @@ void merge_ppb_HLT(){
   TCut ppb3 = "abs(eta_CM)<1&&jet60&&!jet80&&!jet100&&raw>20&&run>210658";
   TCut ppb4 = "abs(eta_CM)<1&&jet80&&!jet100&&raw>20&&run>210658";//try with or without 60 first and then try without 60
   TCut ppb5 = "abs(eta_CM)<1&&jet100&&raw>20&&run>210658";
+  //my ntuples already had the event selection cuts applied in them. 
+  //add the required event selection cuts here. 
+  TCut eventcut = "fabs(vz)<15&&pHBHENoiseFilter&&pprimaryvertexFilter&&pPAcollisionEventSelectionPA&&pVertexFilterCutGplus";
   
+  //the value multiplying the ppb0 here is hard coded from the prescl value got from above. We can also do it with ""*ppb0
   
-  jetppb0_v2->Project("hppb0","pt","3407.08"*ppb0); 
+  jetppb0_v2->Project("hppb0","pt","3407.08"*ppb0)
+    //jetppb0_v2->Project("hppb0","pt","3407.08"*(ppb0 && eventcut)); //if you are running on ntuples produced by my code then we dont need this evetcut. keep it for running on hiForest. 
   hppb0->Print("base");
 
   //jetppb1_v2->Project("hppb1","pt","1163.58"*ppb1);
@@ -390,12 +414,14 @@ void merge_ppb_HLT(){
   //hppb3->Print("base");
 
   jetppb2_v2->Project("hppb4","pt",ppb4);
+  //jetppb2_v2->Project("hppb4","pt",ppb4&&eventcut);
   hppb4->Print("base");
   //divideBinWidth(hppb4);
   //hppb4->Scale(1./5.25585e10);
   //hppb4->Scale(1./4);
 
   jetppb2_v2->Project("hppb5","pt",ppb5);
+  //jetppb2_v2->Project("hppb5","pt",ppb5&&eventcut);
   hppb5->Print("base");
   //divideBinWidth(hppb5);
   //hppb5->Scale(1./6.01453e10); //total no of min bias events for 80
@@ -680,7 +706,7 @@ void merge_ppb_HLT(){
   //c4->SaveAs("ppb_merged_60_lowest_evtfrac_measured_vs_unfolded.gif","RECREATE");  
   c4->SaveAs("ppb_merged_MB_eta_CM_1_lowest_evtfrac_measured_vs_unfolded.jpg","RECREATE");  
   //c4->SaveAs("ppb_merged_40_eta_CM_1_lowest_evtfrac_measured_vs_unfolded.jpg","RECREATE");  
-
+  /*
   //create the spectra with cross section: 
   hPPbComb_3->Scale(1./30.9);
   hPPbComb_3->Scale(1./2);
@@ -709,8 +735,9 @@ void merge_ppb_HLT(){
   //c5->SaveAs("ppb_merged_60_lowest_crosssection_measured_vs_unfolded.gif","RECREATE");  
   c5->SaveAs("ppb_merged_MB_eta_CM_1_lowest_crosssection_measured_vs_unfolded.jpg","RECREATE");  
   //c5->SaveAs("ppb_merged_40_eta_CM_1_lowest_crosssection_measured_vs_unfolded.jpg","RECREATE");  
+  */
 
-
+  
   //compare the MC reco and Gen for pPb used to create the unfolding matrix. 
   TH1F* hppbMC_Gen = (TH1F*)fPPb_Unfo->Get("hGen_cent0");
   TH1F* hppbMC_Reco = (TH1F*)fPPb_Unfo->Get("hRecoMC_cent0");
