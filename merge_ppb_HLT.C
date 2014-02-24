@@ -398,7 +398,7 @@ void merge_ppb_HLT(){
   //add the required event selection cuts here. 
   TCut eventcut = "fabs(vz)<15&&pHBHENoiseFilter&&pprimaryvertexFilter&&pPAcollisionEventSelectionPA&&pVertexFilterCutGplus";
   
-  //the value multiplying the ppb0 here is hard coded from the prescl value got from above. We can also do it with ""*ppb0
+  //the value multiplying the ppb0 here is hard coded from the prescl value got from above. We can also do it with "jetMB_p"*ppb0, where we take the prescl value from the hiforest hlt tree. the output doesnt look that nice. 
   
   jetppb0_v2->Project("hppb0","pt","3407.08"*ppb0)
     //jetppb0_v2->Project("hppb0","pt","3407.08"*(ppb0 && eventcut)); //if you are running on ntuples produced by my code then we dont need this evetcut. keep it for running on hiForest. 
