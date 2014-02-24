@@ -1,5 +1,6 @@
 // RpPb calculation after Unfolding, 
 // the PP reference in this one is with the MC.  we dont have any data at that energy 5.02 TeV 
+// this is done without chMax/jtpt cut 
 
 #include <iostream>
 #include <stdio.h>
@@ -255,8 +256,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   // Initialize reweighting functions
 	
   // Vertex & centrality reweighting for PbPb
-  TF1 *fVz;
-  TF1* fCentralityWeight;
+  //TF1 *fVz;
+  //TF1* fCentralityWeight;
   TCut dataSelection;
   TCut dataSelectionPPb;
   TCut dataSelectionPP;
@@ -265,15 +266,16 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	
   if (isMC) {
     // MC closure test, no reweighting
-    fVz = new TF1("fVz","1");
-    fCentralityWeight =  new TF1("fCentralityWeight","1");
+    //fVz = new TF1("fVz","1");
+    //fCentralityWeight =  new TF1("fCentralityWeight","1");
     dataSelection = "abs(vz)<15&&trackMax/jtpt>0.01&&abs(jteta)<2";
   } else {
     // Reweight to describe data
-    fVz = new TF1("fVz","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
-    fVz->SetParameters(7.62788e-01,-1.13228e-02,5.85199e-03,-3.04550e-04,4.43440e-05);
-    fCentralityWeight = new TF1("fCentralityWeight","[0]*exp([1]+[2]*x+[3]*x*x+[4]*x*x*x)",0,40);
-    fCentralityWeight->SetParameters(2.10653e-02,5.61607,-1.41493e-01,1.00586e-03,-1.32625e-04);
+    // 
+    //fVz = new TF1("fVz","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
+    //fVz->SetParameters(7.62788e-01,-1.13228e-02,5.85199e-03,-3.04550e-04,4.43440e-05);
+    //fCentralityWeight = new TF1("fCentralityWeight","[0]*exp([1]+[2]*x+[3]*x*x+[4]*x*x*x)",0,40);
+    //fCentralityWeight->SetParameters(2.10653e-02,5.61607,-1.41493e-01,1.00586e-03,-1.32625e-04);
     //dataSelectionPbPb = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2";
     //dataSelectionPP = "abs(vz)<15&&pPAcollisionEventSelectionPA&&pHBHENoiseFilter&&abs(jteta)<2";
     //TriggerSelectionPP = "HLT_PAJet80_NoJetID_v1";
@@ -286,11 +288,15 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     TriggerSelectionPPb = "jet80";
 		
   }
+  
+  // Vertex reweighting for pp //this one was the old one that i had
+  //TF1 *fVzPP = new TF1("fVzPP","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
+  //fVzPP->SetParameters(8.41684e-01,-2.58609e-02,4.86550e-03,-3.10581e-04,2.07918e-05);
 	
-  // Vertex reweighting for pp
-  TF1 *fVzPP = new TF1("fVzPP","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
-  fVzPP->SetParameters(8.41684e-01,-2.58609e-02,4.86550e-03,-3.10581e-04,2.07918e-05);
-	
+  //this is from yaxian's file 
+  TF1 * fVz = new TF1("fVz","[0]+[1]*x+[2]*TMath::Power(x,2)+[3]*TMath::Power(x,3)+[4]*TMath::Power(x,4)", -15., 15.);  
+  fVz->SetParameters(1.60182e+00,1.08425e-03,-1.29156e-02,-7.24899e-06,2.80750e-05);
+  
    	
   // Read data file
   TFile *infData;
@@ -395,7 +401,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	double weight_pt=1;
 	double weight_vz=1;
 				
-	weight_cent = fCentralityWeight->Eval(data[i]->bin);
+	//weight_cent = fCentralityWeight->Eval(data[i]->bin);
 	weight_vz = fVz->Eval(data[i]->vz);
 	hCentMC->Fill(data[i]->bin,scale*weight_cent*weight_vz);
 	hVzMC->Fill(data[i]->vz,scale*weight_cent*weight_vz);
@@ -419,8 +425,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  int subEvt=-1;
 	  if ( data[i]->refpt[k]  < 15. ) continue;
 	  if ( data[i]->jteta[k]  > 1.465 || data[i]->jteta[k] < -0.535 ) continue; //eta CM assuming that pPb MC is forward beam
-	  if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
-	  if (  ) continue;
+	  //if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
+	  //if (  ) continue;
 	  for (int l= 0; l< data[i]->ngen;l++) {
 	    if (data[i]->refpt[k]==data[i]->genpt[l]) {
 	      subEvt = data[i]->gensubid[l];
@@ -476,7 +482,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	double weight_pt=1;
 	double weight_vz=1;
 				
-	weight_cent = fCentralityWeight->Eval(data_pq->bin);
+	//weight_cent = fCentralityWeight->Eval(data_pq->bin);
 	weight_vz = fVz->Eval(data_pq->vz);
 	if (cBin>=nbins_cent) continue;
 	if (cBin==-1) continue;
@@ -490,11 +496,11 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 					
 	}
       }
-			
-			
-			
+      
+      
+      
     }
-	       
+    
     // fill pp MC
     for (int i=0;i<nbinsPP_pthat;i++) {
       if (xsectionPP[i]==0) continue;
@@ -507,20 +513,26 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	dataPP[i]->tJet->GetEntry(jentry2);
 	dataPP[i]->tGenJet->GetEntry(jentry2);
 	if(dataPP[i]->pthat<boundariesPP_pthat[i] || dataPP[i]->pthat>boundariesPP_pthat[i+1]) continue;
-	if(dataPP[i]->bin<=28) continue;
+	//if(dataPP[i]->bin<=28) continue;//figure out why this cut is there? ask Yen-Jie 
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
 	float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
-	if(fabs(dataPP[i]->vz)>15) continue;
 	double weight_cent=1;
 	double weight_pt=1;
 	double weight_vz=1;
-				
-	weight_vz = fVzPP->Eval(dataPP[i]->vz);
-	if (weight_vz>5||weight_vz<0.5) cout <<dataPP[i]->vz<<" "<<weight_vz<<endl;
+	
+	if(fabs(dataPP[i]->vz)>15) continue;
+
+	weight_vz = fVz->Eval(dataPP[i]->vz);
+	//if (weight_vz>5||weight_vz<0.5) cout <<dataPP[i]->vz<<" "<<weight_vz<<endl;
 	//weight_vz = 1;
 	hPtHatPP->Fill(dataPP[i]->pthat,scale*weight_vz);
 	int hasLeadingJet = 0;
 	hVzPPMC->Fill(dataPP[i]->vz,scale*weight_vz);
+
+	//Float_t vz_temp = dataPP[i]->vz;
+	//weight_vz = fVz->Eval(vz_temp);
+	
+
 	/*
 	  for (int k= 0; k < dataPP[i]->njets; k++) {
 	  if ( dataPP[i]->jteta[k]  > 2. || dataPP[i]->jteta[k] < -2. ) continue;
@@ -532,11 +544,13 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  }
 	  if (hasLeadingJet == 0) continue;
 	*/
+
 	for (int k= 0; k < dataPP[i]->njets; k++) {
 	  int subEvt=-1;
 	  if ( dataPP[i]->refpt[k]  < 15. ) continue;
 	  if ( dataPP[i]->jteta[k]  > 1. || dataPP[i]->jteta[k] < -1. ) continue;
-	  if ( dataPP[i]->chargedMax[k]/dataPP[i]->jtpt[k]<0.01) continue;
+
+	  //if ( dataPP[i]->chargedMax[k]/dataPP[i]->jtpt[k]<0.01) continue;
 	  //if (uhist[nbins_cent]->hMeasMatch!=0) {
 	  //   int ptBinNumber = uhist[nbins_cent]->hMeasMatch->FindBin(dataPP[i]->jtpt[k]);
 	  //   int ratio = uhist[nbins_cent]->hMeasMatch->GetBinContent(ptBinNumber);
@@ -567,7 +581,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
       }
     }
   }
-  /*	
+ 
   TCanvas *cMC = new TCanvas("cMC","MC",1000,800);
   cMC->Divide(nbins_cent,nbins_cent);
   TCanvas *cData = new TCanvas("cData","Data",1000,800);
@@ -602,7 +616,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     //}
     title2->Draw();
   }
-  */
+  
   cout<<"checking the input histograms"<<endl;
   for(int i = 0;i<=nbins_cent;i++){
     uhist[i]->hMeas->Print("base");
@@ -757,10 +771,17 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     myUnfoldingSmearSys.unfold(uhist[i]->hMeasSmearSys,nBayesianIter);
 		
     bayesianUnfold myUnfolding(uhist[i]->hMatrix,myPrior.hPrior,0);
-    myUnfolding.unfold(uhist[i]->hMeas,nBayesianIter);
-		
-    cout <<"Unfolding bin "<<i<<endl;
+    myUnfolding.unfold(uhist[i]->hMeas,nBayesianIter); 
     
+    //this is where you send the required histogram to be unfolded. 
+    //im changing it from uhist[i]->hMeas to uhist[i]->hRecoMC
+
+    bayesianUnfold mcUnfold(uhist[1]->hMatrix,myPrior.hPrior,0);
+    mcUnfold.unfold(uhist[1]->hRecoMC,nBayesianIter);
+    
+    uhist[1]->hUnfoMC = (TH1F*)mcUnfold.hPrior->Clone(Form("Unfolded_Reco_MC_cent%d",1));
+    
+    cout <<"Unfolding bin "<<i<<endl;
     
     delete hBinByBinCorRaw;
     delete hMCGen;
@@ -1546,7 +1567,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     cIterSys->SaveAs(Form("result-2013-ppb-%s-cent-%d/IterSys.gif",algoName[algo],nbins_cent),"RECREATE");
     cIterSys->SaveAs(Form("result-2013-ppb-%s-cent-%d/IterSys.C",algoName[algo],nbins_cent),"RECREATE");
     cIterSys->SaveAs(Form("result-2013-ppb-%s-cent-%d/IterSys.pdf",algoName[algo],nbins_cent),"RECREATE");
-    /*
+    */
     cMC->Update();
     cMC->SaveAs(Form("result-2013-ppb-%s-cent-%d/MC.gif",algoName[algo],nbins_cent),"RECREATE");
     cMC->SaveAs(Form("result-2013-ppb-%s-cent-%d/MC.C",algoName[algo],nbins_cent),"RECREATE");
@@ -1555,7 +1576,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     cData->SaveAs(Form("result-2013-ppb-%s-cent-%d/Data.gif",algoName[algo],nbins_cent),"RECREATE");
     cData->SaveAs(Form("result-2013-ppb-%s-cent-%d/Data.C",algoName[algo],nbins_cent),"RECREATE");
     cData->SaveAs(Form("result-2013-ppb-%s-cent-%d/Data.pdf",algoName[algo],nbins_cent),"RECREATE");
-    */
+    
     
     cMatrix->Update();
    
