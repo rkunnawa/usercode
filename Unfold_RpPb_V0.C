@@ -246,6 +246,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   RooUnfoldResponse *response[nbins_cent+1];
 	
   // Initialize Histograms
+  TH1F* hGen_check = new TH1F("hGen_check","",1000,0,1000);
 	
   for (int i=0;i<=nbins_cent;i++) {
     uhist[i] = new UnfoldingHistos(i);
@@ -380,7 +381,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   f_pp->SetParameters(0.5688,0.4867);//for ak3PF in MC for pp
 
   Float_t smeared_pt_ppb = 0,smeared_pt_pp = 0;
-
+  
   // Fill PPb MC
   if (!useMatrixFromFile) {
     for (int i=0;i<nbins_pthat;i++) {
@@ -505,7 +506,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     // fill pp MC
     for (int i=0;i<nbinsPP_pthat;i++) {
       if (xsectionPP[i]==0) continue;
-      //float scale=(xsectionPP[i]-xsectionPP[i+1])/dataPP[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1]));
+      float scale=(xsectionPP[i]-xsectionPP[i+1])/dataPP[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1]));
       cout <<"Loading PP pthat"<<boundariesPP_pthat[i]
 	   <<" sample, cross section = "<<xsectionPP[i]
 	   << Form(" pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1])<<endl;
@@ -518,7 +519,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
 	//float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
 	//removing the scale since kurt wanted to compare them for the cross check for 14-007
-	float scale = 1;
+	//float scale = 1;
 	double weight_cent=1;
 	double weight_pt=1;
 	double weight_vz=1;
@@ -564,6 +565,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 					
 	  //if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
 	  if(!isMC){
+
+	    hGen_check->Fill(dataPP[i]->refpt[k]);
+	    
 	    //if(dataPP[i]->jtpt[k]>=50 && dataPP[i]->jtpt[k]<=300){
 	    //smeared_pt_pp = dataPP[i]->jtpt[k]*(1+(f_pp->Eval(dataPP[i]->jtpt[k]))*fgaus_pp->GetRandom());
 	    //response[nbins_cent]->Fill(smeared_pt_pp,dataPP[i]->refpt[k],scale*weight_vz);
