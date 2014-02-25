@@ -90,7 +90,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	
   ////// New MC sample
   //this MC is without the PU subtraction, but the data we are using is akPu3PF, 
-  /*
+  
   if (!yinglu){
 		
     boundaries_pthat[0] = 15;
@@ -134,11 +134,11 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 		
 
   }
-  */
+  
 
 
   //MC JEC with PU subtraction algorithm
-
+  /*
   if(!yinglu){
     boundaries_pthat[0] = 15;
     fileName_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt15_HP04_prod25_v85_merged_forest_0.root";
@@ -179,11 +179,11 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     boundaries_pthat[9] = 1000;
     xsection[9] = 0;
 
-  }
-       
-	
-	
-	
+    }
+  */
+  
+  
+  
   // ================ pp PtBin ======================================================================
   const int nbinsPP_pthat = 8;
   Double_t boundariesPP_pthat[nbinsPP_pthat+1];
@@ -238,7 +238,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //*************************************************************************
 	
   // Output file
-  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_MB_eta_CM_1_lowest_pp_mc_Unfo_%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
+  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_ak3PF_MB_noMCweighting_eta_CM_1_lowest_pp_mc_Unfo_%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
   // Histograms used by RooUnfold
   UnfoldingHistos *uhist[nbins_cent+1];
 	
@@ -251,8 +251,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     uhist[i] = new UnfoldingHistos(i);
     response[i] = new RooUnfoldResponse(uhist[i]->hResMeas,uhist[i]->hResTrue);
   }
-	
-	
+  
+  
   // Initialize reweighting functions
 	
   // Vertex & centrality reweighting for PbPb
@@ -300,7 +300,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
    	
   // Read data file
   TFile *infData;
-  infData = new TFile("merge_ppb_MB_eta_CM_1_lowest_HLT_V2.root");
+  infData = new TFile("merge_ppb_ak3pf_MB_eta_CM_1_lowest_HLT_V2.root");
   TH1F *htest = (TH1F*)infData->Get("hppbComb");
   uhist[nbins_cent-1]->hMeas = rebin2(htest,"hMeas_cent0");
   uhist[nbins_cent-1]->hMeas->Print("base");
@@ -394,7 +394,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	data[i]->tGenJet->GetEntry(jentry2);
 	if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
 	int pthatBin = hPtHatPPb->FindBin(data[i]->pthat);
-	float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
+	//float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
+	float scale = 1;
 	if(fabs(data[i]->vz)>15) continue;
 	int cBin = hCent->FindBin(data[i]->bin)-1;
 	double weight_cent=1;
@@ -402,7 +403,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	double weight_vz=1;
 				
 	//weight_cent = fCentralityWeight->Eval(data[i]->bin);
-	weight_vz = fVz->Eval(data[i]->vz);
+	//weight_vz = fVz->Eval(data[i]->vz);
 	hCentMC->Fill(data[i]->bin,scale*weight_cent*weight_vz);
 	hVzMC->Fill(data[i]->vz,scale*weight_cent*weight_vz);
 	if (cBin>=nbins_cent) continue;
@@ -439,8 +440,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  //   int ratio = uhist[cBin]->hMeasMatch->GetBinContent(ptBinNumber);
 	  //if (ratio!=0) weight_pt = 1./ratio;
 	  //}
-	  if (!isMC||jentry2<data[i]->tJet->GetEntries()/2.) {
-
+	  //if (!isMC||jentry2<data[i]->tJet->GetEntries()/2.) {
+	  if(!isMC){
 	    //if(data[i]->jtpt[k]>=50 && data[i]->jtpt[k]<=300){
 	    //smeared_pt_ppb = data[i]->jtpt[k]*(1+(f_ppb->Eval(data[i]->jtpt[k]))*fgaus_ppb->GetRandom());
 	    //response[cBin]->Fill(smeared_pt_ppb,data[i]->refpt[k],scale*weight_cent*weight_pt*weight_vz);
@@ -515,15 +516,19 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	if(dataPP[i]->pthat<boundariesPP_pthat[i] || dataPP[i]->pthat>boundariesPP_pthat[i+1]) continue;
 	//if(dataPP[i]->bin<=28) continue;//figure out why this cut is there? ask Yen-Jie 
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
-	float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
+	//float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
+	//removing the scale since kurt wanted to compare them for the cross check for 14-007
+	float scale = 1;
 	double weight_cent=1;
 	double weight_pt=1;
 	double weight_vz=1;
 	
 	if(fabs(dataPP[i]->vz)>15) continue;
-
-	weight_vz = fVz->Eval(dataPP[i]->vz);
+	if(!dataPP[i]->pPAcollisionEventSelectionPA || !dataPP[i]->pHBHENoiseFilter) continue;
+	
+	//weight_vz = fVz->Eval(dataPP[i]->vz);
 	//if (weight_vz>5||weight_vz<0.5) cout <<dataPP[i]->vz<<" "<<weight_vz<<endl;
+	// similiarly removed the above weight to help kurt with the comparison. 
 	//weight_vz = 1;
 	hPtHatPP->Fill(dataPP[i]->pthat,scale*weight_vz);
 	int hasLeadingJet = 0;
@@ -557,8 +562,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  //if (ratio!=0) weight_pt = 1./ratio;
 	  //}
 					
-	  if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
-
+	  //if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
+	  if(!isMC){
 	    //if(dataPP[i]->jtpt[k]>=50 && dataPP[i]->jtpt[k]<=300){
 	    //smeared_pt_pp = dataPP[i]->jtpt[k]*(1+(f_pp->Eval(dataPP[i]->jtpt[k]))*fgaus_pp->GetRandom());
 	    //response[nbins_cent]->Fill(smeared_pt_pp,dataPP[i]->refpt[k],scale*weight_vz);
@@ -1567,7 +1572,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     cIterSys->SaveAs(Form("result-2013-ppb-%s-cent-%d/IterSys.gif",algoName[algo],nbins_cent),"RECREATE");
     cIterSys->SaveAs(Form("result-2013-ppb-%s-cent-%d/IterSys.C",algoName[algo],nbins_cent),"RECREATE");
     cIterSys->SaveAs(Form("result-2013-ppb-%s-cent-%d/IterSys.pdf",algoName[algo],nbins_cent),"RECREATE");
-    */
+    
     cMC->Update();
     cMC->SaveAs(Form("result-2013-ppb-%s-cent-%d/MC.gif",algoName[algo],nbins_cent),"RECREATE");
     cMC->SaveAs(Form("result-2013-ppb-%s-cent-%d/MC.C",algoName[algo],nbins_cent),"RECREATE");
@@ -1587,7 +1592,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.jpg",algoName[algo],nbins_cent),"RECREATE");
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.C",algoName[algo],nbins_cent),"RECREATE");
     cResponseNorm->SaveAs(Form("result-2013-ppb-%s-cent-%d/NormalizedResponseMatrix.pdf",algoName[algo],nbins_cent),"RECREATE");
-    
+    //*/
 		
   }
   divideBinWidth(hCent);
