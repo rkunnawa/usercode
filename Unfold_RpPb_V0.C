@@ -238,7 +238,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //*************************************************************************
 	
   // Output file
-  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_ak3PF_MB_noMCweighting_eta_CM_1_lowest_pp_mc_Unfo_%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
+  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_ak3PF_MB_correctedMC_weighting_eta_CM_1_lowest_pp_mc_Unfo_%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
   // Histograms used by RooUnfold
   UnfoldingHistos *uhist[nbins_cent+1];
 	
@@ -506,7 +506,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     // fill pp MC
     for (int i=0;i<nbinsPP_pthat;i++) {
       if (xsectionPP[i]==0) continue;
-      float scale=(xsectionPP[i]-xsectionPP[i+1])/dataPP[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1]));
+      //float scale=(xsectionPP[i]-xsectionPP[i+1])/dataPP[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1]));
       cout <<"Loading PP pthat"<<boundariesPP_pthat[i]
 	   <<" sample, cross section = "<<xsectionPP[i]
 	   << Form(" pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1])<<endl;
@@ -517,7 +517,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	if(dataPP[i]->pthat<boundariesPP_pthat[i] || dataPP[i]->pthat>boundariesPP_pthat[i+1]) continue;
 	//if(dataPP[i]->bin<=28) continue;//figure out why this cut is there? ask Yen-Jie 
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
-	//float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
+	float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
 	//removing the scale since kurt wanted to compare them for the cross check for 14-007
 	//float scale = 1;
 	double weight_cent=1;
@@ -527,7 +527,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	if(fabs(dataPP[i]->vz)>15) continue;
 	if(!dataPP[i]->pPAcollisionEventSelectionPA || !dataPP[i]->pHBHENoiseFilter) continue;
 	
-	//weight_vz = fVz->Eval(dataPP[i]->vz);
+	weight_vz = fVz->Eval(dataPP[i]->vz);
 	//if (weight_vz>5||weight_vz<0.5) cout <<dataPP[i]->vz<<" "<<weight_vz<<endl;
 	// similiarly removed the above weight to help kurt with the comparison. 
 	//weight_vz = 1;
@@ -566,7 +566,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  //if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
 	  if(!isMC){
 
-	    hGen_check->Fill(dataPP[i]->refpt[k]);
+	    hGen_check->Fill(dataPP[i]->refpt[k],scale*weight_vz);
 	    
 	    //if(dataPP[i]->jtpt[k]>=50 && dataPP[i]->jtpt[k]<=300){
 	    //smeared_pt_pp = dataPP[i]->jtpt[k]*(1+(f_pp->Eval(dataPP[i]->jtpt[k]))*fgaus_pp->GetRandom());
