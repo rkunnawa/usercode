@@ -229,7 +229,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     xsectionPP[8] = 0;
 
   }
-	
+  
   //*******************lumi number for the sample***************************
   float lumi=30.9;//ppb
   float pplumi=5300.;
@@ -363,7 +363,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   
   for (int i=0;i<nbinsPP_pthat;i++) {
     TH1F *hPtHatTmp = new TH1F("hPtHatTmp","",nbinsPP_pthat,boundariesPP_pthat);
-    dataPP[i]->tJet->Project("hPtHatTmp","pthat","abs(vz)<15");
+    dataPP[i]->tJet->Project("hPtHatTmp","pthat");
     hPtHatRawPP->Add(hPtHatTmp);
     delete hPtHatTmp;
   }
@@ -506,7 +506,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     // fill pp MC
     for (int i=0;i<nbinsPP_pthat;i++) {
       if (xsectionPP[i]==0) continue;
-      //float scale=(xsectionPP[i]-xsectionPP[i+1])/dataPP[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1]));
+      float scale_test=(xsectionPP[i]-xsectionPP[i+1])/dataPP[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1]));
+      cout<<"nentries between pthat bins "<<dataPP[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1]))<<endl;
       cout <<"Loading PP pthat"<<boundariesPP_pthat[i]
 	   <<" sample, cross section = "<<xsectionPP[i]
 	   << Form(" pthat>%.0f&&pthat<%.0f",boundariesPP_pthat[i],boundariesPP_pthat[i+1])<<endl;
@@ -538,7 +539,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	//Float_t vz_temp = dataPP[i]->vz;
 	//weight_vz = fVz->Eval(vz_temp);
 	
-
+	
 	/*
 	  for (int k= 0; k < dataPP[i]->njets; k++) {
 	  if ( dataPP[i]->jteta[k]  > 2. || dataPP[i]->jteta[k] < -2. ) continue;
@@ -553,7 +554,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 
 	for (int k= 0; k < dataPP[i]->njets; k++) {
 	  int subEvt=-1;
-	  if ( dataPP[i]->refpt[k]  < 15. ) continue;
+	  if ( dataPP[i]->refpt[k]  < 30. ) continue; //i had 15 before. kurt had 30. dont know which is better. 
 	  if ( dataPP[i]->jteta[k]  > 1. || dataPP[i]->jteta[k] < -1. ) continue;
 
 	  //if ( dataPP[i]->chargedMax[k]/dataPP[i]->jtpt[k]<0.01) continue;
