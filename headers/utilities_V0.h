@@ -107,10 +107,10 @@ static const int colorCode[nColor] = {
 };
 
 // Algos, following Ying's convension
-static const int nAlgos = 8;
+static const int nAlgos = 9;
 static const int BinLabelN = 11;
-static const char *algoName[nAlgos] = { "", "icPu5", "akPu2PF", "ak3PF", "akPu4PF", "akPu2Calo", "akPu3Calo", "akPu4Calo" };
-static const char *algoNamePP[nAlgos] = { "", "icPu5", "ak2PF", "ak3PF", "ak4PF", "ak2Calo", "ak3Calo", "ak4Calo" };
+static const char *algoName[nAlgos] = { "", "icPu5", "akPu2PF", "akPu3PF", "akPu4PF", "akPu5PF" , "akPu2Calo", "akPu3Calo", "akPu4Calo" };
+static const char *algoNamePP[nAlgos] = { "", "icPu5", "ak2PF", "ak3PF", "ak4PF", "ak5PF" , "ak2Calo", "ak3Calo", "ak4Calo" };
 static const char *algoNameGen[nAlgos] = { "", "icPu5", "akPu2PF", "ak3PF", "akPu4PF", "akPu2PF", "akPu3PF", "akPu4PF" };
 static const char *BinLabel[BinLabelN] = {"100-110", "110-120", "120-130", "130-140", "140-150", "150-160", "160-170", "170-180", "180-200", "200-240","240-300" };
 
@@ -401,6 +401,7 @@ public:
 		cout <<"Open "<<fileName<<endl;
 		tFile = new TFile(fileName,"read");
 		tEvt = (TTree*)tFile->Get("hiEvtAnalyzer/HiTree");
+		tSkim = (TTree*)tFile->Get("skimanalysis/HltTree");
 		tJet = (TTree*)tFile->Get(jetTree);
 		tJet->SetBranchAddress("jtpt" , jtpt );
 		tJet->SetBranchAddress("trackMax" , trackMax );
@@ -415,12 +416,16 @@ public:
 		if (loadGenJet) tGenJet->SetBranchAddress("gensubid", gensubid);
 		tEvt->SetBranchAddress("hiBin",&bin  );
 		tEvt->SetBranchAddress("vz",&vz  );
+		tSkim->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter);
+		tSkim->SetBranchAddress("pPAcollisionEventSelectionPA",&pPAcollisionEventSelectionPA);
 		tJet->AddFriend(tEvt);
+		tJet->AddFriend(tSkim);
 	};
 	TFile *tFile;
 	TTree *tJet;
 	TTree *tGenJet;
 	TTree *tEvt;
+	TTree* tSkim;
 	float jtpt[1000];
 	float refpt[1000];
 	float jteta[1000];
@@ -432,7 +437,9 @@ public:
 	float pthat;
 	int njets;
 	int ngen;
-	int bin;      
+	int bin;     
+	int pHBHENoiseFilter;
+	int pPAcollisionEventSelectionPA;
 };
 
 class UnfoldingHistos

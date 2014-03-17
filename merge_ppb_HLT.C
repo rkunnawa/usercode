@@ -138,11 +138,14 @@ static const double boundaries_rec[nbins_rec+1] = {
         880, 890, 900, 910, 920, 930, 940, 950, 960, 970, 980, 990, 1000
 	};
 
-Double_t boundaries_yaxian[] = {0,5,10,15,20,30,45,60,75,90,105,120,140,160,180,200,220,260,300,400,600,1000};
-Int_t nbins_yaxian = 21;
+//Double_t boundaries_yaxian[] = {0,5,10,15,20,30,45,60,75,90,105,120,140,160,180,200,220,260,300,400,600,1000};
+//Int_t nbins_yaxian = 21;
 
 //Double_t boundaries_yaxian[] = {3, 4, 5, 7, 9, 12, 15, 18, 22, 27, 33, 39, 47, 55, 64,74, 84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 362, 429, 507, 592, 1000};
 //Int_t nbins_yaxian = 31;
+
+static const int nbins_yaxian = 29;
+static const double boundaries_yaxian[nbins_yaxian+1] = {3,4,5,7,9,12,15,18,22,27,33,39,47,55,64,74,84,97,114,133,153,174,196,220,245,272,300,429,692,1000};
 
 // rebin the spectra
 TH1F *rebin(TH1F *h, char *histName)
@@ -252,6 +255,7 @@ void merge_ppb_HLT(){
   TH1F* hMB = new TH1F("hMB","",nbins_yaxian,boundaries_yaxian);
   */
   TH1F *hppb0 = new TH1F("hppb0","",1000,0,1000);
+  TH1F* hppb0_v2 = new TH1F("hppb0_v2","",1000,0,1000);
   TH1F *hppb1 = new TH1F("hppb1","",1000,0,1000);
   TH1F *hppb2 = new TH1F("hppb2","",1000,0,1000);
   TH1F *hppb3 = new TH1F("hppb3","",1000,0,1000);
@@ -259,9 +263,10 @@ void merge_ppb_HLT(){
   TH1F *hppb5 = new TH1F("hppb5","",1000,0,1000);
   TH1F *hppb6 = new TH1F("hppb6","",1000,0,1000);
   TH1F *hppbComb = new TH1F("hppbComb","",1000,0,1000);
+  TH1F* hppbComb_v2 = new TH1F("hppbComb_v2","",1000,0,1000);
   TH1F* hMB = new TH1F("hMB","",1000,0,1000);
   
-
+  
   //define histograms which are used for trigger turn on curves. 
   TH1F* hHLT_120 = new TH1F("hHLT_120","",1000,0,200);
   TH1F* hHLT_100 = new TH1F("hHLT_100","",1000,0,200);
@@ -362,6 +367,13 @@ void merge_ppb_HLT(){
     ppb Prescl5 = 2.46404
     ppb Prescl6 = 6.2406
 
+    MB_count = 379966
+    ppb prescl0 = 3407.55
+    ppb prescl1 = 2197.48
+    ppb prescl2 = 40.2013
+    ppb prescl3 = 3.82997
+    ppb prescl4 = 1.38966
+    
   */
 
   //the way to estimate the equivalent number of min bias events 
@@ -400,7 +412,8 @@ void merge_ppb_HLT(){
   
   //the value multiplying the ppb0 here is hard coded from the prescl value got from above. We can also do it with "jetMB_p"*ppb0, where we take the prescl value from the hiforest hlt tree. the output doesnt look that nice. 
   
-  jetppb0_v2->Project("hppb0","pt","3407.08"*ppb0)
+  jetppb0_v2->Project("hppb0","pt","3407.55"*ppb0);
+  jetppb0_v2->Project("hppb0_v2","pt","jetMB_p*L1_MB_p"*ppb0);
     //jetppb0_v2->Project("hppb0","pt","3407.08"*(ppb0 && eventcut)); //if you are running on ntuples produced by my code then we dont need this evetcut. keep it for running on hiForest. 
   hppb0->Print("base");
 
@@ -437,6 +450,10 @@ void merge_ppb_HLT(){
   //hppbComb->Add(hppb6,1);
 
   hppbComb->Print("base");
+
+  hppbComb_v2->Add(hppb0_v2,1);
+  hppbComb_v2->Add(hppb4,1);
+  hppbComb_v2->Add(hppb5,1);
 
   
 
@@ -586,9 +603,16 @@ void merge_ppb_HLT(){
   hppbComb->SetYTitle("counts");
   hppbComb->SetXTitle("Jet p_{T} GeV/c");
   hppbComb->Draw();
+  hppbComb_v2->SetMarkerColor(kPink);
+  hppbComb_v2->SetMarkerStyle(28);
+  hppbComb_v2->Draw("same");
+  /*
   hppb0->SetMarkerStyle(27);
   hppb0->SetMarkerColor(28);
   hppb0->Draw("same");
+  hppb0_v2->SetMarkerStyle(23);
+  hppb0_v2->SetMarkerColor(kYellow);
+  hppb0_v2->Draw("same");
   //hppb3->SetMarkerStyle(25);
   //hppb3->SetMarkerColor(kBlue);
   //hppb3->Draw("same");
@@ -598,23 +622,27 @@ void merge_ppb_HLT(){
   hppb5->SetMarkerStyle(24);
   hppb5->SetMarkerColor(kGreen);
   hppb5->Draw("same");
-
+  */
   TLegend *title = myLegend(0.34,0.65,0.65,0.9);
   title->AddEntry(hppbComb,"PPb Merged","pl");
-  title->AddEntry(hppb0,"PPb MB","pl");
-  //title->AddEntry(hppb3,"PPb HLT_60","pl");
+  title->AddEntry(hppbComb_v2,"PPb Merge hlt_prescl","pl");
+  /*
+  title->AddEntry(hppb0,"PPb MB - overlap","pl");
+  title->AddEntry(hppb0_v2,"PPb MB - hlt prescl","pl");
+  title->AddEntry(hppb3,"PPb HLT_60","pl");
   title->AddEntry(hppb4,"PPb HLT_80","pl");
   title->AddEntry(hppb5,"PPb HLT_100","pl");
+  */
   title->SetTextSize(0.04);
   title->Draw();
   drawText("PPb 2013 Data PromptReco",0.3,0.65,20);  
-  drawText("Anti-k_{T} PU PF Jets R = 0.3, |#eta_{CM}|<1, |vz|<15",0.3,0.56,20);
+  drawText("Anti-k_{T} PF Jets R = 0.3, |#eta_{CM}|<1, |vz|<15",0.3,0.56,20);
 
   //c2->SaveAs("ppb_2013_pt_merged_60_lowest.gif","RECREATE");
   c2->SaveAs("ppb_2013_pt_merged_MB_lowest_eta_CM_1_lowest.jpg","RECREATE");
 
   //comparison with the unfolded data: 
-  TFile* fPPb_Unfo = TFile::Open("result-2013-ppb-akPu3PF-cent-1/ppb_merge_MB_eta_CM_1_lowest_pp_mc_Unfo_akPu3PF_cent_1.root");
+  TFile* fPPb_Unfo = TFile::Open("result-2013-ppb-ak3PF-cent-1/ppb_merge_ak3PF_MB_eta_CM_1_lowest_pp_mc_Unfo_ak3PF_cent_1.root");
   TH1F* hPPb_Unfo = (TH1F*)fPPb_Unfo->Get("Unfolded_cent0");
   //TH1F* hPPb_Unfo = rebin(hPPb_Unfo_test,"hPPb_Unfo");
   hPPb_Unfo->SetAxisRange(20,500,"X");
@@ -767,12 +795,13 @@ void merge_ppb_HLT(){
   c6->SaveAs("ppb_2013_mc_reco_gen_eta_CM_1.jpg","RECREATE");
 
   //compare with Yaxian's epectra
-  TFile *fYaxian = TFile::Open("PPbJetTrigHFsumEta4Bin1PYTHIAAkPu3PFJetSpectra.root");
+  //TFile *fYaxian = TFile::Open("PPbJetTrigHFsumEta4Bin1PYTHIAAkPu3PFJetSpectra.root");
+  TFile *fYaxian = TFile::Open("PPbJetTrigPYTHIAak3PFJetSpectraRpAHFsumEta4Bin1.root");
   TH1F* h_Yaxian = fYaxian->Get("DataJetInEtaBin-10_10;1");
   //TH1F* h_Yaxian_evenbin = rebin(h_Yaxian,"h_Yaxian_evenbin");
   h_Yaxian->Print("base");
-  divideBinWidth(h_Yaxian);
-  h_Yaxian->Scale(1./2);
+  //divideBinWidth(h_Yaxian);
+  //h_Yaxian->Scale(1./2);
   //h_Yaxian_evenbin->Print("base");
   //divideBinWidth(h_Yaxian_evenbin);
   //h_Yaxian_evenbin->Scale(1./2);
@@ -826,7 +855,7 @@ void merge_ppb_HLT(){
   TH1F* hPP_Refe_Yaxian = (TH1F*)fYaxian->Get("PYTHIAJetInEtaBin-10_10_Cen0-100%;1");
   //TH1F* hPP_Refe_Yaxian_evenbin = rebin(hPP_Refe_Yaxian,"hPP_Refe_Yaxian_evenbin");
 
-  TH1F* hPP_Refe = (TH1F*)fPPb_Unfo->Get("hRecoMC_cent1");//change it from hRecoMC_cent1 and hGen_cent
+  TH1F* hPP_Refe = (TH1F*)fPPb_Unfo->Get("hGen_cent1");//change it from hRecoMC_cent1 and hGen_cent
   TH1F* hPP_Refe_y = rebin_yaxian(hPP_Refe,"hPP_Refe_y");
   cout<<"hPP_Refe"<<endl;
   hPP_Refe->Print("base");
@@ -846,9 +875,9 @@ void merge_ppb_HLT(){
 
   hPP_Refe_Yaxian->Print("base");
   hPP_Refe_Yaxian->Scale(1./70);
-  hPP_Refe_Yaxian->Scale(1./2);
+  //hPP_Refe_Yaxian->Scale(1./2);
   hPP_Refe_Yaxian->Scale(6.9);
-  divideBinWidth(hPP_Refe_Yaxian);
+  //divideBinWidth(hPP_Refe_Yaxian);
 
   //hPP_Refe_Yaxian_evenbin->Print("base");
   //hPP_Refe_Yaxian_evenbin->Scale(1./70);
@@ -946,12 +975,13 @@ void merge_ppb_HLT(){
 
   //TFile f("merge_ppb_60_lowest_HLT_V2.root","RECREATE");
   //TFile f("merge_ppb_40_eta_CM_1_lowest_HLT_V2.root","RECREATE");
-  TFile f("merge_ppb_MB_eta_CM_1_lowest_HLT_V2.root","RECREATE");
+  TFile f("merge_ppb_ak3pf_MB_eta_CM_1_lowest_HLT_V2.root","RECREATE");
   hppb1->Write();
   hppb2->Write();
   hppb3->Write();
   hppb4->Write();
   hppbComb->Write();
+  hppbComb_v2->Write();
   hPPbComb->Write();
   hPPb_Unfo->Write();
   hPPbComb_2->Write();

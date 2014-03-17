@@ -1,3 +1,4 @@
+
 // RpPb calculation after Unfolding, 
 // the PP reference in this one is with the MC.  we dont have any data at that energy 5.02 TeV 
 // this is done without chMax/jtpt cut 
@@ -90,7 +91,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	
   ////// New MC sample
   //this MC is without the PU subtraction, but the data we are using is akPu3PF, 
-  
+  /*
   if (!yinglu){
 		
     boundaries_pthat[0] = 15;
@@ -132,13 +133,12 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     boundaries_pthat[9] = 1000;
     xsection[9] = 0;
 		
-
   }
-  
+  */
 
 
   //MC JEC with PU subtraction algorithm
-  /*
+  
   if(!yinglu){
     boundaries_pthat[0] = 15;
     fileName_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt15_HP04_prod25_v85_merged_forest_0.root";
@@ -180,7 +180,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     xsection[9] = 0;
 
     }
-  */
+  
   
   
   
@@ -225,7 +225,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     fileNamePP_pthat[7] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod16/Signal_Pythia_pt280/HiForest_v77_v2_merged01/pt280_HP04_hiforest77_hiSignal.root";
     xsectionPP[7] = 6.160e-07;
 		
-    boundariesPP_pthat[8] = 1000;
+    boundariesPP_pthat[8] = 2000;
     xsectionPP[8] = 0;
 
   }
@@ -238,7 +238,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //*************************************************************************
 	
   // Output file
-  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_ak3PF_MB_correctedMC_weighting_eta_CM_1_lowest_pp_mc_Unfo_%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
+  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_correctedMC_weighting_eta_CM_1_mc__%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
   // Histograms used by RooUnfold
   UnfoldingHistos *uhist[nbins_cent+1];
 	
@@ -301,8 +301,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
    	
   // Read data file
   TFile *infData;
-  infData = new TFile("merge_ppb_ak3pf_MB_eta_CM_1_lowest_HLT_V2.root");
-  TH1F *htest = (TH1F*)infData->Get("hppbComb");
+  infData = new TFile("/net/hisrv0001/home/rkunnawa/WORK/CMSSW_5_3_8_HI/src/pAforest_merge_output_akPu3PF_v2.root");
+  TH1F *htest = (TH1F*)infData->Get("hpPb_Comb_20");
   uhist[nbins_cent-1]->hMeas = rebin2(htest,"hMeas_cent0");
   uhist[nbins_cent-1]->hMeas->Print("base");
 
@@ -367,6 +367,10 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     hPtHatRawPP->Add(hPtHatTmp);
     delete hPtHatTmp;
   }
+
+  cout<<hPtHatRawPP->Integral()<<endl;
+  cout<<hPtHatRawPP->GetEntries()<<endl;
+  hPtHatRawPP->Print("base");
   
   //apply the JECs to MC from Doga here. 
   TF1 *fgaus_ppb = new TF1("fgaus_ppb","gaus(0)",-20,20);
@@ -382,8 +386,10 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 
   Float_t smeared_pt_ppb = 0,smeared_pt_pp = 0;
   
-  // Fill PPb MC
   if (!useMatrixFromFile) {
+
+    // Fill PPb MC
+    
     for (int i=0;i<nbins_pthat;i++) {
       if (xsection[i]==0) continue;
       cout <<"Loading pthat"<<boundaries_pthat[i]
@@ -395,13 +401,16 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	data[i]->tGenJet->GetEntry(jentry2);
 	if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
 	int pthatBin = hPtHatPPb->FindBin(data[i]->pthat);
-	//float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
-	float scale = 1;
+	float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
+	//float scale = 1;
 	if(fabs(data[i]->vz)>15) continue;
 	int cBin = hCent->FindBin(data[i]->bin)-1;
 	double weight_cent=1;
 	double weight_pt=1;
 	double weight_vz=1;
+
+	if(fabs(data[i]->vz)>15) continue;
+	if(!data[i]->pPAcollisionEventSelectionPA || !data[i]->pHBHENoiseFilter) continue;
 				
 	//weight_cent = fCentralityWeight->Eval(data[i]->bin);
 	//weight_vz = fVz->Eval(data[i]->vz);
@@ -421,12 +430,14 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  
 	  }
 	  if (hasLeadingJet == 0) continue;
+	//close the comment here since we dont want to look at leading jets 
 	*/
-	
+    
 	for (int k= 0; k < data[i]->njets; k++) {
 	  int subEvt=-1;
-	  if ( data[i]->refpt[k]  < 15. ) continue;
-	  if ( data[i]->jteta[k]  > 1.465 || data[i]->jteta[k] < -0.535 ) continue; //eta CM assuming that pPb MC is forward beam
+	  if ( data[i]->refpt[k]  < 30. ) continue;
+	  //if ( data[i]->jteta[k]  > 1.465 || data[i]->jteta[k] < -0.535 ) continue; //eta CM assuming that pPb MC is forward beam
+	  if( abs(data[i]->jteta[k]+0.465) > 1) continue;
 	  //if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
 	  //if (  ) continue;
 	  for (int l= 0; l< data[i]->ngen;l++) {
@@ -472,7 +483,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 		
 		
     ////// Pyquen cross check
-		
+    /*	
     if(isPyquen && isMC){
 			
       for (Long64_t jentry2=0; jentry2<data_pq->tJet->GetEntries();jentry2++) {
@@ -502,6 +513,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
       
       
     }
+    */
+    
     
     // fill pp MC
     for (int i=0;i<nbinsPP_pthat;i++) {
@@ -519,6 +532,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	//if(dataPP[i]->bin<=28) continue;//figure out why this cut is there? ask Yen-Jie 
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
 	float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
+        //float scale = xsectionPP[pthatBin-1]-xsectionPP[pthatBin];
 	//removing the scale since kurt wanted to compare them for the cross check for 14-007
 	//float scale = 1;
 	double weight_cent=1;
@@ -555,15 +569,15 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	for (int k= 0; k < dataPP[i]->njets; k++) {
 	  int subEvt=-1;
 	  if ( dataPP[i]->refpt[k]  < 30. ) continue; //i had 15 before. kurt had 30. dont know which is better. 
-	  if ( dataPP[i]->jteta[k]  > 1. || dataPP[i]->jteta[k] < -1. ) continue;
-
+	  //if ( dataPP[i]->jteta[k]+0.465  > 1. || dataPP[i]->jteta[k]-0.465 < -1. ) continue;
+	  if( abs(dataPP[i]->jteta[k]+0.465) > 1) continue;
 	  //if ( dataPP[i]->chargedMax[k]/dataPP[i]->jtpt[k]<0.01) continue;
 	  //if (uhist[nbins_cent]->hMeasMatch!=0) {
 	  //   int ptBinNumber = uhist[nbins_cent]->hMeasMatch->FindBin(dataPP[i]->jtpt[k]);
 	  //   int ratio = uhist[nbins_cent]->hMeasMatch->GetBinContent(ptBinNumber);
 	  //if (ratio!=0) weight_pt = 1./ratio;
 	  //}
-					
+	  
 	  //if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
 	  if(!isMC){
 
@@ -591,7 +605,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
       }
     }
   }
- 
+/*
   TCanvas *cMC = new TCanvas("cMC","MC",1000,800);
   cMC->Divide(nbins_cent,nbins_cent);
   TCanvas *cData = new TCanvas("cData","Data",1000,800);
@@ -626,13 +640,17 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     //}
     title2->Draw();
   }
-  
+*/
   cout<<"checking the input histograms"<<endl;
   for(int i = 0;i<=nbins_cent;i++){
     uhist[i]->hMeas->Print("base");
     uhist[i]->hGen->Print("base");
     cout<<endl<<endl;
   }
+
+
+  
+
 
   /*
   TCanvas *cCent = new TCanvas("cCent","Centrality",600,600);
@@ -644,6 +662,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   hCentData->Draw();
   hCentMC->Draw("same");
   */
+
+
+  
   cout <<"Response Matrix..."<<endl;
 	
   TCanvas * cMatrix = new TCanvas("cMatrix","Matrix",1200,800);
@@ -745,7 +766,10 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   cPPb->Divide(3,3);
   cPPb->cd(1);
 	
-	
+  
+
+
+  
   for (int i=0;i<nbins_cent;i++) {
     cPPb->cd(i+1)->SetLogy();
 		
@@ -808,7 +832,12 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     uhist[i]->hRecoSmearSys   = (TH1F*) myUnfoldingSmearSys.hPrior->Clone(Form("UnfoldedSmearSys_cent%i",i));
     //uhist[i]->hRecoBinByBin = (TH1F*) unfold2.Hreco();
     uhist[i]->hRecoBinByBin->SetName(Form("UnfoldedBinByBin_cent%i",i));
-		
+
+
+  
+
+
+  
     /*
     // Do unfolding
     prior myPrior(uhist[i]->hMatrix,uhist[i]->hMeas,0.0);
@@ -919,17 +948,19 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     }
     */
     //cleanup(uhist[i]->hReco);
+
+  
     uhist[i]->hMeas->SetMarkerStyle(20);
     uhist[i]->hMeas->SetMarkerColor(kRed);
     uhist[i]->hReco->SetMarkerStyle(25);
     uhist[i]->hReco->Draw("");
-    uhist[i]->hReco->SetAxisRange(100,330);
+    //uhist[i]->hReco->SetAxisRange(100,330);
     //      TH1F *hReproduced = (TH1F*)myUnfolding.hReproduced->Clone(Form("hReproduced_cent%d",i));
     //      hReproduced->SetMarkerColor(4);
     //      hReproduced->SetMarkerStyle(24);
     uhist[i]->hMeas->Draw("same");
   }
-	
+  
   /*
   cPbPb->cd(8);
   TLegend *pbpblegend = myLegend(0.52,0.65,0.85,0.9);
@@ -939,7 +970,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   pbpblegend->AddEntry(uhist[0]->hMeas,"Measured","pl");
   pbpblegend->AddEntry(uhist[0]->hReco,"Unfolded","pl");
   pbpblegend->Draw();
-  */
+  
 	
 	
 	
@@ -1001,7 +1032,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	
   //************************     Making Canvas       ***********************
 	
-	
+  /*	
 	
   TCanvas * cIterSys = new TCanvas("cIterSys","Iteration Systematics",1200,800);
   makeMultiPanelCanvasWithGap(cIterSys,3,2,0.01,0.01,0.16,0.2,0.04,0.04);
@@ -1025,7 +1056,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	
   TCanvas * cPPMCclosure = new TCanvas("cPPMCclosure","cPPMCclosure",600,450);
 	
-	
+  */	
 	
   //************   MC Closure Test For PP        *************
 	
@@ -1113,7 +1144,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   */
 	
 	
-	
+  /*	
   // calculate the maximum from all cent bins
   for (int i=0;i<nbins_cent;i++) {
 		
@@ -1130,11 +1161,18 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 		
 		
   }
+
+  */
+
+
+  /*
   for (int i=0;i<nbins_cent;i++) {
     //cRpA->cd(nbins_cent-i);
     
     TH1F *hRebinRpA = rebin(uhist[i]->hReco, Form("hRebinRpA_cent%d",i));
+  */
 
+  
     /*		
     TH1F *hRebinRAA = rebin(uhist[i]->hReco, Form("hRebinRAA_cent%d",i));
     TH1F *hRebinRAA_Npart = rebin_Npart(uhist[i]->hReco, Form("hRebinRAA_Npart_cent%d",i));
@@ -1172,6 +1210,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     title->SetTextSize(0.06);
     */
     
+
+  /*
     // Iteration systematics
     TH1F *hRecoRpAIterSys[10];
     TLegend *legBayesianIter = myLegend(0.6,0.6,0.9,0.9);
@@ -1228,6 +1268,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     }
     drawEnvelope(systematics.hSysIter[i],"hist same");
     
+
+  */
     
     //calculate the RpA here: 
     // histograms needed: hRebinRAA and 
@@ -1541,7 +1583,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     title_->Draw();
     l->Draw();
     */
-  }   // centrality for loop end
+  
+
+  //}   // centrality for loop end
 	
 	
 	
@@ -1549,8 +1593,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //************   Test  Plotting ends      ***************
 	
 	
-	
+  	
   if (isMC) {
+    /*
     cRpA->Update();
     cRpA->SaveAs("MCClosureTest/MCClosureTest.gif");
     cRpA->SaveAs("MCClosureTest/MCClosureTest.C");
@@ -1564,7 +1609,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     cPPMCclosure->SaveAs("MCClosureTest/MCClosureTestPP.C");
     cPPMCclosure->SaveAs("MCClosureTest/MCClosureTestPP.pdf");
 		
-		
+	*/	
   } else {
 		
     /*
@@ -1600,7 +1645,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     //*/
 		
   }
-  divideBinWidth(hCent);
+// divideBinWidth(hCent);
 	
 
 	

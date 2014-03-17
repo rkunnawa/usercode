@@ -706,7 +706,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 	
   for (int i=0;i<nbinsPP_pthat;i++) {
     TH1F *hPtHatTmp = new TH1F("hPtHatTmp","",nbinsPP_pthat,boundariesPP_pthat);
-    dataPP[i]->tJet->Project("hPtHatTmp","pthat","abs(vz)<15");
+    dataPP[i]->tJet->Project("hPtHatTmp","pthat");
     hPtHatRawPP->Add(hPtHatTmp);
     delete hPtHatTmp;
   }
@@ -1099,7 +1099,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     uhist[i]->hRecoBinByBin = (TH1F*) uhist[i]->hMeas->Clone(Form("hRecoBinByBin_cent%d",i));
     uhist[i]->hRecoBinByBin->Divide(hBinByBinCor);
     //      uhist[i]->hRecoBinByBin = (TH1F*) hMCReco->Clone(Form("hRecoBinByBin_cent%d",i));
-		
+    
 
 
     // Do unfolding

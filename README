@@ -19,3 +19,6 @@ $$ Sept 15th 2013
 
 	- 
 
+useful to read from a tree
+
+TTree* jet_MB = (TTree*)_file0->Get("ak3PFJetAnalyzer/t");TTree* evt_MB = (TTree*)_file0->Get("hiEvtAnalyzer/HiTree");TTree* hlt_MB = (TTree*)_file0->Get("hltanalysis/HltTree");TTree* skim_MB = (TTree*)_file0->Get("skimanalysis/HltTree");jet_MB->AddFriend(evt_MB);jet_MB->AddFriend(hlt_MB);jet_MB->AddFriend(skim_MB);

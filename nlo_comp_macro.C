@@ -147,20 +147,25 @@ void nlo_comp_macro(){
 
   TH1::SetDefaultSumw2();
   
-  TFile *fPP = TFile::Open("result-2013-akPu4PF-cent-6-isFineBin-0/pbpb_pp_merged_chmx_pt_isMC_0_Unfo_2013_akPu4PF_cent_6_isFineBin_0.root");
+  TFile *fPP = TFile::Open("result-2013-akPu3PF-cent-6-isFineBin-0/pbpb_pp_merged_chmx_pt_isMC_0_Unfo_2013_akPu3PF_cent_6_isFineBin_0.root");
   //TFile *fPP = TFile::Open("merge_pbpb_pp_ak5_HLT_V2.root");
   TFile *fNLO = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/mc/fnl4350_nnpdf21-nlo_aspdf.root");
   //TFile *fNLO = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/mc/fnl4350_cteq66-nlo_aspdf.root");
-  TFile *fPP_meas = TFile::Open("merge_pbpb_pp_ak4_HLT_V2.root");//ak4
+  TFile *fPP_meas = TFile::Open("merge_pbpb_pp_ak3_HLT_V2.root");//ak4
   //TFile *fPP_meas = TFile::Open("merge_HLT_V2.root");//ak3
 
   TH1F *htest_unfo = (TH1F*)fPP->Get("Unfolded_cent6");
+  TH1F *htest_mc = (TH1F*)fPP->Get("hGen_cent6");
   TH1F *htest_meas = (TH1F*)fPP_meas->Get("hppComb");
   TH1F *hPPunfo = (TH1F*)htest_unfo->Clone("hPPunfo");
   TH1F *hPPmeas = (TH1F*)htest_meas->Clone("hPPmeas");
+  TH1F *hPPMC = (TH1F*)htest_mc->Clone("hPPMC");
   hPPmeas->Print("base");
+  hPPunfo->Print("base");
   TH1F *hPPrebin_meas = rebin(htest_meas,"hPPrebin_meas");
   TH1F *hPPrebin = rebin(htest_unfo,"hPPrebin");
+  TH1F *hPPMCrebin = rebin(htest_mc,"hPPMCrebin");
+  hPPMCrebin->Print("base");
   //TH1F *htest = (TH1F*)fPP->Get("hppComb");
   //TH1F *hPPrebin = rebin(htest,"hPPrebin");
 
@@ -175,6 +180,11 @@ void nlo_comp_macro(){
   hPPrebin_2->Scale(1./4);
   hPPrebin_2->Scale(1./5.3);
   divideBinWidth(hPPrebin_2);
+  
+  hPPMCrebin->Scale(1./4);
+  divideBinWidth(hPPMCrebin);
+  hPPMCrebin->Scale(1e9);
+  
   //TH1F *hPPrebin_2 = (TH1F*)hPPrebin->Clone("hPPrebin_2");
   gStyle->SetOptStat(0);
 
@@ -193,11 +203,11 @@ void nlo_comp_macro(){
   hPPmeas->SetMarkerColor(kBlack);
   hPPmeas->Draw("same");
   TLegend *titl = myLegend(0.54,0.65,0.85,0.9);
-  titl->AddEntry(hPPmeas,"PP2013 Meas ak4PF","pl");
+  titl->AddEntry(hPPmeas,"PP2013 Meas ak3PF","pl");
   titl->AddEntry(hPPunfo,"PP2013 Unfo Bayesian","pl");
   titl->SetTextSize(0.03);
   titl->Draw();
-  drawText("Anti-k_{T}PF R = 0.4",0.43,0.6,22);
+  drawText("Anti-k_{T}PF R = 0.3",0.43,0.6,22);
   drawText("|#eta|<2, |vz|<15",0.47,0.5,22);
   
   c2->cd(2);
@@ -205,16 +215,25 @@ void nlo_comp_macro(){
   hPPRatio->Divide(hPPunfo);
   hPPRatio->SetXTitle("Jet p_{T} GeV/c");
   hPPRatio->SetYTitle("Ratio Measured/Unfolded");
-  hPPRatio->SetTitle("PP2013 ak4PF merged");
+  hPPRatio->SetTitle("PP2013 ak3PF merged");
   hPPRatio->GetYaxis()->SetRangeUser(0,2);
   hPPRatio->Draw();
-  c2->SaveAs("pp_2013_ak4_merged_unfolded_pt.gif","RECREATE");
+  c2->SaveAs("pp_2013_ak3_merged_unfolded_pt.pdf","RECREATE");
   
 
   
-  TH1F *hNLO = (TH1F*)fNLO->Get("h100300");
+  TH1F *hNLO = (TH1F*)fNLO->Get("h100200");
+  /*
+  TH1F *hNLO_err = (TH1F*)fNLO->Get("h100203");
+  for(int i = 0;i<hNLO_err->GetNbinsX();i++){
+    Float_T valErr = hNLO_Err->GetBinError(i);
+    hNLO->SetBinError(i,valErr);
+  }
+  */
+
   //h100300 - ak4PF, h100200 - ak3PF
   TH1F* hNLO_2 = (TH1F*)hNLO->Clone("hNLO_2");
+  hNLO->Print("base");
 
   TCanvas *cComp = new TCanvas("cComp","",800,600);
   cComp->Divide(2,1);
@@ -226,39 +245,53 @@ void nlo_comp_macro(){
 
   hNLO->SetMarkerStyle(20);
   hNLO->SetMarkerColor(kBlack);
-  hNLO->SetTitle("");
+  hNLO->SetTitle("PP 2.76 TeV");
   hNLO->SetYTitle("#sigma pb");
   hNLO->SetXTitle("Jet p_{T} GeV/c");
   hNLO->Draw("pl");
+
+  hPPMCrebin->SetMarkerStyle(21);
+  hPPMCrebin->SetMarkerColor(kBlue);
+
+  hPPMCrebin->Draw("same");
+
   hPPrebin->Draw("same");
 
-  TLegend *title = myLegend(0.54,0.65,0.85,0.9);
-  title->AddEntry(hNLO,"NLO","pl");
-  title->AddEntry(hPPrebin,"PP ak4PF unfo","pl");
+  TLegend *title = myLegend(0.34,0.65,0.54,0.75);
+  title->AddEntry(hNLO,"NLO nnpdf21","pl");
+  title->AddEntry(hPPrebin,"PP ak3PF unfo","pl");
+  title->AddEntry(hPPMCrebin,"PP ak3PF MC Gen","pl");
   title->SetTextSize(0.06);
   title->Draw();
   
 
   cComp->cd(2);
   TH1F *hPP = (TH1F*)hPPrebin->Clone("hPP");
+  TH1F* hPPMC_v2 = (TH1F*)hPPMCrebin->Clone("hPPMC_v2");
+
+  hPP->Print("base");
+  hPPMC_v2->Print("base");
+  
   hPP->Divide(hNLO);
-  hPP->SetTitle("Ratio of PP ak4PF unfolded to NLO");
+  hPPMC_v2->Divide(hNLO);
+  hPP->SetTitle("Ratio of PP ak3PF unfolded and MC Gen to NLO");
   //hPP->SetTitle("Ratio of PP ak4PF measured to NLO");
   hPP->SetYTitle("#frac{#sigma_{PP}}{#sigma_{NLO}}");
   hPP->SetXTitle("Jet p_{T} GeV/c");
   hPP->Draw();
+  hPPMC_v2->Draw("same");
 
-  cComp->SaveAs("fastNLO_comparison/ratio_pp_ak4_merged_NLO_nnpdf21nlo.gif","RECREATE");
+  cComp->SaveAs("fastNLO_comparison/ratio_pp_ak3_merged_NLO_nnpdf21nlo.pdf","RECREATE");
 
   TCanvas c1;
   c1.SetLogy();
   hPPrebin->SetAxisRange(50,500,"X");
   hPPrebin->SetYTitle("#sigma (pb)");
   hPPrebin->SetXTitle("Jet p_{T} GeV/c");
-  hPPrebin->SetTitle("PP ak4PF unfolded");
+  hPPrebin->SetTitle("PP ak3PF unfolded");
   hPPrebin->Draw();
-  c1.SaveAs("fastNLO_comparison/PP_2013_ak4_merged_Unfolded_crosssection.gif","RECREATE");
-  c1.SaveAs("fastNLO_comparison/PP_2013_ak4_merged_Unfolded_crosssection.C","RECREATE");
+  c1.SaveAs("fastNLO_comparison/PP_2013_ak3_merged_Unfolded_crosssection.pdf","RECREATE");
+  c1.SaveAs("fastNLO_comparison/PP_2013_ak3_merged_Unfolded_crosssection.C","RECREATE");
   
   TCanvas *c3 = new TCanvas("c3","",800,600);
   c3->SetGrid();
@@ -268,7 +301,7 @@ void nlo_comp_macro(){
   //graph_Expected.DrawClone("E3AL");
   
 
-  TFile *fNPC = TFile::Open("fastNLO_comparison/files/npc_extrapolation_ivan_ak4.root");
+  TFile *fNPC = TFile::Open("fastNLO_comparison/files/npc_extrapolation_ivan.root");
   TH1F* hNPC = (TH1F*)fNPC->Get("hNPC");
   hNPC->Scale(1000);// 1000 for the pb from nb 
   //hNPC->Print("base");
@@ -280,7 +313,7 @@ void nlo_comp_macro(){
   hNPC->Draw();
   hPPrebin->Draw("same");
 
-  c3->SaveAs("fastNLO_comparison/NPC_atlas_ak4.gif","RECREATE");
+  c3->SaveAs("fastNLO_comparison/NPC_atlas_ak3.pdf","RECREATE");
 
 
   TCanvas *c4 = new TCanvas("c4","",800,600);
@@ -305,15 +338,15 @@ void nlo_comp_macro(){
   hNLO_2->Draw("same");
 
   TLegend *title2 = myLegend(0.54,0.65,0.85,0.9);
-  title2->AddEntry(hNPC_rebin,"Ivan NPC - Atlas R=0.4","pl");
-  title2->AddEntry(hPPrebin_2,"PP2013 ak4PF unfolded","pl");
-  title2->AddEntry(hNLO_2,"CMS NLO nnpdf21 R=0.4","l");
+  title2->AddEntry(hNPC_rebin,"Ivan NPC - Atlas R=0.3","pl");
+  title2->AddEntry(hPPrebin_2,"PP2013 ak3PF unfolded","pl");
+  title2->AddEntry(hNLO_2,"CMS NLO nnpdf21 R=0.3","l");
 
   title2->SetTextSize(0.04);
   title2->Draw();
   gStyle->SetOptStat(0);
  
-  c4->SaveAs("fastNLO_comparison/pp_ak4_nlo_overlay_hist.pdf","RECREATE");
+  c4->SaveAs("fastNLO_comparison/pp_ak3_nlo_overlay_hist.pdf","RECREATE");
 
   TCanvas *c6 = new TCanvas("c6","",800,600);
   TH1F* hPPratio = (TH1F*)hPPrebin_2->Clone("hPPratio");
@@ -324,17 +357,17 @@ void nlo_comp_macro(){
   //Float_t delta
   
   hPPratio->Divide(hNPC_rebin);
-  hPPratio->SetTitle("Ratio of PP 2013 ak4 unfolded w/ Ivan's NPC Atlas");
+  hPPratio->SetTitle("Ratio of PP 2013 ak3 unfolded w/ Ivan's NPC Atlas");
   hPPratio->SetYTitle(" ");
   hPPratio->SetXTitle("p_{T} GeV/c");
   hPPratio->Draw();
-  c6->SaveAs("pp_ak4_npc_ratio.pdf","RECREATE");
+  c6->SaveAs("pp_ak3_npc_ratio.pdf","RECREATE");
 
   TCanvas *c5 = new TCanvas("c5","",800,600);
   hNPC->Draw();
   hNPC_rebin->Draw("same");
   c5->SetLogy();
-  c5->SaveAs("Ivan_plot_rebin_ak4.pdf","RECREATE");
+  c5->SaveAs("Ivan_plot_rebin_ak3.pdf","RECREATE");
  
   
 

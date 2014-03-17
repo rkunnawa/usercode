@@ -278,7 +278,7 @@ void RpA_calculation(){
   hpPbRatio->SetTitle("pPb2013 akPu3PF merged");
   hpPbRatio->GetYaxis()->SetRangeUser(0,2);
   hpPbRatio->Draw();
-  c->SaveAs("pPb_2013_akPu3PF_merged_MB_lowest_eta_CM_1_unfolded_pt.gif","RECREATE");
+  c->SaveAs("pPb_2013_akPu3PF_merged_MB_lowest_eta_CM_1_unfolded_pt.jpg","RECREATE");
 
   TH1F* hPP_Refe = (TH1F*)fin->Get("hGen_cent1");
   hPP_Refe->Print("base");
@@ -312,7 +312,7 @@ void RpA_calculation(){
   title2->SetTextSize(0.03);
   title2->Draw();
 
-  c1->SaveAs("RpA_merge_MB_lowest_calculation_bin_v0.gif","RECREATE");
+  c1->SaveAs("RpA_merge_MB_lowest_calculation_bin_v0.jpg","RECREATE");
 
   TCanvas *c2 = new TCanvas("c2","",800,600);
   hRpA_Meas_rebin->Divide(hPP_Refe_rebin);
@@ -329,7 +329,7 @@ void RpA_calculation(){
   hRpA_Meas_rebin->Draw();
   hRpA_Unfo_rebin->Draw("same");
 
-  c2->SaveAs("RpA_merge_MB_lowest_eta_CM_1_calculation_bin_v1.gif","RECREATE");
+  c2->SaveAs("RpA_merge_MB_lowest_eta_CM_1_calculation_bin_v1.jpg","RECREATE");
 
   TCanvas *c3 = new TCanvas("c3","",800,600);
   hRpA_Meas_rebin2->Divide(hPP_Refe_rebin2);
@@ -346,7 +346,7 @@ void RpA_calculation(){
   hRpA_Meas_rebin2->Draw();
   hRpA_Unfo_rebin2->Draw("same");
 
-  c3->SaveAs("RpA_merge_MB_lowest_eta_CM_1_calculation_bin_v2.gif","RECREATE");
+  c3->SaveAs("RpA_merge_MB_lowest_eta_CM_1_calculation_bin_v2.jpg","RECREATE");
 
 
 
