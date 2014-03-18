@@ -302,10 +302,22 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   // Read data file
   TFile *infData;
   infData = new TFile("/net/hisrv0001/home/rkunnawa/WORK/CMSSW_5_3_8_HI/src/pAforest_merge_output_akPu3PF_v2.root");
-  TH1F *htest = (TH1F*)infData->Get("hpPb_Comb_20");
-  uhist[nbins_cent-1]->hMeas = rebin2(htest,"hMeas_cent0");
-  uhist[nbins_cent-1]->hMeas->Print("base");
+  //TH1F *htest = (TH1F*)infData->Get("hpPb_Comb_20");
+  uhist[nbins_cent-1]->hMeas = (TH1F*)infData->Get("hpPb_Comb_20");
 
+  uhist[0]->hMeas = (TH1F*)uhist[0]->hMeas->Rebin(nbins_yaxian,"hMeas_cent0",boundaries_yaxian);
+  uhist[1]->hMeas = (TH1F*)uhist[1]->hMeas->Rebin(nbins_yaxian,"hMeas_cent1",boundaries_yaxian);
+
+  //for(int ij = 0;ij<nbins_yaxian;ij++){
+
+  //  double value = uhist[0]->hMeas->GetBinContent(ij);
+  //  if(trigEffInc[ij]!=0)value = value/trigEffInc[ij];
+  //  uhist[0]->hMeas->SetBinContent(ij,value);
+
+  //}
+
+  uhist[nbins_cent-1]->hMeas->Print("base");
+ 
 	
   // Setup jet data branches
   JetData *data[nbins_pthat];
@@ -399,7 +411,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	data[i]->tEvt->GetEntry(jentry2);
 	data[i]->tJet->GetEntry(jentry2);
 	data[i]->tGenJet->GetEntry(jentry2);
-	if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
+	//if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
 	int pthatBin = hPtHatPPb->FindBin(data[i]->pthat);
 	float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
 	//float scale = 1;
@@ -409,7 +421,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	double weight_pt=1;
 	double weight_vz=1;
 
-	if(fabs(data[i]->vz)>15) continue;
+	//if(fabs(data[i]->vz)>15) continue;
 	if(!data[i]->pPAcollisionEventSelectionPA || !data[i]->pHBHENoiseFilter) continue;
 				
 	//weight_cent = fCentralityWeight->Eval(data[i]->bin);
@@ -641,14 +653,21 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     title2->Draw();
   }
 */
+
+  
+  
   cout<<"checking the input histograms"<<endl;
   for(int i = 0;i<=nbins_cent;i++){
+    //uhist[i]->hGen = (TH1F*)uhist[i]->hGen->Rebin(nbins_yaxian,Form("hGen_cent%d",i),boundaries_yaxian);
     uhist[i]->hMeas->Print("base");
     uhist[i]->hGen->Print("base");
+
+    
+    
     cout<<endl<<endl;
   }
 
-
+  
   
 
 
@@ -772,7 +791,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   
   for (int i=0;i<nbins_cent;i++) {
     cPPb->cd(i+1)->SetLogy();
-		
+    
     // Do Bin-by-bin
     cout<<"doing bin by bin unfolding"<<endl;
 		
@@ -788,7 +807,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     uhist[i]->hRecoBinByBin->Divide(hBinByBinCor);
     //      uhist[i]->hRecoBinByBin = (TH1F*) hMCReco->Clone(Form("hRecoBinByBin_cent%d",i));
 		
-		
+    
 		
     // Do unfolding
     prior myPrior(uhist[i]->hMatrix,uhist[i]->hMeas,0);
@@ -801,19 +820,21 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 		
     bayesianUnfold myUnfoldingJECSys(uhist[i]->hMatrix,hPrior,0);
     myUnfoldingJECSys.unfold(uhist[i]->hMeasJECSys,nBayesianIter);
+    
     bayesianUnfold myUnfoldingSmearSys(uhist[i]->hMatrix,hPrior,0);
     myUnfoldingSmearSys.unfold(uhist[i]->hMeasSmearSys,nBayesianIter);
 		
-    bayesianUnfold myUnfolding(uhist[i]->hMatrix,myPrior.hPrior,0);
+    //bayesianUnfold myUnfolding(uhist[i]->hMatrix,myPrior.hPrior,0);
+    bayesianUnfold myUnfolding(uhist[i]->hMatrix,hPrior,0); //got this from kurt's unfold2.C 
     myUnfolding.unfold(uhist[i]->hMeas,nBayesianIter); 
     
     //this is where you send the required histogram to be unfolded. 
     //im changing it from uhist[i]->hMeas to uhist[i]->hRecoMC
 
-    bayesianUnfold mcUnfold(uhist[1]->hMatrix,myPrior.hPrior,0);
-    mcUnfold.unfold(uhist[1]->hRecoMC,nBayesianIter);
+    //bayesianUnfold mcUnfold(uhist[1]->hMatrix,myPrior.hPrior,0);
+    //mcUnfold.unfold(uhist[1]->hRecoMC,nBayesianIter);
     
-    uhist[1]->hUnfoMC = (TH1F*)mcUnfold.hPrior->Clone(Form("Unfolded_Reco_MC_cent%d",1));
+    //uhist[1]->hUnfoMC = (TH1F*)mcUnfold.hPrior->Clone(Form("Unfolded_Reco_MC_cent%d",1));
     
     cout <<"Unfolding bin "<<i<<endl;
     
