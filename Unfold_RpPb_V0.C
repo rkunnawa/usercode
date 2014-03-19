@@ -150,7 +150,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 
     boundaries_pthat[2] = 50;
     fileName_pthat[2] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt50_HP04_prod25_v85_merged_forest_0.root";
-    xsection[2] = 3.778e-02;
+    xsection[2] = 3.778e-03;
 
     boundaries_pthat[3] = 80;
     fileName_pthat[3] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt80_HP04_prod25_v85_merged_forest_0.root";
@@ -380,9 +380,12 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     delete hPtHatTmp;
   }
 
-  cout<<hPtHatRawPP->Integral()<<endl;
-  cout<<hPtHatRawPP->GetEntries()<<endl;
-  hPtHatRawPP->Print("base");
+  TH1F* hPthatCheckpPb = new TH1F("hPtHatCheckpPb","",nbins_yaxian, boundaries_yaxian);
+  TH1F* hPthatCheckpp = new TH1F("hPtHatCheckpp","",nbins_yaxian, boundaries_yaxian);
+
+  //cout<<hPtHatRawPP->Integral()<<endl;
+  //cout<<hPtHatRawPP->GetEntries()<<endl;
+  //hPtHatRawPP->Print("base");
   
   //apply the JECs to MC from Doga here. 
   TF1 *fgaus_ppb = new TF1("fgaus_ppb","gaus(0)",-20,20);
@@ -422,8 +425,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	double weight_vz=1;
 
 	//if(fabs(data[i]->vz)>15) continue;
-	if(!data[i]->pPAcollisionEventSelectionPA || !data[i]->pHBHENoiseFilter) continue;
-				
+	//if(!data[i]->pPAcollisionEventSelectionPA || !data[i]->pHBHENoiseFilter) continue;
+	
 	//weight_cent = fCentralityWeight->Eval(data[i]->bin);
 	//weight_vz = fVz->Eval(data[i]->vz);
 	hCentMC->Fill(data[i]->bin,scale*weight_cent*weight_vz);
@@ -431,6 +434,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	if (cBin>=nbins_cent) continue;
 	if (cBin==-1) continue;
 	hPtHatPPb->Fill(data[i]->pthat,scale*weight_cent*weight_vz);
+	hPthatCheckpPb->Fill(data[i]->pthat,scale*weight_cent*weight_vz);
 	/*
 	  int hasLeadingJet = 0;
 	  for (int k= 0; k < data[i]->njets; k++) {
@@ -543,6 +547,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	//if(dataPP[i]->pthat<boundariesPP_pthat[i] || dataPP[i]->pthat>boundariesPP_pthat[i+1]) continue;
 	//if(dataPP[i]->bin<=28) continue;//figure out why this cut is there? ask Yen-Jie 
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
+	//above i changed it from hPtHatPP to hPtHatRawPP. since it should be with the Raw counts right???
 	float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
         //float scale = xsectionPP[pthatBin-1]-xsectionPP[pthatBin];
 	//removing the scale since kurt wanted to compare them for the cross check for 14-007
@@ -561,7 +566,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	hPtHatPP->Fill(dataPP[i]->pthat,scale*weight_vz);
 	int hasLeadingJet = 0;
 	hVzPPMC->Fill(dataPP[i]->vz,scale*weight_vz);
-
+	hPthatCheckpp->Fill(dataPP[i]->pthat,scale*weight_vz);
 	//Float_t vz_temp = dataPP[i]->vz;
 	//weight_vz = fVz->Eval(vz_temp);
 	
