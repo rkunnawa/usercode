@@ -336,8 +336,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   JetData *dataPP[nbins_pthat];
   JetData *data_pq;
 	
-  for (int i=0;i<nbins_pthat;i++) data[i] = new JetData(fileName_pthat[i],Form("%sJetAnalyzer/t",algoName[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]));
-  for (int i=0;i<nbinsPP_pthat;i++) dataPP[i] = new JetData(fileNamePP_pthat[i],Form("%sJetAnalyzer/t",algoNamePP[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]));
+  for (int i=0;i<nbins_pthat;i++) data[i] = new JetData(fileName_pthat[i],Form("%sJetAnalyzer/t",algoName[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]),0);
+  for (int i=0;i<nbinsPP_pthat;i++) dataPP[i] = new JetData(fileNamePP_pthat[i],Form("%sJetAnalyzer/t",algoNamePP[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]),0);
 	
   if (yinglu) data_pq = new JetData(fileName_pthat_pq,Form("%sJetAnalyzer/t",algoName[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]));	
 	
@@ -428,7 +428,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
       for (Long64_t jentry2=0; jentry2<data[i]->tJet->GetEntries();jentry2++) {
 	data[i]->tEvt->GetEntry(jentry2);
 	data[i]->tJet->GetEntry(jentry2);
-	data[i]->tGenJet->GetEntry(jentry2);
+	//data[i]->tGenJet->GetEntry(jentry2);
 	//if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
 	int pthatBin = hPtHatPPb->FindBin(data[i]->pthat);
 	//float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
@@ -440,6 +440,9 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	double weight_cent=1;
 	double weight_pt=1;
 	double weight_vz=1;
+
+	if(scale*weight_cent*weight_vz <=0 ) cout<<"RED FLAG RED FLAF RED FLAG"<<endl;
+
 
 	//if(fabs(data[i]->vz)>15) continue;
 	//if(!data[i]->pPAcollisionEventSelectionPA || !data[i]->pHBHENoiseFilter) continue;
@@ -473,13 +476,13 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  if( abs(data[i]->jteta[k]+0.465) > 1) continue;
 	  //if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
 	  //if (  ) continue;
-	  for (int l= 0; l< data[i]->ngen;l++) {
-	    if (data[i]->refpt[k]==data[i]->genpt[l]) {
-	      subEvt = data[i]->gensubid[l];
-	      break;
-	    }
-	  }
-	  if (subEvt!=0) continue;
+	  //for (int l= 0; l< data[i]->ngen;l++) {
+	  //  if (data[i]->refpt[k]==data[i]->genpt[l]) {
+	  //    subEvt = data[i]->gensubid[l];
+	  //    break;
+	  //  }
+	  //}
+	  //if (subEvt!=0) continue;
 	  //if (uhist[cBin]->hMeasMatch!=0) {
 	  //   int ptBinNumber = uhist[cBin]->hMeasMatch->FindBin(data[i]->jtpt[k]);
 	  //   int ratio = uhist[cBin]->hMeasMatch->GetBinContent(ptBinNumber);
@@ -821,7 +824,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     TH1F* hMCGen          = (TH1F*)uhist[i]->hResponse->ProjectionX(); // gen
     hBinByBinCorRaw->Divide(hMCGen);
     TF1 *f = new TF1("f","[0]+[1]*x");
-    hBinByBinCorRaw->Fit("f","LL ","",100,300);
+    hBinByBinCorRaw->Fit("f","LL ","",40,250);
     TH1F* hBinByBinCor = (TH1F*)hBinByBinCorRaw->Clone();//functionHist(f,hBinByBinCorRaw,Form("hBinByBinCor_cent%d",i));
     //TH1F* hBinByBinCor = (TH1F*)functionHist(f,hBinByBinCorRaw,Form("hBinByBinCor_cent%d",i));
 		
@@ -832,8 +835,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     
 		
     // Do unfolding
-    prior myPrior(uhist[i]->hMatrix,uhist[i]->hMeas,0);
-    myPrior.unfold(uhist[i]->hMeas,1);
+    //prior myPrior(uhist[i]->hMatrix,uhist[i]->hMeas,0);
+    //myPrior.unfold(uhist[i]->hMeas,1);
     TH1F *hPrior = (TH1F*)hMCGen->Clone("hPrior");
     removeZero(hPrior);
     //hPrior->Scale(uhist[i]->hMeas->Integral(0,1000)/hPrior->Integral(0,1000));

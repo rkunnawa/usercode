@@ -21,7 +21,7 @@
 #include "RooUnfold-1.1.1/src/RooUnfoldSvd.h"
 #include "RooUnfold-1.1.1/src/RooUnfoldBinByBin.h"
 
-#include "headers/utilities.h"
+#include "headers/utilities_V0.h"
 #include "headers/bayesianUnfold.h"
 #include "headers/prior.h"
 
@@ -33,7 +33,7 @@ using namespace std;
 // Update Yen-Jie Lee 06.22.12
 //==============================================================================
 
-void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool useMatrixFromFile = 0, int doToy = 0, int isMC = 0,char *spectraFileName = "pbpbSpectra.root", int doJECSys = 0,int isFineBin = 0,int year = 2013) // algo 2 =akpu2 ; 3 =akpu3 ; 4 =akpu4 ;1 = icpu5
+void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool useMatrixFromFile = 0, int doToy = 0, int isMC = 0,char *spectraFileName = "pbpbSpectra.root", int doJECSys = 0,int isFineBin = 0,int year = 2013) // algo 2 =akpu2 ; 3 =akpu3 ; 4 =akpu4 ;1 = icpu5
 {
   //#ifdef __CINT__
   //gSystem->Load("libRooUnfold");
@@ -81,10 +81,11 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 	
   // Pthat binning
   //const int nbins_pthat = 8;
-  const int nbins_pthat = 9;
+  const int nbins_pthat = 3;
   Double_t boundaries_pthat[nbins_pthat+1];
   char *fileName_pthat[nbins_pthat+1];
   Double_t xsection[nbins_pthat+1];
+  Double_t entries[nbins_pthat];
 	
   char *fileName_pthat_pq;
   fileName_pthat_pq="/hadoop/store/user/belt/hiForest2/v27_28/pyquenFull80_HYDJET.root";
@@ -94,8 +95,10 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   ////// New MC samples
 	
   if (yinglu) {
+    /*
     boundaries_pthat[0]=30;
-    fileName_pthat[0]="/hadoop/store/user/belt/hiForest2/Pythia30_HydjetDrum_mix01_HiForest2_v19.root";   
+    //fileName_pthat[0]="/hadoop/store/user/belt/hiForest2/Pythia30_HydjetDrum_mix01_HiForest2_v19.root";   
+    fileName_pthat[0] = "/mnt/hadoop";
     xsection[0]= 1.079e-02;
 	
     boundaries_pthat[1]=50;
@@ -132,22 +135,30 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 	
     xsection[9] = 0;
     boundaries_pthat[9]=1000;
+    */
   } else { 
 	
     ////// New MC samples
 
     boundaries_pthat[0]=30;
-    fileName_pthat[0]="/mnt/hadoop/cms/store/user/kjung/PbPbMCProd/HydjetDrum_Dijet30_Tracking/merged/Dijet30_HydjetDrum_v27_Full_mergedV1.root";
+    //fileName_pthat[0]="/mnt/hadoop/cms/store/user/kjung/PbPbMCProd/HydjetDrum_Dijet30_Tracking/merged/Dijet30_HydjetDrum_v27_Full_mergedV1.root";
+    fileName_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/HIMC/Jet30/Track8_Jet19_STARTHI53_LV1/merged/HiForest_Pythia_Hydjet_Jet30_Track8_Jet19_STARTHI53_LV1_merged_forest_0.root";
     xsection[0]= 1.079e-02;
+    entries[0] = 14925;
 	
     boundaries_pthat[1]=50;
-    fileName_pthat[1]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet50_HydjetDrum_v27_mergedV1.root";
+    //fileName_pthat[1]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet50_HydjetDrum_v27_mergedV1.root";
+    fileName_pthat[1] = "/mnt/hadoop/cms/store/user/dgulhan/HIMC/Jet50/Track8_Jet19_STARTHI53_LV1/merged/HiForest_Pythia_Hydjet_Jet50_Track8_Jet19_STARTHI53_LV1_merged_forest_0.root";
     xsection[1]= 1.021e-03;
+    entries[1] = 1609;
 	
     boundaries_pthat[2]=80;
-    fileName_pthat[2]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet80_HydjetDrum_v27_mergedV1.root";
+    //fileName_pthat[2]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet80_HydjetDrum_v27_mergedV1.root";
+    fileName_pthat[2] = "/mnt/hadoop/cms/store/user/dgulhan/HIMC/Jet80/Track8_Jet21_STARTHI53_LV1/merged3/HiForest_Pythia_Hydjet_Jet80_Track8_Jet21_STARTHI53_LV1_merged_forest_0.root";
     xsection[2]= 9.913e-05;
+    entries[2] = 163;
 	
+    /*
     boundaries_pthat[3]=100;
     fileName_pthat[3]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet100_HydjetDrum_v27_mergedV1.root ";
     xsection[3]= 3.069e-05 ;
@@ -171,10 +182,10 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     boundaries_pthat[8]=300;
     fileName_pthat[8]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v28/Dijet300_HydjetDrum_v28_mergedV1.root";
     xsection[8]= 3.176e-08;
-	
-    xsection[9] = 0;
-    boundaries_pthat[9]=1000;
-
+    */
+    xsection[3] = 0;
+    boundaries_pthat[3]=1000;
+    
     // yen-jie's file location
     /*
       boundaries_pthat[0]=30;
@@ -184,7 +195,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       boundaries_pthat[1]=50;
       fileName_pthat[1]="/d102/yjlee/hiForest2MC/Pythia50_HydjetDrum_mix01_HiForest2_v19.root";   
       xsection[1]= 1.021e-03;
-	
+	0.009769
       boundaries_pthat[2]=80;
       fileName_pthat[2]="/d102/yjlee/hiForest2MC/Pythia80_HydjetDrum_mix01_HiForest2_v20.root";   
       xsection[2]= 9.913e-05;
@@ -224,7 +235,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   Double_t boundariesPP_pthat[nbinsPP_pthat+1];
   char *fileNamePP_pthat[nbinsPP_pthat+1];
   Double_t xsectionPP[nbinsPP_pthat+1];
-	
+  
   if (yinglu) {	
     boundariesPP_pthat[0]=30;
     fileNamePP_pthat[0]="/hadoop/store/user/belt/hiForest2/pp276Dijet30_merged.root";   
@@ -420,7 +431,15 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
    	
   // Read data file
   TFile *infData;
-	
+
+  infData = TFile::Open("RAA/merge_pbpb_ak3_vs_HLT_V2.root");
+
+  uhist[0]->hMeas = (TH1F*)infData->Get("hpbpbComb");
+  uhist[1]->hMeas = (TH1F*)infData->Get("hppComb");
+
+  uhist[0]->hMeas->Print("base");
+  uhist[1]->hMeas->Print("base");
+  /*	
   if (isMC) {
     if (yinglu) {
       //infData = new TFile("/hadoop/store/user/belt/hiForest2/Pythia80_HydjetDrum_mix01_HiForest2_v20.root");
@@ -474,7 +493,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     //cout<<"G"<<endl;
 
   }
-
+  */
   cout<<"loaded pbpb data/mc file"<<endl;
 
   /*
@@ -489,6 +508,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     int dataNJet;
     tDataJet->SetBranchAddress("nref",&dataNJet);
   */
+  /*
   Int_t  dataNJet;
 
   if(!isMC){
@@ -549,7 +569,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     tPPJet->AddFriend(tPPHlt);
 
   }
-
+  */
   cout<<"loaded pp data/mc file"<<endl;
 	
   // Setup jet data branches
@@ -557,9 +577,10 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   JetData *dataPP[nbins_pthat];
   JetData *data_pq; 
 	
-  for (int i=0;i<nbins_pthat;i++) data[i] = new JetData(fileName_pthat[i],Form("%sJetAnalyzer/t",algoName[3]),Form("%sJetAnalyzer/t",algoNameGen[3]));	
-  for (int i=0;i<nbinsPP_pthat;i++) dataPP[i] = new JetData(fileNamePP_pthat[i],Form("%sJetAnalyzer/t",algoNamePP[4]),Form("%sJetAnalyzer/t",algoNameGen[4]));	// changed algo for pp to ak4pf
-	
+  for (int i=0;i<nbins_pthat;i++) data[i] = new JetData(fileName_pthat[i],Form("%sJetAnalyzer/t",algoName[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]));	
+  for (int i=0;i<nbinsPP_pthat;i++) dataPP[i] = new JetData(fileNamePP_pthat[i],Form("%sJetAnalyzer/t",algoNamePP[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]));	
+ 
+  /*
   if (yinglu) data_pq = new JetData(fileName_pthat_pq,Form("%sJetAnalyzer/t",algoName[algo]),Form("%sJetAnalyzer/t",algoNameGen[algo]));	
 	
   TFile *fSpectra(0);
@@ -580,11 +601,11 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     akPu3CaloResult = new TFile("result/pbpb_Unfo_akPu3Calo.root");
     akPu4CaloResult = new TFile("result/pbpb_Unfo_akPu4Calo.root");
   }
-	
+  */
   // Come back to the output file dir
   pbpb_Unfo->cd();
 	
-	
+  /*	
   Float_t rndGaus[1000];
 	
   TTree *tRandom = new TTree("tRandom","");
@@ -592,7 +613,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   tRandom->Branch("rndGaus",rndGaus,"rndGaus[nrefe]/F");
 	
   TRandom rnd;
-  /*
+  
     if (!useSpectraFromFile) {
     for (int i=0;i<tDataJet->GetEntries();i++)
     {
@@ -630,14 +651,14 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   hVzPPData->Sumw2();
   hVzPPMC->Sumw2();
 	
-	
+  /*	
   if (!useSpectraFromFile) {
     tDataJet->AddFriend(tRandom);
     if(!isMC)tDataJet->Project("hCentData","bin",dataSelectionPbPb);
     if(isMC)tDataJet->Project("hCentData","hiBin",dataSelectionPbPb);
     tDataJet->Project("hVzData","vz",dataSelectionPbPb);
   }
-	
+  
   for (int i=0;i<=nbins_cent;i++){
     //TCut centCut = Form("hiBin<%.0f&&hiBin>=%.0f",boundaries_cent[i+1],boundaries_cent[i]);
     TCut centCut;
@@ -675,7 +696,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     }
     uhist[i]->hMeas->Draw();
   }
-	
+  
   if (!isMC) {
     if(year == 2013){
       //tPPJet->Project(Form("hMeas_cent%d",nbins_cent),"pt",dataSelectionPP&&TriggerSelectionPP);
@@ -687,7 +708,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       tPPJet->Project("hVzPPData","vz",dataSelectionPP&&TriggerSelectionPP);
     }
   }
-	
+  */
 	
   TCanvas *c = new TCanvas("c","",600,600);
   TH1F *hPtHat = new TH1F("hPtHat","",nbins_pthat,boundaries_pthat);
@@ -697,20 +718,23 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 	
   RooUnfoldResponse res(uhist[0]->hResMeas,uhist[0]->hResTrue);
 	
+  cout<<"reading all the pbpb mc files"<<endl;
   for (int i=0;i<nbins_pthat;i++) {
     TH1F *hPtHatTmp = new TH1F("hPtHatTmp","",nbins_pthat,boundaries_pthat);
     data[i]->tJet->Project("hPtHatTmp","pthat");
     hPtHatRaw->Add(hPtHatTmp);
     delete hPtHatTmp;
   }
-	
+  cout<<"reading all the pp mc files"<<endl;
   for (int i=0;i<nbinsPP_pthat;i++) {
     TH1F *hPtHatTmp = new TH1F("hPtHatTmp","",nbinsPP_pthat,boundariesPP_pthat);
     dataPP[i]->tJet->Project("hPtHatTmp","pthat");
     hPtHatRawPP->Add(hPtHatTmp);
     delete hPtHatTmp;
   }
-	
+  
+  cout<<"starting to fill the MC"<<endl;
+  
   // Fill PbPb MC   
   if (!useMatrixFromFile) {
     for (int i=0;i<nbins_pthat;i++) {
@@ -718,26 +742,38 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       cout <<"Loading pthat"<<boundaries_pthat[i]
 	   <<" sample, cross section = "<<xsection[i]
 	   << Form(" pthat>%.0f&&pthat<%.0f",boundaries_pthat[i],boundaries_pthat[i+1])<<endl;
+      cout<<data[i]->tJet->GetEntries()<<endl;
       for (Long64_t jentry2=0; jentry2<data[i]->tJet->GetEntries();jentry2++) {
+	//cout<<"hi"<<endl;
 	data[i]->tEvt->GetEntry(jentry2);
 	data[i]->tJet->GetEntry(jentry2);
-	data[i]->tGenJet->GetEntry(jentry2);
-	if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
+	//data[i]->tGenJet->GetEntry(jentry2);
+	//if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
 	int pthatBin = hPtHat->FindBin(data[i]->pthat);
-	float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRaw->GetBinContent(pthatBin);
+	//cout<<xsection[pthatBin-1]-xsection[pthatBin]<<endl;
+	//cout<<"nentries = "<<hPtHatRaw->GetBinContent(pthatBin)<<endl;
+	double scale = (double)(xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRaw->GetBinContent(pthatBin);
+	//double scale = (double)(xsection[pthatBin-1]-xsection[pthatBin])/entries[i];
+	
 	if(fabs(data[i]->vz)>15) continue;
-	int cBin = hCent->FindBin(data[i]->bin)-1;
+	//int cBin = hCent->FindBin(data[i]->bin)-1;
+	int cBin = nbins_cent-1;
 	double weight_cent=1;
 	double weight_pt=1;
 	double weight_vz=1;
-				
-	weight_cent = fCentralityWeight->Eval(data[i]->bin);
+	
+	//weight_cent = fCentralityWeight->Eval(data[i]->bin);
 	weight_vz = fVz->Eval(data[i]->vz);
 	hCentMC->Fill(data[i]->bin,scale*weight_cent*weight_vz);
 	hVzMC->Fill(data[i]->vz,scale*weight_cent*weight_vz);
 	if (cBin>=nbins_cent) continue;
 	if (cBin==-1) continue;
 	hPtHat->Fill(data[i]->pthat,scale*weight_cent*weight_vz);
+
+	if(scale*weight_cent*weight_vz <=0 ) cout<<"RED FLAG RED FLAF RED FLAG"<<endl;
+
+	//cout<<"scale = "<<scale<<endl;
+	
 	/*
 	  int hasLeadingJet = 0;
 	  for (int k= 0; k < data[i]->njets; k++) { 
@@ -750,41 +786,49 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 	  }
 	  if (hasLeadingJet == 0) continue;
 	*/
+
+	//cout<<"passed the cuts, now going to jets loop"<<endl;
 	for (int k= 0; k < data[i]->njets; k++) { 
-	  int subEvt=-1;
+	  //int subEvt=-1;
 	  if ( data[i]->refpt[k]  < 30. ) continue;
 	  if ( data[i]->jteta[k]  > 2. || data[i]->jteta[k] < -2. ) continue;
 	  if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
-	  for (int l= 0; l< data[i]->ngen;l++) {
-	    if (data[i]->refpt[k]==data[i]->genpt[l]) {
-	      subEvt = data[i]->gensubid[l];
-	      break;
-	    } 
-	  }
-	  if (subEvt!=0) continue;
+	  //for (int l= 0; l< data[i]->ngen;l++) {
+	  //  if (data[i]->refpt[k]==data[i]->genpt[l]) {
+	  //    subEvt = data[i]->gensubid[l];
+	  //    break;
+	  //  } 
+	  //}
+	  //if (subEvt!=0) continue;
 	  //if (uhist[cBin]->hMeasMatch!=0) {
 	  //   int ptBinNumber = uhist[cBin]->hMeasMatch->FindBin(data[i]->jtpt[k]);
 	  //   int ratio = uhist[cBin]->hMeasMatch->GetBinContent(ptBinNumber);
 	  //if (ratio!=0) weight_pt = 1./ratio;
 	  //}
-	  if (!isMC||jentry2<data[i]->tJet->GetEntries()/2.) {
+	  //if (!isMC||jentry2<data[i]->tJet->GetEntries()/2.) {
+	  //cout<<"going to fill the histograms now"<<endl;
+	  //cout<<"fvz = "<<weight_vz<<endl;
+	  //if(!isMC){
 	    response[cBin]->Fill(data[i]->jtpt[k],data[i]->refpt[k],scale*weight_cent*weight_pt*weight_vz);
 	    uhist[cBin]-> hMatrix->Fill(data[i]->refpt[k],data[i]->jtpt[k],scale*weight_cent*weight_pt*weight_vz);
-	    uhist[cBin]-> hGen->Fill(data[i]->refpt[k],scale*weight_cent*weight_pt*weight_vz);
+	    uhist[cBin]-> hGen->Fill(data[i]->refpt[k],scale*weight_vz);
 	    uhist[cBin]-> hRecoMC->Fill(data[i]->jtpt[k],scale*weight_cent*weight_pt*weight_vz);
-	  }	  
-	  if (isMC&&jentry2>data[i]->tJet->GetEntries()/2. &&!isPyquen) {
-	    uhist[cBin]-> hGen->Fill(data[i]->refpt[k],scale*weight_cent*weight_pt*weight_vz);   
-	    uhist[cBin]-> hMeas->Fill(data[i]->jtpt[k],scale*weight_cent*weight_pt*weight_vz);  	 
-	    uhist[cBin]-> hMeasJECSys->Fill(data[i]->jtpt[k]*(1.+0.02/nbins_cent*(nbins_cent-i)),scale*weight_cent*weight_pt*weight_vz); 
+	    //}	  
+	    //if (isMC&&jentry2>data[i]->tJet->GetEntries()/2. &&!isPyquen) {
+	    //uhist[cBin]-> hGen->Fill(data[i]->refpt[k],scale*weight_cent*weight_pt*weight_vz);   
+	    //uhist[cBin]-> hMeas->Fill(data[i]->jtpt[k],scale*weight_cent*weight_pt*weight_vz);  	 
+	    //uhist[cBin]-> hMeasJECSys->Fill(data[i]->jtpt[k]*(1.+0.02/nbins_cent*(nbins_cent-i)),scale*weight_cent*weight_pt*weight_vz); 
 	    
 						 
-	  }
+	    //}
 	}
+	//uhist[cBin]->hGen->Print("base");
 				
       }
 			
     }
+
+    uhist[0]->hGen->Print("base");
 		
 		
 		
@@ -830,8 +874,8 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       for (Long64_t jentry2=0; jentry2<dataPP[i]->tJet->GetEntries();jentry2++) {
 	dataPP[i]->tEvt->GetEntry(jentry2);
 	dataPP[i]->tJet->GetEntry(jentry2);
-	dataPP[i]->tGenJet->GetEntry(jentry2);
-	if(dataPP[i]->pthat<boundariesPP_pthat[i] || dataPP[i]->pthat>boundariesPP_pthat[i+1]) continue;
+	//dataPP[i]->tGenJet->GetEntry(jentry2);
+	//if(dataPP[i]->pthat<boundariesPP_pthat[i] || dataPP[i]->pthat>boundariesPP_pthat[i+1]) continue;
 	if(dataPP[i]->bin<=28) continue;
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
 	float scale = (xsectionPP[pthatBin-1]-xsectionPP[pthatBin])/hPtHatRawPP->GetBinContent(pthatBin);
@@ -868,7 +912,8 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 	  //if (ratio!=0) weight_pt = 1./ratio;
 	  //}
 					
-	  if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
+	  //if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
+	  if(!isMC){
 	    response[nbins_cent]->Fill(dataPP[i]->jtpt[k],dataPP[i]->refpt[k],scale*weight_vz);
 	    uhist[nbins_cent]-> hMatrix->Fill(dataPP[i]->refpt[k],dataPP[i]->jtpt[k],scale*weight_vz);
 	    uhist[nbins_cent]-> hGen->Fill(dataPP[i]->refpt[k],scale*weight_vz);   
@@ -885,16 +930,20 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     }
   }
   
+  TCanvas *cMC;
+  TCanvas *cData;
+  TCanvas *cMCRatio;
+
   if(!isMC){
 
     cout<<"Plotting MC, Data histograms"<<endl;
 
-    TCanvas *cMC = new TCanvas("cMC","MC",1000,800);
-    cMC->Divide(3,3);
-    TCanvas *cData = new TCanvas("cData","Data",1000,800);
-    cData->Divide(3,3);
-    TCanvas *cMCRatio = new TCanvas("cMCRatio","MC ratio Reco to Gen",1000,800);
-    cMCRatio->Divide(3,3);
+    cMC = new TCanvas("cMC","MC",1000,800);
+    cMC->Divide(3,1);
+    cData = new TCanvas("cData","Data",1000,800);
+    cData->Divide(3,1);
+    cMCRatio = new TCanvas("cMCRatio","MC ratio Reco to Gen",1000,800);
+    cMCRatio->Divide(3,1);
 
     for(int i = 0;i<=nbins_cent;i++){
 
@@ -935,7 +984,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       TH1F* hMCRecoRatio = (TH1F*)uhist[i]->hRecoMC->Clone(Form("hMCRecoRatio_cent%d",i));
       TH1F* hMCGenRatio = (TH1F*)uhist[i]->hGen->Clone(Form("hMCGenRatio",i));
       hMCRecoRatio->Divide(hMCGenRatio);
-      if(i == 6){
+      if(i == 1){
 	hMCRecoRatio->SetTitle("Ratio of Generator level PP Reco Jet pt to Gen Jet pt");
       }else {
 	hMCRecoRatio->SetTitle(Form("Ratio of Generator Level PbPb Reco Jet pt to Gen Jet pt %2.0f-%2.0f%%",2.5*boundaries_cent[i],2.5*boundaries_cent[i+1]));
@@ -948,7 +997,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 
     }
   
-    cMC->cd(8);
+    cMC->cd(3);
     TLegend *MClegend = myLegend(0.52,0.65,0.85,0.9);
     uhist[0]->hGen->SetMarkerStyle(20);
     uhist[0]->hGen->SetMarkerColor(kRed);
@@ -1078,7 +1127,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 	
   // ======================= Reconstructed pp and PbPb spectra =========================================================
   TCanvas * cPbPb = new TCanvas("cPbPb","PbPb",1200,800);
-  cPbPb->Divide(3,3); 
+  cPbPb->Divide(3,1); 
   cPbPb->cd(1);
 	
 	
@@ -1092,7 +1141,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     TH1F* hMCGen          = (TH1F*)uhist[i]->hResponse->ProjectionX(); // gen
     hBinByBinCorRaw->Divide(hMCGen);
     TF1 *f = new TF1("f","[0]+[1]*x");
-    hBinByBinCorRaw->Fit("f","LL ","",100,300);
+    hBinByBinCorRaw->Fit("f","LL ","",50,300);
     TH1F* hBinByBinCor = (TH1F*)hBinByBinCorRaw->Clone();//functionHist(f,hBinByBinCorRaw,Form("hBinByBinCor_cent%d",i));
     //TH1F* hBinByBinCor = (TH1F*)functionHist(f,hBinByBinCorRaw,Form("hBinByBinCor_cent%d",i));
 
@@ -1103,8 +1152,8 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
 
 
     // Do unfolding
-    prior myPrior(uhist[i]->hMatrix,uhist[i]->hMeas,0);
-    myPrior.unfold(uhist[i]->hMeas,1);
+    //prior myPrior(uhist[i]->hMatrix,uhist[i]->hMeas,0);
+    //myPrior.unfold(uhist[i]->hMeas,1);
     TH1F *hPrior = (TH1F*)hMCGen->Clone("hPrior");
     removeZero(hPrior);
     //hPrior->Scale(uhist[i]->hMeas->Integral(0,1000)/hPrior->Integral(0,1000));
@@ -1116,7 +1165,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     bayesianUnfold myUnfoldingSmearSys(uhist[i]->hMatrix,hPrior,0);
     myUnfoldingSmearSys.unfold(uhist[i]->hMeasSmearSys,nBayesianIter);
 
-    bayesianUnfold myUnfolding(uhist[i]->hMatrix,myPrior.hPrior,0);
+    bayesianUnfold myUnfolding(uhist[i]->hMatrix,hPrior,0);
     myUnfolding.unfold(uhist[i]->hMeas,nBayesianIter);
 
     cout <<"Unfolding bin "<<i<<endl;
@@ -1130,6 +1179,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       bayesianUnfold myUnfoldingSys(uhist[i]->hMatrix,hPrior,0);
       myUnfoldingSys.unfold(uhist[i]->hMeas,j);
       uhist[i]->hRecoIterSys[j]  = (TH1F*) myUnfoldingSys.hPrior->Clone(Form("hRecoRAA_IterSys%d_cent%d",j,i));
+      uhist[i]->hRecoIterSys[j]->Print("base");
     }
 
     uhist[i]->hReco         = (TH1F*) uhist[i]->hRecoIterSys[nBayesianIter]->Clone(Form("Unfolded_cent%i",i));
@@ -1251,7 +1301,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     uhist[i]->hMeas->SetMarkerColor(kRed);
     uhist[i]->hReco->SetMarkerStyle(25);
     uhist[i]->hReco->Draw("");    
-    uhist[i]->hReco->SetAxisRange(100,330);
+    uhist[i]->hReco->SetAxisRange(50,330);
     //      TH1F *hReproduced = (TH1F*)myUnfolding.hReproduced->Clone(Form("hReproduced_cent%d",i));
     //      hReproduced->SetMarkerColor(4);
     //      hReproduced->SetMarkerStyle(24);
@@ -1259,7 +1309,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   }	     
   
 
-  cPbPb->cd(8);
+  cPbPb->cd(3);
   TLegend *pbpblegend = myLegend(0.52,0.65,0.85,0.9);
   uhist[0]->hMeas->SetMarkerStyle(20);
   uhist[0]->hMeas->SetMarkerColor(kRed);
@@ -1519,7 +1569,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   // PP histograms 
 	
   //isFineBin = 1
-  /*
+  
     TH1F *hRebinPP         = (TH1F*)uhist[nbins_cent]->hReco->Clone("hRebinPP");
     TH1F *hRebinPP_Npart   = (TH1F*)uhist[nbins_cent]->hReco->Clone("hRebinPP_Npart");
     TH1F *hRebinBinByBinPP = (TH1F*)uhist[nbins_cent]->hRecoBinByBin->Clone("hRebinBinByBinPP");
@@ -1527,7 +1577,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     TH1F *hMeasPP          = (TH1F*)uhist[nbins_cent]->hMeas->Clone("hMeasPP");
     TH1F *hRebinMeasPP     = (TH1F*)uhist[nbins_cent]->hMeas->Clone("hRebinMeasPP");
     TH1F *hRebinGenPP      = (TH1F*)uhist[nbins_cent]->hGen->Clone(Form("hRebinGen_cent%d",nbins_cent));
-  */
+    /*
     // isFineBin = 0
     TH1F *hRebinPP         = rebin(uhist[nbins_cent]->hReco, "hRebinPP");
     TH1F *hRebinPP_Npart   = rebin_Npart(uhist[nbins_cent]->hReco, "hRebinPP_Npart");
@@ -1536,8 +1586,9 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     TH1F *hMeasPP          = (TH1F*)uhist[nbins_cent]->hMeas->Clone("hMeasPP");
     TH1F *hRebinMeasPP     = rebin(uhist[nbins_cent]->hMeas, "hRebinMeasPP");
     TH1F *hRebinGenPP      = rebin(uhist[nbins_cent]->hGen, Form("hRebinGen_cent%d",nbins_cent));
-    
+    */
   //dividebinwidth pp histograms
+    /*
   divideBinWidth(hRebinPP);
   divideBinWidth(hRebinPP_Npart);
   divideBinWidth(hRebinBinByBinPP);
@@ -1545,18 +1596,18 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
   divideBinWidth(hMeasPP);
   divideBinWidth(hRebinMeasPP);
   divideBinWidth(hRebinGenPP);
-
+    */
 
   // Scale PP histograms
+  //not scaled here due to the scaling applied during the merge macro 
 	
-	
-  hRebinPP               ->Scale(1./pplumi/64/1000000);
-  hRebinPP_Npart		   ->Scale(1./pplumi/64/1000000);
-  hRebinMeasPP           ->Scale(1./pplumi/64/1000000);
-  hRecoPP                ->Scale(1./pplumi/64/1000000);
-  hRebinBinByBinPP       ->Scale(1./pplumi/64/1000000);
-  hMeasPP                ->Scale(1./pplumi/64/1000000);
-  hRebinGenPP            ->Scale(1./pplumi/64/1000000);
+  //hRebinPP               ->Scale(1./pplumi/64/1000000);
+  //hRebinPP_Npart		   ->Scale(1./pplumi/64/1000000);
+  //hRebinMeasPP           ->Scale(1./pplumi/64/1000000);
+  //hRecoPP                ->Scale(1./pplumi/64/1000000);
+  //hRebinBinByBinPP       ->Scale(1./pplumi/64/1000000);
+  //hMeasPP                ->Scale(1./pplumi/64/1000000);
+  //hRebinGenPP            ->Scale(1./pplumi/64/1000000);
 	
 	
   //***************Scale Factor for trackcut correction ************
@@ -1698,13 +1749,13 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       checkMaximumSys(systematics.hSysIter[nbins_cent],hRecoRAAIterSys[j],0,1.1);
     }
 		
-		
+    
   }
   for (int i=0;i<nbins_cent;i++) {
     cRAA->cd(nbins_cent-i);
     		
     //isFineBin = 0
-    
+    /*
       TH1F *hRebinRAA = rebin(uhist[i]->hReco, Form("hRebinRAA_cent%d",i));
       TH1F *hRebinRAA_Npart = rebin_Npart(uhist[i]->hReco, Form("hRebinRAA_Npart_cent%d",i));
       TH1F *hRebinBinByBinRAA = rebin(uhist[i]->hRecoBinByBin, Form("hRebinBinByBinRAA_cent%d",i));
@@ -1715,11 +1766,11 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       TH1F *hRecoRAASmearSys   = (TH1F*)uhist[i]->hRecoSmearSys->Clone(Form("hRecoRAASmearSys_cent%d",i));
       TH1F *hRebinRAAJECSys = rebin(hRecoRAAJECSys, Form("hRebinRAAJECSys_cent%d",i));
       TH1F *hRebinRAASmearSys = rebin(hRecoRAASmearSys, Form("hRebinRAASmearSys_cent%d",i));
-      	
+    */
     
     
     // ifFineBin = 1.
-      /*
+      
       TH1F *hRebinRAA = (TH1F*)uhist[i]->hReco->Clone(Form("hRebinRAA_cent%d",i));
       TH1F *hRebinRAA_Npart = (TH1F*)uhist[i]->hReco->Clone(Form("hRebinRAA_Npart_cent%d",i));
       TH1F *hRebinBinByBinRAA = (TH1F*)uhist[i]->hRecoBinByBin->Clone(Form("hRebinBinByBinRAA_cent%d",i));
@@ -1730,9 +1781,10 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       TH1F *hRecoRAASmearSys   = (TH1F*)uhist[i]->hRecoSmearSys->Clone(Form("hRecoRAASmearSys_cent%d",i));
       TH1F *hRebinRAAJECSys = (TH1F*)hRecoRAAJECSys->Clone(Form("hRebinRAAJECSys_cent%d",i));
       TH1F *hRebinRAASmearSys = (TH1F*)hRecoRAASmearSys->Clone(Form("hRebinRAASmearSys_cent%d",i));
-      */
+      
       
     // dividebin width
+      /*
     divideBinWidth(hRebinRAA);
     divideBinWidth(hRebinRAA_Npart);
     divideBinWidth(hRebinBinByBinRAA);
@@ -1743,6 +1795,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     divideBinWidth(hMeasRAA);
     divideBinWidth(hRecoRAAJECSys);
     divideBinWidth(hRecoRAASmearSys);
+      */
 
     ///// Set Histograms of Genjet to Save
     uhist[i]-> hGen->SetName(Form("hGen_cent%i",i));
@@ -1764,9 +1817,9 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     for (int j=2;j<7;j++) {
 			
 			
-      //************    Iteration Sys   akPu3PF        *************
+      //************    Iteration Sys   akVs3PF        *************
 			
-      cout <<" Plotting  Iteration Sys   akPu3PF   " << endl;
+      cout <<" Plotting  Iteration Sys   akVs3PF   " << endl;
       cIterSys->cd(nbins_cent-i);
 			
       hRecoRAAIterSys[j] = rebin(uhist[i]->hRecoIterSys[j],Form("hRecoRAA_IterSys%d_cent%d",j,i));
@@ -1828,7 +1881,8 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       //hRebinRAASmearSys     ->Scale(1./CorFac[i]/lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       //hRebinRAAJECSys       ->Scale(1./CorFac[i]/lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       //hRecoRAASmearSys     ->Scale(1./CorFac[i]/lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-
+      //im commenting this scaling out now due to the scaling in the merge macro. 
+      /*
       hRebinRAA            ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       hRebinRAA_Npart      ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       hRebinMeasRAA        ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
@@ -1839,7 +1893,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
       hRebinRAASmearSys    ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       hRebinRAAJECSys      ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       hRecoRAASmearSys     ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-
+      */
       hRebinMeasRAA->Divide(hRebinMeasPP);
       hRebinRAA->Divide(hRebinPP);
       hRebinRAA_Npart->Divide(hRebinPP_Npart);
@@ -2169,18 +2223,20 @@ void Unfold_RAA_V0(int method = 1,int algo = 4,bool useSpectraFromFile = 0, bool
     cJECSys->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/JECSys.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
     cJECSys->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/JECSys.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
     cJECSys->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/JECSys.pdf",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
-    //cMC->Update();
-    //cMC->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MC.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
-    //cMC->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MC.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
-    //cMC->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MC.pdf",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");	
-    //cMCRatio->Update();
-    //cMCRatio->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MCRatio.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
-    //cMCRatio->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MCRatio.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
-    //cMCRatio->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MCRatio.pdf",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");	
-    //cData->Update();
-    //cData->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/Data.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
-    //cData->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/Data.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
-    //cData->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/Data.pdf",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    cMC->Update();
+    cMC->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MC.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    cMC->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MC.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    cMC->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MC.pdf",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");	
+    
+    cMCRatio->Update();
+    cMCRatio->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MCRatio.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    cMCRatio->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MCRatio.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    cMCRatio->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/MCRatio.pdf",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");	
+    cData->Update();
+    cData->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/Data.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    cData->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/Data.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    cData->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/Data.pdf",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
+    
     cMatrix->Update();
     cMatrix->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/ResponseMatrix.gif",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
     cMatrix->SaveAs(Form("result-%d-%s-cent-%d-isFineBin-%d/ResponseMatrix.C",year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
