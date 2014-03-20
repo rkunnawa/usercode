@@ -1,4 +1,3 @@
-
 // RpPb calculation after Unfolding, 
 // the PP reference in this one is with the MC.  we dont have any data at that energy 5.02 TeV 
 // this is done without chMax/jtpt cut 
@@ -83,7 +82,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   Double_t boundaries_pthat[nbins_pthat+1];
   char *fileName_pthat[nbins_pthat+1];
   Double_t xsection[nbins_pthat+1];
-	
+  Double_t entries[nbins_pthat];
+
   char *fileName_pthat_pq;
   fileName_pthat_pq="/hadoop/store/user/belt/hiForest2/v27_28/pyquenFull80_HYDJET.root";
   //fileName_pthat_pq="/hadoop/store/user/belt/hiForest2/pyquen_hydjet_hiforest_test.root";
@@ -97,18 +97,22 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     boundaries_pthat[0] = 15;
     fileName_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod16/Hijing_Pythia_pt15/HiForest_v77_merged01/pt15_HP04_prod16_v77_merged_forest_0.root";
     xsection[0] = 5.335e-01;// make sure that you have the correct one here.
-		
+	
+
     boundaries_pthat[1] = 30;
     fileName_pthat[1] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod16/Hijing_Pythia_pt30/HiForest_v77_merged01/pt30_HP04_prod16_v77_merged_forest_0.root";
     xsection[1] = 3.378e-02;
+    Double_t entries[1] = 256048;
 		
     boundaries_pthat[2] = 50;
     fileName_pthat[2] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod16/Hijing_Pythia_pt50/HiForest_v77_merged01/pt50_HP04_prod16_v77_merged_forest_0.root";
     xsection[2] = 3.778e-03;
+    Double_t entries[2] = 262493;
 		
     boundaries_pthat[3] = 80;
     fileName_pthat[3] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod16/Hijing_Pythia_pt80/HiForest_v77_merged01/pt80_HP04_prod16_v77_merged_forest_0.root";
     xsection[3] = 4.412e-04;
+    Double_t entries[3] = 261485;
 		
     boundaries_pthat[4] = 120;
     fileName_pthat[4] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod16/Hijing_Pythia_pt120/HiForest_v77_merged01/pt120_HP04_prod16_v77_merged_forest_0.root";
@@ -136,51 +140,59 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   }
   */
 
-
+  
   //MC JEC with PU subtraction algorithm
   
   if(!yinglu){
     boundaries_pthat[0] = 15;
     fileName_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt15_HP04_prod25_v85_merged_forest_0.root";
     xsection[0] = 5.335e-01;
+    entries[0] = 271818;
 
     boundaries_pthat[1] = 30;
     fileName_pthat[1] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt30_HP04_prod25_v85_merged_forest_0.root";
     xsection[1] = 3.378e-02;
+    entries[1] = 256048;
 
     boundaries_pthat[2] = 50;
     fileName_pthat[2] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt50_HP04_prod25_v85_merged_forest_0.root";
     xsection[2] = 3.778e-03;
+    entries[2] = 262493;
 
     boundaries_pthat[3] = 80;
     fileName_pthat[3] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt80_HP04_prod25_v85_merged_forest_0.root";
     xsection[3] = 4.412e-04;
+    entries[3] = 261485;
 
     boundaries_pthat[4] = 120;
     fileName_pthat[4] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt120_HP04_prod25_v85_merged_forest_0.root";
     xsection[4] = 6.147e-05;
+    entries[4] = 175821;
 
     boundaries_pthat[5] = 170;
     fileName_pthat[5] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt170_HP04_prod25_v85_merged_forest_0.root";
     xsection[5] = 1.018e-05;
+    entries[5] = 232802;
 
     boundaries_pthat[6] = 220;
     fileName_pthat[6] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt220_HP04_prod25_v85_merged_forest_0.root";
     xsection[6] = 2.477e-06;
+    entries[6] = 249562;
 
     boundaries_pthat[7] = 280;
     fileName_pthat[7] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt280_HP04_prod25_v85_merged_forest_0.root";
     xsection[7] = 6.160e-07;
+    entries[7] = 207726;
 
     boundaries_pthat[8] = 370;
     fileName_pthat[8] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod25/HiForest_v85_merged01/pt370_HP04_prod25_v85_merged_forest_0.root";
     xsection[8] = 1.088e-07;
+    entries[8] = 140270;
 
-    boundaries_pthat[9] = 1000;
+    boundaries_pthat[9] = 2000;
     xsection[9] = 0;
 
     }
-  
   
   
   
@@ -410,14 +422,19 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
       cout <<"Loading pthat"<<boundaries_pthat[i]
 	   <<" sample, cross section = "<<xsection[i]
 	   << Form(" pthat>%.0f&&pthat<%.0f",boundaries_pthat[i],boundaries_pthat[i+1])<<endl;
+      float scale_test=(xsection[i]-xsection[i+1])/data[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundaries_pthat[i],boundaries_pthat[i+1]));
+      cout<<"nentries between pthat bins "<<data[i]->tJet->GetEntries(Form("pthat>%.0f&&pthat<%.0f",boundaries_pthat[i],boundaries_pthat[i+1]))<<endl;
+      cout<<"nentries from file = "<<entries[i]<<endl;
       for (Long64_t jentry2=0; jentry2<data[i]->tJet->GetEntries();jentry2++) {
 	data[i]->tEvt->GetEntry(jentry2);
 	data[i]->tJet->GetEntry(jentry2);
 	data[i]->tGenJet->GetEntry(jentry2);
 	//if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
 	int pthatBin = hPtHatPPb->FindBin(data[i]->pthat);
-	float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
+	//float scale = (xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRawPPb->GetBinContent(pthatBin);
+	float scale = (xsection[pthatBin-1]-xsection[pthatBin])/entries[i];
 	//float scale = 1;
+	//cout<<"svale = "<<scale<<endl;
 	if(fabs(data[i]->vz)>15) continue;
 	int cBin = hCent->FindBin(data[i]->bin)-1;
 	double weight_cent=1;
