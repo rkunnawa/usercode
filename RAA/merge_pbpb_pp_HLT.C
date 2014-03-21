@@ -142,7 +142,7 @@ TH1F *rebin(TH1F *h, char *histName)
   return hRebin;
 }
 
-void merge_pbpb_pp_HLT(){
+void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   
   TH1::SetDefaultSumw2();
 
@@ -161,9 +161,9 @@ void merge_pbpb_pp_HLT(){
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet40_v2.root");
 
   
-  TTree *jetpbpb0 = (TTree*)fpbpb0->Get("akVs3PFJetAnalyzer/t");
-  TTree *jetpbpb1 = (TTree*)fpbpb1->Get("akVs3PFJetAnalyzer/t");
-  TTree *jetpbpb2 = (TTree*)fpbpb2->Get("akVs3PFJetAnalyzer/t");
+  TTree *jetpbpb0 = (TTree*)fpbpb0->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
+  TTree *jetpbpb1 = (TTree*)fpbpb1->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
+  TTree *jetpbpb2 = (TTree*)fpbpb2->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
 
   TTree *evtpbpb0 = (TTree*)fpbpb0->Get("hiEvtAnalyzer/HiTree");
   TTree *evtpbpb1 = (TTree*)fpbpb1->Get("hiEvtAnalyzer/HiTree");
@@ -189,8 +189,8 @@ void merge_pbpb_pp_HLT(){
   jetpbpb1->AddFriend(skmpbpb1);
   jetpbpb2->AddFriend(skmpbpb2);
 
-  TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get("jetR3");
-  TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get("jetR3");
+  TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get(Form("jetR%d",radius));
+  TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get(Form("jetR%d",radius));
 
   TTree *evtpp1_v2 = (TTree*)fpp1_v2->Get("evt");
   TTree *evtpp2_v2 = (TTree*)fpp2_v2->Get("evt");
@@ -309,17 +309,17 @@ void merge_pbpb_pp_HLT(){
   c1->SetLogy();
   hpbpbComb->SetMarkerStyle(20);
   //hpbpbComb->SetYTitle("#frac{dN}{N_{MB} d p_{T} d #eta}");
-  hpbpbComb->SetYTitle("#frac{d^2 #sigma}{d p_{T} d#eta} #mu barns");
+  hpbpbComb->SetYTitle("#frac{d^{2} #sigma}{d p_{T} d#eta} #mu barns");
   hpbpbComb->SetXTitle("Jet p_{T} GeV/c");
 
-  TF1 *fPowerLaw = new TF1("fPowerLaw","[0]*pow(x+[1],[2])");
-  hpbpbComb->Fit("fPowerLaw","","",30,300);
-  hpbpbComb->Fit("fPowerLaw","","",30,300);
-  hpbpbComb->Fit("fPowerLaw","","",30,300);
-  hpbpbComb->Fit("fPowerLaw","","",30,300);
-  hpbpbComb->Fit("fPowerLaw","","",30,300);
-  hpbpbComb->Fit("fPowerLaw","","",30,300);
-  hpbpbComb->Fit("fPowerLaw","","",30,300);
+  //TF1 *fPowerLaw = new TF1("fPowerLaw","[0]*pow(x+[1],[2])");
+  //hpbpbComb->Fit("fPowerLaw","","",30,300);
+  //hpbpbComb->Fit("fPowerLaw","","",30,300);
+  //hpbpbComb->Fit("fPowerLaw","","",30,300);
+  //hpbpbComb->Fit("fPowerLaw","","",30,300);
+  //hpbpbComb->Fit("fPowerLaw","","",30,300);
+  //hpbpbComb->Fit("fPowerLaw","","",30,300);
+  //hpbpbComb->Fit("fPowerLaw","","",30,300);
   hpbpbComb->SetAxisRange(20,300,"X");
   //hpbpbComb->SetAxisRange(1e-4,1e-12,"Y");
   hpbpbComb->Draw();
@@ -341,7 +341,7 @@ void merge_pbpb_pp_HLT(){
   title->SetTextSize(0.03);
   title->Draw();
   //drawText("PbPb data",0.3,0.65,20);  
-  drawText("Anti-k_{T} Vs PF Jets R = 0.3, |#eta|<2, |vz|<15",0.35,0.56,20);
+  drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.35,0.56,20);
   c1->SaveAs("pbpb_2011_vs_pt_combined.pdf","RECREATE");
 
   TCanvas *c2 = new TCanvas("c2","",800,600);
@@ -351,14 +351,14 @@ void merge_pbpb_pp_HLT(){
   hppComb->SetYTitle("#frac{d^2 #sigma}{d p_{T} d#eta} #mu barns");
   hppComb->SetXTitle("Jet p_{T} GeV/c");
 
-  TF1 *fPowerLaw2 = new TF1("fPowerLaw2","[0]*pow(x+[1],[2])");
-  hppComb->Fit("fPowerLaw2","","",30,300);
-  hppComb->Fit("fPowerLaw2","","",30,300);
-  hppComb->Fit("fPowerLaw2","","",30,300);
-  hppComb->Fit("fPowerLaw2","","",30,300);
-  hppComb->Fit("fPowerLaw2","","",30,300);
-  hppComb->Fit("fPowerLaw2","","",30,300);
-  hppComb->Fit("fPowerLaw2","","",30,300);
+  //TF1 *fPowerLaw2 = new TF1("fPowerLaw2","[0]*pow(x+[1],[2])");
+  //hppComb->Fit("fPowerLaw2","","",30,300);
+  //hppComb->Fit("fPowerLaw2","","",30,300);
+  //hppComb->Fit("fPowerLaw2","","",30,300);
+  //hppComb->Fit("fPowerLaw2","","",30,300);
+  //hppComb->Fit("fPowerLaw2","","",30,300);
+  //hppComb->Fit("fPowerLaw2","","",30,300);
+  //hppComb->Fit("fPowerLaw2","","",30,300);
   hppComb->SetAxisRange(20,300,"X");
   //hppComb->SetAxisRange(1e-4,1e-12,"Y");
   hppComb->Draw();
@@ -380,7 +380,7 @@ void merge_pbpb_pp_HLT(){
   title2->SetTextSize(0.03);
   title2->Draw();
   //drawText("PP data",0.3,0.65,20);  
-  drawText("Anti-k_{T} PF Jets R = 0.3, |#eta|<2, |vz|<15",0.35,0.56,20);
+  drawText(Form("Anti-k_{T} PF Jets R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
   c2->SaveAs("pp_2011_pt_combined.pdf","RECREATE");
 
 
@@ -403,7 +403,8 @@ void merge_pbpb_pp_HLT(){
   hRAA->SetAxisRange(0,2,"Y");
   hRAA->Draw();
 
-  drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
+  //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
+  drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
 
   c3->SaveAs("RAA_March2014_voronoi.pdf","RECREATE");
 
@@ -534,7 +535,7 @@ void merge_pbpb_pp_HLT(){
   */
 
   //Create output file and save them. 
-  TFile f("merge_pbpb_ak3_vs_HLT_V2.root","RECREATE");
+  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2.root",radius,algo),"RECREATE");
   hpbpb1->Write();
   hpbpb2->Write();
   hpbpb3->Write();
