@@ -4,6 +4,7 @@
 // macro to read in latest PbPb data files and merge those three triggers 
 // effective minbias events is calculated outside(interactively) and then it is hardcoded in the macro
 
+// make the change to centrality  = 6. just increase it.  
 
 #include <iostream>
 #include <stdio.h>
@@ -36,6 +37,10 @@
 #include "TLatex.h"
 #include "TMath.h"
 #include "TLine.h"
+
+//#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+//#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
+//#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 TH1F *functionHist(TF1 *f, TH1F* h,char *fHistname)
 {
@@ -122,7 +127,6 @@ const int nbins_jetPtBin = 25;
 static const int nbins_yaxian = 29;
 static const double boundaries_yaxian[nbins_yaxian+1] = {22, 27, 33, 39, 47, 55, 64, 74, 84, 97, 114, 133, 153, 174, 196, 220, 245, 272, 300, 330, 362, 395, 430, 468, 507, 548, 592, 638, 790, 967};
 
-
 // rebin the spectra
 TH1F *rebin(TH1F *h, char *histName)
 {
@@ -142,7 +146,7 @@ TH1F *rebin(TH1F *h, char *histName)
   return hRebin;
 }
 
-void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
+void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 6){
   
   TH1::SetDefaultSumw2();
 
@@ -153,14 +157,36 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   // 80 is the unprescaled trigger - yes
   // 
   
+  //data files - PbPb 
   TFile *fpbpb0 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_Forest_Track8_Jet21/0.root");
   TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
   TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
- 
+  
+  // data files - pp 
   TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet80_v2.root");
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet40_v2.root");
+  /*
+  //loading the files for doing the JEC's on the fly
+  string fJECL2AK3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AK3PF_offline.txt";
+  string fJECL3AK3PF = "HI_PythiaZ2_2760GeV_5316_v14_L3Absolute_AK3PF_offline.txt";
+  string fJECL2AKPu3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AKPu3PF_offline.txt";
+  string fJECL3AKPu3PF = "HI_PythiaZ2_2760GeV_5316_v14_L3Absolute_AKPu3PF_offline.txt";
+  string fJECL2AKVs3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AKVs3PF_offline.txt";
+  string fJECL3AKVs3PF = "HI_PythiaZ2_2760GeV_5316_v14_L3Absolute_AKVs3PF_offline.txt";
 
-  
+  // grab the JEC's
+  vector <JetCorrectorParameters> vpar_HI53x;
+  FactorizedJetCorrector *JEC_HI53;
+
+  JetCorrectorParameters *parHI53x_l2 = new JetCorrectorParameters(fJECL2AKVs3PF.c_str());
+  JetCorrectorParameters *parHI53x_l3 = new JetCorrectorParameters(fJECL3AKVs3PF.c_str());
+
+  vpar_HI53x.push_back(*parHI53x_l2);
+  vpar_HI53x.push_back(*parHI53x_l3);
+  JEC_HI53x = new FactorizedJetCorrector(vpar_HI53x);
+  */
+
+  // grab the trees from the data files. 
   TTree *jetpbpb0 = (TTree*)fpbpb0->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
   TTree *jetpbpb1 = (TTree*)fpbpb1->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
   TTree *jetpbpb2 = (TTree*)fpbpb2->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
@@ -189,6 +215,131 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   jetpbpb1->AddFriend(skmpbpb1);
   jetpbpb2->AddFriend(skmpbpb2);
 
+  //declare the variables and set their branch address to the required trees 
+  int nrefe0;
+  float pt0[1000];
+  //float old_pt0[1000];
+  float raw0[1000];
+  float eta0[1000];
+  float eta0_CM[1000];
+  float phi0[1000];
+  float chMax0[1000];
+  float trkMax0[1000];
+  float chSum0[1000];
+  float phSum0[1000];
+  float neSum0[1000];
+  float trkSum0[1000];
+  float phMax0[1000];
+  float neMax0[1000];
+  
+  int nrefe1;
+  float pt1[1000];
+  //float old_pt1[1000];
+  float raw1[1000];
+  float eta1[1000];
+  float eta1_CM[1000];
+  float phi1[1000];
+  float chMax1[1000];
+  float trkMax1[1000];
+  float chSum1[1000];
+  float phSum1[1000];
+  float neSum1[1000];
+  float trkSum1[1000];
+  float phMax1[1000];
+  float neMax1[1000];
+
+  int nrefe2;
+  float pt2[1000];
+  //float old_pt2[1000];
+  float raw2[1000];
+  float eta2[1000];
+  float eta1_CM[1000];
+  float phi2[1000];
+  float chMax2[1000];
+  float trkMax2[1000];
+  float chSum2[1000];
+  float phSum2[1000];
+  float neSum2[1000];
+  float trkSum2[1000];
+  float phMax2[1000];
+  float neMax2[1000];
+
+  int evt0;
+  int run0;
+  int lumi0;
+  int hiBin0;
+  float vx0;
+  float vy0;
+  float vz0;
+  int hiNtracks0;
+  float hiHFminus0;
+  float hiHFplus0;
+  float hiHFplusEta40;
+  float hiHFminusEta40;
+  int pPAcollisionEventSelectionPA0;
+  int pHBHENoiseFilter0;
+  int pprimaryvertexFilter0;
+  int pVertexFilterCutGplus0;
+
+  int evt1;
+  int run1;
+  int lumi1;
+  int hiBin1;
+  float vx1;
+  float vy1;
+  float vz1;
+  int hiNtracks1;
+  float hiHFminus1;
+  float hiHFplus1;
+  float hiHFplusEta41;
+  float hiHFminusEta41;
+  int pPAcollisionEventSelectionPA1;
+  int pHBHENoiseFilter1;
+  int pprimaryvertexFilter1;
+  int pVertexFilterCutGplus1;
+
+  int evt2;
+  int run2;
+  int lumi2;
+  int hiBin2;
+  float vx2;
+  float vy2;
+  float vz2;
+  int hiNtracks2;
+  float hiHFminus2;
+  float hiHFplus2;
+  float hiHFplusEta42;
+  float hiHFminusEta42;
+  int pPAcollisionEventSelectionPA2;
+  int pHBHENoiseFilter2;
+  int pprimaryvertexFilter2;
+  int pVertexFilterCutGplus2;
+
+  int jet55_0;
+  int jet66_0;
+  int jet80_0;
+
+  int jet55_p_0;
+  int jet65_p_0;
+  int jet80_p_0;
+
+  int jet55_1;
+  int jet66_1;
+  int jet80_1;
+
+  int jet55_p_1;
+  int jet65_p_1;
+  int jet80_p_1;
+
+  int jet55_2;
+  int jet66_2;
+  int jet80_2;
+
+  int jet55_p_2;
+  int jet65_p_2;
+  int jet80_p_2;
+
+  //do it for the pp - need to check up on this. 
   TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get(Form("jetR%d",radius));
   TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get(Form("jetR%d",radius));
 
@@ -198,16 +349,8 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   jetpp1_v2->AddFriend(evtpp1_v2);
   jetpp2_v2->AddFriend(evtpp2_v2);
 
-  TCut pbpb0 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIZeroBiasPizel_SingleTrack_v1&&chargedMax/jtpt>0.01";
-  TCut pbpb1 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&chargedMax/jtpt>0.01";
-  TCut pbpb2 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01";
-  TCut pbpb3 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01";
+  //get all the pp spectra here: 
   TCut pp3 = "abs(eta)<2&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
-  
-  TH1F *hpbpb1 = new TH1F("hpbpb1","",1000,0,1000);
-  TH1F *hpbpb2 = new TH1F("hpbpb2","",1000,0,1000);
-  TH1F *hpbpb3 = new TH1F("hpbpb3","",1000,0,1000);
-  TH1F *hpbpbComb = new TH1F("hpbpbComb","",1000,0,1000);
   
   TH1F *hpp1 = new TH1F("hpp1","",1000,0,1000);
   TH1F *hpp2 = new TH1F("hpp2","",1000,0,1000);
@@ -222,21 +365,8 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
 
   //root [9] (Float_t)jet->GetEntries("HLT_HIJet80_v1")/jet->GetEntries("HLT_HIJet80_v1&&HLT_HIJet55_v1")
   //(double)2.34995051108819153e+00
-  
-  jetpbpb2->Project("hpbpb1","jtpt",pbpb1);
-  hpbpb1->Print("base");
-  //divideBinWidth(hpbpb1);
-
-  jetpbpb1->Project("hpbpb2","jtpt",pbpb2);
-  hpbpb2->Print("base");
-  //divideBinWidth(hpbpb2);
-
-  jetpbpb1->Project("hpbpb3","jtpt","HLT_HIJet55_v1_Prescl"*pbpb3);
-  //jetpbpb1->Project("hpbpb3","jtpt","2.34995"*pbpb3);
-  
-  hpbpb3->Print("base");
-  //divideBinWidth(hpbpb3);
-  
+  //ive commented this below - to just check for the pbpb histograms to load. 
+  /*
   jetpp1_v2->Project("hpp1","pt","abs(eta)<2&&jet80&&chMax/pt>0.01");
   hpp1->Print("base");
  
@@ -244,26 +374,11 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   hpp2->Print("base");
 
   jetpp2_v2->Project("hpp3","pt","9.25038"*pp3);
+  // 9.25038 was the value. 
   //jetpp2_v2->Project("hpp3","pt","jet40_p"*pp3);
   hpp3->Print("base");
  
-
-  //scale the PbPb histograms before adding them
-  //we have to scale them according to the lumi of the Jet80 file. 
-  // HLT file  |   Lumi inverse micro barns 
-  // HLT_80    |   149.382 
-  // HLT_65    |   3.195
-  // HLT_55    |   2.734
-  // 
-
-  hpbpb1->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
-  hpbpb2->Scale(1./3.195e6);
-  hpbpb3->Scale(1./2.734e6);
-
-  hpbpb1->Scale(1./4);//delta eta
-  hpbpb2->Scale(1./4);
-  hpbpb3->Scale(1./4);
-
+  */
   hpp1->Scale(1./5300e6);//pp lumi
   hpp2->Scale(1./5300e6);
   hpp3->Scale(1./5300e6);
@@ -272,26 +387,10 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   hpp2->Scale(1./4);
   hpp3->Scale(1./4);
 
-  //add the histograms  
-  hpbpbComb->Add(hpbpb1);
-  hpbpbComb->Add(hpbpb2);
-  hpbpbComb->Add(hpbpb3);
-  hpbpbComb->Print("base");
-
   hppComb->Add(hpp1,1);
   hppComb->Add(hpp2,1);
   hppComb->Add(hpp3,1);
   hppComb->Print("base");
-
-  hpbpbComb = (TH1F*)hpbpbComb->Rebin(nbins_yaxian,"hpbpbComb",boundaries_yaxian);
-  hpbpb3 = (TH1F*)hpbpb3->Rebin(nbins_yaxian,"hpbpb3",boundaries_yaxian);
-  hpbpb2 = (TH1F*)hpbpb2->Rebin(nbins_yaxian,"hpbpb2",boundaries_yaxian);
-  hpbpb1 = (TH1F*)hpbpb1->Rebin(nbins_yaxian,"hpbpb1",boundaries_yaxian);
-
-  divideBinWidth(hpbpbComb);
-  divideBinWidth(hpbpb3);
-  divideBinWidth(hpbpb2);
-  divideBinWidth(hpbpb1);
 
   hppComb = (TH1F*)hppComb->Rebin(nbins_yaxian,"hppComb",boundaries_yaxian);
   hpp3 = (TH1F*)hpp3->Rebin(nbins_yaxian,"hpp3",boundaries_yaxian);
@@ -303,46 +402,141 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   divideBinWidth(hpp2);
   divideBinWidth(hpp3);
 
- 
-  
-  TCanvas *c1 = new TCanvas("c1","",800,600);
-  c1->SetLogy();
-  hpbpbComb->SetMarkerStyle(20);
-  //hpbpbComb->SetYTitle("#frac{dN}{N_{MB} d p_{T} d #eta}");
-  hpbpbComb->SetYTitle("#frac{d^{2} #sigma}{d p_{T} d#eta} #mu barns");
-  hpbpbComb->SetXTitle("Jet p_{T} GeV/c");
 
-  //TF1 *fPowerLaw = new TF1("fPowerLaw","[0]*pow(x+[1],[2])");
-  //hpbpbComb->Fit("fPowerLaw","","",30,300);
-  //hpbpbComb->Fit("fPowerLaw","","",30,300);
-  //hpbpbComb->Fit("fPowerLaw","","",30,300);
-  //hpbpbComb->Fit("fPowerLaw","","",30,300);
-  //hpbpbComb->Fit("fPowerLaw","","",30,300);
-  //hpbpbComb->Fit("fPowerLaw","","",30,300);
-  //hpbpbComb->Fit("fPowerLaw","","",30,300);
-  hpbpbComb->SetAxisRange(20,300,"X");
-  //hpbpbComb->SetAxisRange(1e-4,1e-12,"Y");
-  hpbpbComb->Draw();
-  hpbpb3->SetMarkerStyle(20);
-  hpbpb3->SetMarkerColor(kRed);
-  hpbpb3->Draw("same");
-  hpbpb2->SetMarkerStyle(20);
-  hpbpb2->SetMarkerColor(kBlue);
-  hpbpb2->Draw("same");
-  hpbpb1->SetMarkerStyle(20);
-  hpbpb1->SetMarkerColor(kGreen);
-  hpbpb1->Draw("same");
-  hpbpbComb->Draw("same");
-  TLegend *title = myLegend(0.25,0.65,0.55,0.8);
-  title->AddEntry(hpbpbComb,"PbPb 2.76 TeV Data Merged","pl");
-  title->AddEntry(hpbpb3,"w_{3} * (HLT_55 && !HLT_65 && !HLT_80)","pl");
-  title->AddEntry(hpbpb2,"HLT_65 && !HLT_80","pl");
-  title->AddEntry(hpbpb1,"HLT_80","pl");
-  title->SetTextSize(0.03);
-  title->Draw();
-  //drawText("PbPb data",0.3,0.65,20);  
-  drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.35,0.56,20);
-  c1->SaveAs("pbpb_2011_vs_pt_combined.pdf","RECREATE");
+  //these were for doing it from the forests directly without the proper JEC's 
+  //add the centrality cuts: 
+
+  //if(nbins_cent == 6){
+    Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
+    Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
+    //}else if(nbins_cent == 1){
+    //Double_t boundaries_cent[nbins_cent+1] = {0,40};
+    //Double_ncoll[nbins_cent] = {362.24};
+    //}
+  
+  TCut pbpb0 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIZeroBiasPizel_SingleTrack_v1&&chargedMax/jtpt>0.01";//this is just for the MB file. not really used here so far. 
+
+  TCut pbpb1[nbins_cent];
+  TCut pbpb2[nbins_cent];
+  TCut pbpb3[nbins_cent];
+
+  TH1F *hpbpb1[nbins_cent],*hpbpb2[nbins_cent],*hpbpb3[nbins_cent];
+  TH1F *hpbpbComb[nbins_cent];
+
+  //centrality loop for the pbpb files/histograms 
+  for(int i = 0;i<nbins_cent;i++){
+
+    cout<<"centrality boundary = "<<boundaries_cent[i]*2.5<<" - "<<boundaries_cent[i+1]*2.5<<endl;
+
+    pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%d&&hiBin<%d",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%d&&hiBin<%d",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%d&&hiBin<%d",boundaries_cent[i],boundaries_cent[i+1]);
+
+    hpbpb1[i] = new TH1F(Form("hpbpb1_%d",i),"",1000,0,1000);
+    hpbpb2[i] = new TH1F(Form("hpbpb2_%d",i),"",1000,0,1000);
+    hpbpb3[i] = new TH1F(Form("hpbpb3_%d",i),"",1000,0,1000);
+    hpbpbComb[i] = new TH1F(Form("hpbpbComb_%d",i),"",1000,0,1000);
+
+    jetpbpb2->Project(Form("hpbpb1_%d",i),"jtpt",pbpb1[i]);
+    hpbpb1[i]->Print("base");
+    //divideBinWidth(hpbpb1);
+    
+    jetpbpb1->Project(Form("hpbpb2_%d",i),"jtpt",pbpb2[i]);
+    hpbpb2[i]->Print("base");
+    //divideBinWidth(hpbpb2);
+    
+    jetpbpb1->Project(Form("hpbpb3_%d",i),"jtpt","HLT_HIJet55_v1_Prescl"*pbpb3[i]);
+    //jetpbpb1->Project("hpbpb3","jtpt","2.34995"*pbpb3);
+    hpbpb3[i]->Print("base");
+    //divideBinWidth(hpbpb3);
+
+    //scale the PbPb histograms before adding them
+    //we have to scale them according to the lumi of the Jet80 file. 
+    // HLT file  |   Lumi inverse micro barns 
+    // HLT_80    |   149.382 
+    // HLT_65    |   3.195
+    // HLT_55    |   2.734
+    // 
+    
+    hpbpb1[i]->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
+    hpbpb2[i]->Scale(1./3.195e6);
+    hpbpb3[i]->Scale(1./2.734e6);
+    
+    hpbpb1[i]->Scale(1./4);//delta eta
+    hpbpb2[i]->Scale(1./4);
+    hpbpb3[i]->Scale(1./4);
+    
+    //add the histograms  
+    hpbpbComb[i]->Add(hpbpb1[i]);
+    hpbpbComb[i]->Add(hpbpb2[i]);
+    hpbpbComb[i]->Add(hpbpb3[i]);
+    hpbpbComb[i]->Print("base");
+
+    hpbpbComb[i] = (TH1F*)hpbpbComb[i]->Rebin(nbins_yaxian,Form("hpbpbComb_%d",i),boundaries_yaxian);
+    hpbpb3[i] = (TH1F*)hpbpb3[i]->Rebin(nbins_yaxian,Form("hpbpb3_%d",i),boundaries_yaxian);
+    hpbpb2[i] = (TH1F*)hpbpb2[i]->Rebin(nbins_yaxian,Form("hpbpb2_%d",i),boundaries_yaxian);
+    hpbpb1[i] = (TH1F*)hpbpb1[i]->Rebin(nbins_yaxian,Form("hpbpb1_%d",i),boundaries_yaxian);
+
+    divideBinWidth(hpbpbComb[i]);
+    divideBinWidth(hpbpb3[i]);
+    divideBinWidth(hpbpb2[i]);
+    divideBinWidth(hpbpb1[i]);
+    
+  }
+  
+  TCanvas *c1 = new TCanvas("c1","",1000,800);
+  c1->Divide(3,2);
+
+  for(int i = 0;i<nbins_cent;i++){
+    
+    c1->cd(i)->SetLogy();
+    hpbpbComb[i]->SetMarkerStyle(20);
+    //hpbpbComb[i]->SetYTitle("#frac{dN}{N_{MB} d p_{T} d #eta}");
+    hpbpbComb[i]->SetYTitle("#frac{d^{2} #sigma}{d p_{T} d#eta} #mu barns");
+    hpbpbComb[i]->SetXTitle("Jet p_{T} GeV/c");
+    
+    //TF1 *fPowerLaw = new TF1("fPowerLaw","[0]*pow(x+[1],[2])");
+    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+    hpbpbComb[i]->SetAxisRange(50,300,"X");
+    //hpbpbComb[i]->SetAxisRange(1e-4,1e-12,"Y");
+    hpbpbComb[i]->Draw();
+    hpbpb3[i]->SetMarkerStyle(20);
+    hpbpb3[i]->SetMarkerColor(kRed);
+    hpbpb3[i]->Draw("same");
+    hpbpb2[i]->SetMarkerStyle(20);
+    hpbpb2[i]->SetMarkerColor(kBlue);
+    hpbpb2[i]->Draw("same");
+    hpbpb1[i]->SetMarkerStyle(20);
+    hpbpb1[i]->SetMarkerColor(kGreen);
+    hpbpb1[i]->Draw("same");
+    hpbpbComb[i]->Draw("same");
+
+    drawText(Form("%d-%d %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
+
+    if(i == 6){
+       
+      TLegend *title = myLegend(0.25,0.65,0.55,0.8);
+      title->AddEntry(hpbpbComb,"PbPb 2.76 TeV Data Merged","pl");
+      title->AddEntry(hpbpb3,"w_{3} * (HLT_55 && !HLT_65 && !HLT_80)","pl");
+      title->AddEntry(hpbpb2,"HLT_65 && !HLT_80","pl");
+      title->AddEntry(hpbpb1,"HLT_80","pl");
+      title->SetTextSize(0.03);
+      title->Draw();
+      //drawText("PbPb data",0.3,0.65,20);  
+      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.35,0.56,20);
+      
+    }
+    
+  }
+  
+ 
+  c1->SaveAs(Form("RAA/pbpb_2011_vs_pt_combined_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
 
   TCanvas *c2 = new TCanvas("c2","",800,600);
   c2->SetLogy();
@@ -387,26 +581,34 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
 
   // calculate the measured RAA here just as a simple calculation 
   hppComb->Scale(1./64); //sigma pp
-  hpbpbComb->Scale(1./362.24); // ncoll
-  hpbpbComb->Scale(1./7.65);//remember what this is. maybe sigma inelastic 
-
-  TH1F* hRAA = (TH1F*)hpbpbComb->Clone("hRAA");
- 
-  hRAA->Divide(hppComb);
-
   TCanvas *c3 = new TCanvas("c3","",800,600);
-  
-  hRAA->SetYTitle("R_{AA}");
-  hRAA->SetXTitle("p_{T} GeV/c");
-  hRAA->SetMarkerStyle(20);
-  hRAA->SetMarkerColor(kBlack);
-  hRAA->SetAxisRange(0,2,"Y");
-  hRAA->Draw();
+  c3->Divide(3,2);
 
-  //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
-  drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
+  TH1F* hRAA[nbins_cent];
 
-  c3->SaveAs("RAA_March2014_voronoi.pdf","RECREATE");
+  for(int i = 0;i>nbins_cent;i++){
+
+    hpbpbComb[i]->Scale(1./ncoll[i]); // ncoll
+    hpbpbComb[i]->Scale(1./7.65);//remember what this is. maybe sigma inelastic
+
+    hRAA[i]  = (TH1F*)hpbpbComb[i]->Clone(Form("hRAA_%d",i));
+    hRAA[i]->Divide(hppComb);
+
+    c3->cd(i);
+    hRAA[i]->SetYTitle("R_{AA}");
+    hRAA[i]->SetXTitle("p_{T} GeV/c");
+    hRAA[i]->SetMarkerStyle(20);
+    hRAA[i]->SetMarkerColor(kBlack);
+    hRAA[i]->SetAxisRange(0,2,"Y");
+    hRAA[i]->Draw();
+    drawText(Form("%d-%d %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
+
+    if(i == 6)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
+    //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
+
+  }
+
+  c3->SaveAs(Form("RAA_March2014_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
 
   //plot the statistical uncertainty here
   //statistical error/meanvalue as a function of pt for the combined spectra. 
@@ -535,17 +737,19 @@ void merge_pbpb_pp_HLT(int radius = 4, char *algo = "Vs"){
   */
 
   //Create output file and save them. 
-  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2.root",radius,algo),"RECREATE");
+  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
+  for(int i = 0;i<nbins_cent;i++){
   hpbpb1->Write();
   hpbpb2->Write();
   hpbpb3->Write();
+  hpbpbComb->Write();
+  hRAA[i]->Write();
+  }
   //hPPComb_bins->Write();
   hpp1->Write();
   hpp2->Write();
   hpp3->Write();
-  hpbpbComb->Write();
   hppComb->Write();
-  hRAA->Write();
   //hPPComb->Write();
   //hPbPb_Uncert->Write();
   //hPPComb->Write();
