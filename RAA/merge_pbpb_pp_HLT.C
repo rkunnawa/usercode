@@ -366,7 +366,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
   //root [9] (Float_t)jet->GetEntries("HLT_HIJet80_v1")/jet->GetEntries("HLT_HIJet80_v1&&HLT_HIJet55_v1")
   //(double)2.34995051108819153e+00
   //ive commented this below - to just check for the pbpb histograms to load. 
-  /*
+  
   jetpp1_v2->Project("hpp1","pt","abs(eta)<2&&jet80&&chMax/pt>0.01");
   hpp1->Print("base");
  
@@ -378,7 +378,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
   //jetpp2_v2->Project("hpp3","pt","jet40_p"*pp3);
   hpp3->Print("base");
  
-  */
+  
   hpp1->Scale(1./5300e6);//pp lumi
   hpp2->Scale(1./5300e6);
   hpp3->Scale(1./5300e6);
@@ -422,17 +422,19 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
 
   TH1F *hpbpb1[nbins_cent],*hpbpb2[nbins_cent],*hpbpb3[nbins_cent];
   TH1F *hpbpbComb[nbins_cent];
+  //TH1F* htest = new TH1F("htest","",1000,0,1000);
 
   //centrality loop for the pbpb files/histograms 
   for(int i = 0;i<nbins_cent;i++){
 
     cout<<"centrality boundary = "<<boundaries_cent[i]*2.5<<" - "<<boundaries_cent[i+1]*2.5<<endl;
 
-    pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%d&&hiBin<%d",boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%d&&hiBin<%d",boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%d&&hiBin<%d",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
 
     hpbpb1[i] = new TH1F(Form("hpbpb1_%d",i),"",1000,0,1000);
+    //hpbpb1[i]->Print("base");
     hpbpb2[i] = new TH1F(Form("hpbpb2_%d",i),"",1000,0,1000);
     hpbpb3[i] = new TH1F(Form("hpbpb3_%d",i),"",1000,0,1000);
     hpbpbComb[i] = new TH1F(Form("hpbpbComb_%d",i),"",1000,0,1000);
@@ -517,7 +519,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
     hpbpb1[i]->Draw("same");
     hpbpbComb[i]->Draw("same");
 
-    drawText(Form("%d-%d %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
+    drawText(Form("%f-%f %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
 
     if(i == 6){
        
@@ -601,7 +603,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
     hRAA[i]->SetMarkerColor(kBlack);
     hRAA[i]->SetAxisRange(0,2,"Y");
     hRAA[i]->Draw();
-    drawText(Form("%d-%d %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
+    drawText(Form("%f-%f %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
 
     if(i == 6)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
     //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
