@@ -146,7 +146,7 @@ TH1F *rebin(TH1F *h, char *histName)
   return hRebin;
 }
 
-void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 6){
+void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   
   TH1::SetDefaultSumw2();
 
@@ -215,129 +215,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
   jetpbpb1->AddFriend(skmpbpb1);
   jetpbpb2->AddFriend(skmpbpb2);
 
-  //declare the variables and set their branch address to the required trees 
-  int nrefe0;
-  float pt0[1000];
-  //float old_pt0[1000];
-  float raw0[1000];
-  float eta0[1000];
-  float eta0_CM[1000];
-  float phi0[1000];
-  float chMax0[1000];
-  float trkMax0[1000];
-  float chSum0[1000];
-  float phSum0[1000];
-  float neSum0[1000];
-  float trkSum0[1000];
-  float phMax0[1000];
-  float neMax0[1000];
-  
-  int nrefe1;
-  float pt1[1000];
-  //float old_pt1[1000];
-  float raw1[1000];
-  float eta1[1000];
-  float eta1_CM[1000];
-  float phi1[1000];
-  float chMax1[1000];
-  float trkMax1[1000];
-  float chSum1[1000];
-  float phSum1[1000];
-  float neSum1[1000];
-  float trkSum1[1000];
-  float phMax1[1000];
-  float neMax1[1000];
-
-  int nrefe2;
-  float pt2[1000];
-  //float old_pt2[1000];
-  float raw2[1000];
-  float eta2[1000];
-  float eta1_CM[1000];
-  float phi2[1000];
-  float chMax2[1000];
-  float trkMax2[1000];
-  float chSum2[1000];
-  float phSum2[1000];
-  float neSum2[1000];
-  float trkSum2[1000];
-  float phMax2[1000];
-  float neMax2[1000];
-
-  int evt0;
-  int run0;
-  int lumi0;
-  int hiBin0;
-  float vx0;
-  float vy0;
-  float vz0;
-  int hiNtracks0;
-  float hiHFminus0;
-  float hiHFplus0;
-  float hiHFplusEta40;
-  float hiHFminusEta40;
-  int pPAcollisionEventSelectionPA0;
-  int pHBHENoiseFilter0;
-  int pprimaryvertexFilter0;
-  int pVertexFilterCutGplus0;
-
-  int evt1;
-  int run1;
-  int lumi1;
-  int hiBin1;
-  float vx1;
-  float vy1;
-  float vz1;
-  int hiNtracks1;
-  float hiHFminus1;
-  float hiHFplus1;
-  float hiHFplusEta41;
-  float hiHFminusEta41;
-  int pPAcollisionEventSelectionPA1;
-  int pHBHENoiseFilter1;
-  int pprimaryvertexFilter1;
-  int pVertexFilterCutGplus1;
-
-  int evt2;
-  int run2;
-  int lumi2;
-  int hiBin2;
-  float vx2;
-  float vy2;
-  float vz2;
-  int hiNtracks2;
-  float hiHFminus2;
-  float hiHFplus2;
-  float hiHFplusEta42;
-  float hiHFminusEta42;
-  int pPAcollisionEventSelectionPA2;
-  int pHBHENoiseFilter2;
-  int pprimaryvertexFilter2;
-  int pVertexFilterCutGplus2;
-
-  int jet55_0;
-  int jet66_0;
-  int jet80_0;
-
-  int jet55_p_0;
-  int jet65_p_0;
-  int jet80_p_0;
-
-  int jet55_1;
-  int jet66_1;
-  int jet80_1;
-
-  int jet55_p_1;
-  int jet65_p_1;
-  int jet80_p_1;
-
-  int jet55_2;
-  int jet66_2;
-  int jet80_2;
-
-  int jet55_p_2;
-  int jet65_p_2;
-  int jet80_p_2;
 
   //do it for the pp - need to check up on this. 
   TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get(Form("jetR%d",radius));
@@ -406,13 +283,12 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
   //these were for doing it from the forests directly without the proper JEC's 
   //add the centrality cuts: 
 
-  //if(nbins_cent == 6){
-    Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
-    Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
-    //}else if(nbins_cent == 1){
-    //Double_t boundaries_cent[nbins_cent+1] = {0,40};
-    //Double_ncoll[nbins_cent] = {362.24};
-    //}
+  const int nbins_cent = 6;
+  Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
+  Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
+  //const int nbins_cent = 1;
+  //Double_t boundaries_cent[nbins_cent+1] = {0,40};
+  //Double_t ncoll[nbins_cent] = {362.24}; //use taa instead of ncoll. 
   
   TCut pbpb0 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIZeroBiasPizel_SingleTrack_v1&&chargedMax/jtpt>0.01";//this is just for the MB file. not really used here so far. 
 
@@ -490,8 +366,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
   c1->Divide(3,2);
 
   for(int i = 0;i<nbins_cent;i++){
-    
-    c1->cd(i)->SetLogy();
+    c1->cd(i+1);
+    c1->cd(i+1)->SetLogy();
     hpbpbComb[i]->SetMarkerStyle(20);
     //hpbpbComb[i]->SetYTitle("#frac{dN}{N_{MB} d p_{T} d #eta}");
     hpbpbComb[i]->SetYTitle("#frac{d^{2} #sigma}{d p_{T} d#eta} #mu barns");
@@ -519,26 +395,26 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
     hpbpb1[i]->Draw("same");
     hpbpbComb[i]->Draw("same");
 
-    drawText(Form("%f-%f %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
+    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*2.5,boundaries_cent[i+1]*2.5),0.1,0.9,20);
 
-    if(i == 6){
+    if(i == nbins_cent-1){
        
       TLegend *title = myLegend(0.25,0.65,0.55,0.8);
-      title->AddEntry(hpbpbComb,"PbPb 2.76 TeV Data Merged","pl");
-      title->AddEntry(hpbpb3,"w_{3} * (HLT_55 && !HLT_65 && !HLT_80)","pl");
-      title->AddEntry(hpbpb2,"HLT_65 && !HLT_80","pl");
-      title->AddEntry(hpbpb1,"HLT_80","pl");
+      title->AddEntry(hpbpbComb[nbins_cent-1],"PbPb 2.76 TeV Data Merged","pl");
+      title->AddEntry(hpbpb3[nbins_cent-1],"w_{3} * (HLT_55 && !HLT_65 && !HLT_80)","pl");
+      title->AddEntry(hpbpb2[nbins_cent-1],"HLT_65 && !HLT_80","pl");
+      title->AddEntry(hpbpb1[nbins_cent-1],"HLT_80","pl");
       title->SetTextSize(0.03);
       title->Draw();
       //drawText("PbPb data",0.3,0.65,20);  
-      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.35,0.56,20);
+      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.35,0.56,14);
       
     }
     
   }
   
  
-  c1->SaveAs(Form("RAA/pbpb_2011_vs_pt_combined_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
+  c1->SaveAs(Form("pbpb_2011_vs_pt_combined_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
 
   TCanvas *c2 = new TCanvas("c2","",800,600);
   c2->SetLogy();
@@ -579,8 +455,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
   drawText(Form("Anti-k_{T} PF Jets R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
   c2->SaveAs("pp_2011_pt_combined.pdf","RECREATE");
 
-
-
   // calculate the measured RAA here just as a simple calculation 
   hppComb->Scale(1./64); //sigma pp
   TCanvas *c3 = new TCanvas("c3","",800,600);
@@ -588,26 +462,26 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
 
   TH1F* hRAA[nbins_cent];
 
-  for(int i = 0;i>nbins_cent;i++){
+  for(int i = 0;i<nbins_cent;i++){
 
     hpbpbComb[i]->Scale(1./ncoll[i]); // ncoll
     hpbpbComb[i]->Scale(1./7.65);//remember what this is. maybe sigma inelastic
 
-    hRAA[i]  = (TH1F*)hpbpbComb[i]->Clone(Form("hRAA_%d",i));
+    hRAA[i] = (TH1F*)hpbpbComb[i]->Clone("hRAA");
+    hRAA[i]->Print("base");
     hRAA[i]->Divide(hppComb);
 
-    c3->cd(i);
+    c3->cd(i+1);
     hRAA[i]->SetYTitle("R_{AA}");
     hRAA[i]->SetXTitle("p_{T} GeV/c");
     hRAA[i]->SetMarkerStyle(20);
     hRAA[i]->SetMarkerColor(kBlack);
     hRAA[i]->SetAxisRange(0,2,"Y");
     hRAA[i]->Draw();
-    drawText(Form("%f-%f %",boundaries_cent[i]*2.5,boundaries_cent[i]*2.5),0.1,0.9,20);
+    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*2.5,boundaries_cent[i+1]*2.5),0.1,0.9,20);
 
-    if(i == 6)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
+    if(i == 5)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,14);
     //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
-
   }
 
   c3->SaveAs(Form("RAA_March2014_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
@@ -741,11 +615,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs",const int nbins_cent = 
   //Create output file and save them. 
   TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
   for(int i = 0;i<nbins_cent;i++){
-  hpbpb1->Write();
-  hpbpb2->Write();
-  hpbpb3->Write();
-  hpbpbComb->Write();
-  hRAA[i]->Write();
+    hpbpb1[i]->Write();
+    hpbpb2[i]->Write();
+    hpbpb3[i]->Write();
+    hpbpbComb[i]->Write();
+    hRAA[i]->Write();
   }
   //hPPComb_bins->Write();
   hpp1->Write();

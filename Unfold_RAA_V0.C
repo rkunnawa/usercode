@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <stdio.h>
 
@@ -24,6 +23,11 @@
 #include "headers/utilities_V0.h"
 #include "headers/bayesianUnfold.h"
 #include "headers/prior.h"
+
+
+//#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+//#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
+//#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 using namespace std;
 
@@ -81,7 +85,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 	
   // Pthat binning
   //const int nbins_pthat = 8;
-  const int nbins_pthat = 3;
+  const int nbins_pthat = 5;
   Double_t boundaries_pthat[nbins_pthat+1];
   char *fileName_pthat[nbins_pthat+1];
   Double_t xsection[nbins_pthat+1];
@@ -140,33 +144,59 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 	
     ////// New MC samples
 
+    /*
+
+    /mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet30_FOREST_Track8_Jet24_FixedPtHat_v0_mergedpkurt/0.root added 
+    /mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet50_FOREST_Track8_Jet24_FixedPtHat_v0_mergedpkurt/0.root added 
+    /mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet80_FOREST_Track8_Jet24_FixedPtHat_v0_mergedpkurt/0.root added 
+    /mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet100_FOREST_Track8_Jet24_FixedPtHat_v0/0.root added 
+    /mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet120_FOREST_Track8_Jet24_FixedPtHat_v0/0.root added 
+    root [4] ch->GetEntries()
+    (const Long64_t)917109
+    root [5] ch->GetEntries("pthat>=30 && pthat<50")
+    (Long64_t)22008
+    root [6] ch->GetEntries("pthat>=50 && pthat<80")
+    (Long64_t)30742
+    root [7] ch->GetEntries("pthat>=80 && pthat<100")
+    (Long64_t)209137
+    root [8] ch->GetEntries("pthat>=100 && pthat<120")
+    (Long64_t)188218
+    root [9] ch->GetEntries("pthat>=120 && pthat<1000")
+    (Long64_t)467004
+    root [10] 
+    
+    */
     boundaries_pthat[0]=30;
     //fileName_pthat[0]="/mnt/hadoop/cms/store/user/kjung/PbPbMCProd/HydjetDrum_Dijet30_Tracking/merged/Dijet30_HydjetDrum_v27_Full_mergedV1.root";
-    fileName_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/HIMC/Jet30/Track8_Jet19_STARTHI53_LV1/merged/HiForest_Pythia_Hydjet_Jet30_Track8_Jet19_STARTHI53_LV1_merged_forest_0.root";
+    fileName_pthat[0] = "/mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet30_FOREST_Track8_Jet24_FixedPtHat_v0_mergedpkurt/0.root";
     xsection[0]= 1.079e-02;
-    entries[0] = 14925;
+    entries[0] = 22008;
 	
     boundaries_pthat[1]=50;
     //fileName_pthat[1]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet50_HydjetDrum_v27_mergedV1.root";
-    fileName_pthat[1] = "/mnt/hadoop/cms/store/user/dgulhan/HIMC/Jet50/Track8_Jet19_STARTHI53_LV1/merged/HiForest_Pythia_Hydjet_Jet50_Track8_Jet19_STARTHI53_LV1_merged_forest_0.root";
+    fileName_pthat[1] = "/mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet50_FOREST_Track8_Jet24_FixedPtHat_v0_mergedpkurt/0.root";
     xsection[1]= 1.021e-03;
-    entries[1] = 1609;
+    entries[1] = 30742;
 	
     boundaries_pthat[2]=80;
     //fileName_pthat[2]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet80_HydjetDrum_v27_mergedV1.root";
-    fileName_pthat[2] = "/mnt/hadoop/cms/store/user/dgulhan/HIMC/Jet80/Track8_Jet21_STARTHI53_LV1/merged3/HiForest_Pythia_Hydjet_Jet80_Track8_Jet21_STARTHI53_LV1_merged_forest_0.root";
+    fileName_pthat[2] = "/mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet80_FOREST_Track8_Jet24_FixedPtHat_v0_mergedpkurt/0.root";
     xsection[2]= 9.913e-05;
-    entries[2] = 163;
+    entries[2] = 209137;
 	
-    /*
+    
     boundaries_pthat[3]=100;
-    fileName_pthat[3]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet100_HydjetDrum_v27_mergedV1.root ";
+    //fileName_pthat[3]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet100_HydjetDrum_v27_mergedV1.root ";
+    fileName_pthat[3] = "/mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet100_FOREST_Track8_Jet24_FixedPtHat_v0/0.root";
     xsection[3]= 3.069e-05 ;
+    entries[3] = 188218;
 	
     boundaries_pthat[4]=120;
-    fileName_pthat[4]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v28/Dijet120_HydjetDrum_v28_mergedV1.root";
+    //fileName_pthat[4]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v28/Dijet120_HydjetDrum_v28_mergedV1.root";
+    fileName_pthat[4] = "/mnt/hadoop/cms/store/user/velicanu/HydjetDrum_Pyquen_Dijet120_FOREST_Track8_Jet24_FixedPtHat_v0/0.root";
     xsection[4]= 1.128e-05;
-	
+    entries[4] = 467004;
+    /*
     boundaries_pthat[5]=170;
     fileName_pthat[5]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v27/Dijet170_HydjetDrum_v27_mergedV1.root";
     xsection[5]= 1.470e-06;
@@ -183,8 +213,8 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     fileName_pthat[8]="/mnt/hadoop/cms/store/user/yenjie/HiForest_v28/Dijet300_HydjetDrum_v28_mergedV1.root";
     xsection[8]= 3.176e-08;
     */
-    xsection[3] = 0;
-    boundaries_pthat[3]=1000;
+    xsection[5] = 0;
+    boundaries_pthat[5]=1000;
     
     // yen-jie's file location
     /*
@@ -370,7 +400,27 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   //float lumi=129.;
   //float pplumi=212.;
   //*************************************************************************
-	
+  /*	
+  //loading the files for doing the JEC's on the fly
+  string fJECL2AK3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AK3PF_offline.txt";
+  string fJECL3AK3PF = "HI_PythiaZ2_2760GeV_5316_v14_L3Absolute_AK3PF_offline.txt";
+  string fJECL2AKPu3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AKPu3PF_offline.txt";
+  string fJECL3AKPu3PF = "HI_PythiaZ2_2760GeV_5316_v14_L3Absolute_AKPu3PF_offline.txt";
+  string fJECL2AKVs3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AKVs3PF_offline.txt";
+  string fJECL3AKVs3PF = "HI_PythiaZ2_2760GeV_5316_v14_L3Absolute_AKVs3PF_offline.txt";
+
+  // grab the JEC's
+  vector <JetCorrectorParameters> vpar_HI53x;
+  FactorizedJetCorrector *JEC_HI53;
+
+  JetCorrectorParameters *parHI53x_l2 = new JetCorrectorParameters(fJECL2AKVs3PF.c_str());
+  JetCorrectorParameters *parHI53x_l3 = new JetCorrectorParameters(fJECL3AKVs3PF.c_str());
+
+  vpar_HI53x.push_back(*parHI53x_l2);
+  vpar_HI53x.push_back(*parHI53x_l3);
+  JEC_HI53x = new FactorizedJetCorrector(vpar_HI53x);
+  */
+
   // Output file
   TFile *pbpb_Unfo = new TFile(Form("result-%d-%s-cent-%d-isFineBin-%d/pbpb_pp_merged_chmx_pt_isMC_%d_Unfo_%d_%s_cent_%d_isFineBin_%d.root",year,algoName[algo],nbins_cent,isFineBin,isMC,year,algoName[algo],nbins_cent,isFineBin),"RECREATE");
 	
@@ -432,13 +482,18 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   // Read data file
   TFile *infData;
 
-  infData = TFile::Open("RAA/merge_pbpb_ak3_vs_HLT_V2.root");
+  infData = TFile::Open("RAA/merge_pbpb_ak3_Vs_HLT_V2_nbins_cent_6.root");
 
-  uhist[0]->hMeas = (TH1F*)infData->Get("hpbpbComb");
-  uhist[1]->hMeas = (TH1F*)infData->Get("hppComb");
+  for(int i = 0;i<nbins_cent;i++){
 
-  uhist[0]->hMeas->Print("base");
-  uhist[1]->hMeas->Print("base");
+    uhist[i]->hMeas = (TH1F*)infData->Get(Form("hpbpbComb_%d",i));
+    uhist[i]->hMeas->Print("base"); 
+  }
+
+  uhist[nbins_cent]->hMeas = (TH1F*)infData->Get("hppComb");
+  uhist[nbins_cent]->hMeas->Print("base");
+
+
   /*	
   if (isMC) {
     if (yinglu) {
@@ -634,7 +689,6 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   TCanvas * cInput = new TCanvas("cInput","Input",1200,800);
   cInput->Divide(3,3);
 	
-	
   TH1F *hCent = new TH1F("hCent","",nbins_cent,boundaries_cent);
   TH1F *hCentData = new TH1F("hCentData","",40,0,40);
   TH1F *hCentMC = new TH1F("hCentMC","",40,0,40);
@@ -744,20 +798,27 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 	   << Form(" pthat>%.0f&&pthat<%.0f",boundaries_pthat[i],boundaries_pthat[i+1])<<endl;
       cout<<data[i]->tJet->GetEntries()<<endl;
       for (Long64_t jentry2=0; jentry2<data[i]->tJet->GetEntries();jentry2++) {
+      //for (Long64_t jentry2=0; jentry2<100;jentry2++) {
+
 	//cout<<"hi"<<endl;
 	data[i]->tEvt->GetEntry(jentry2);
 	data[i]->tJet->GetEntry(jentry2);
 	//data[i]->tGenJet->GetEntry(jentry2);
-	//if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
+	if(data[i]->pthat<boundaries_pthat[i] || data[i]->pthat>boundaries_pthat[i+1]) continue;
+	
+	//if(jentry2%100==0)cout<<"pthat of that event = "<<data[i]->pthat<<endl;
+	
 	int pthatBin = hPtHat->FindBin(data[i]->pthat);
+	//if(jentry2%100==0)cout<<"pthatBin = "<<pthatBin<<endl;
+	
 	//cout<<xsection[pthatBin-1]-xsection[pthatBin]<<endl;
 	//cout<<"nentries = "<<hPtHatRaw->GetBinContent(pthatBin)<<endl;
 	double scale = (double)(xsection[pthatBin-1]-xsection[pthatBin])/hPtHatRaw->GetBinContent(pthatBin);
 	//double scale = (double)(xsection[pthatBin-1]-xsection[pthatBin])/entries[i];
 	
 	if(fabs(data[i]->vz)>15) continue;
-	//int cBin = hCent->FindBin(data[i]->bin)-1;
-	int cBin = nbins_cent-1;
+	int cBin = hCent->FindBin(data[i]->bin)-1;
+	//int cBin = nbins_cent-1;
 	double weight_cent=1;
 	double weight_pt=1;
 	double weight_vz=1;
@@ -939,11 +1000,11 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     cout<<"Plotting MC, Data histograms"<<endl;
 
     cMC = new TCanvas("cMC","MC",1000,800);
-    cMC->Divide(3,1);
+    cMC->Divide(3,2);
     cData = new TCanvas("cData","Data",1000,800);
-    cData->Divide(3,1);
+    cData->Divide(3,2);
     cMCRatio = new TCanvas("cMCRatio","MC ratio Reco to Gen",1000,800);
-    cMCRatio->Divide(3,1);
+    cMCRatio->Divide(3,2);
 
     for(int i = 0;i<=nbins_cent;i++){
 
@@ -958,9 +1019,12 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       uhist[i]->hGen->SetMarkerColor(kRed);
       uhist[i]->hRecoMC->SetMarkerStyle(25);
       uhist[i]->hRecoMC->SetMarkerColor(kBlue);
+      uhist[i]->hGen->SetXTitle("p_{T} GeV/c");
+      divideBinWidth(uhist[i]->hGen);
+      divideBinWidth(uhist[i]->hRecoMC);
       uhist[i]->hGen->Draw("");
       uhist[i]->hRecoMC->Draw("same");
-      if(i == 6){
+      if(i == nbins_cent){
 	title1->AddEntry(uhist[i]->hGen,"PP MC","");
       }else{
 	title1->AddEntry(uhist[i]->hGen,Form("PbPb MC - %2.0f-%2.0f%%",2.5*boundaries_cent[i],2.5*boundaries_cent[i+1]),"");
@@ -973,7 +1037,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 
       title2 = myLegend(0.18,0.7,0.48,0.8);//data
       title2->SetTextSize(0.06);
-      if(i == 6){
+      if(i == 1){
 	title2->AddEntry(uhist[i]->hMeas,"PP Data","");
       }else {
 	title2->AddEntry(uhist[i]->hMeas,Form("PbPb Data - %2.0f-%2.0f%%",2.5*boundaries_cent[i],2.5*boundaries_cent[i+1]),"");
@@ -997,12 +1061,12 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 
     }
   
-    cMC->cd(3);
-    TLegend *MClegend = myLegend(0.52,0.65,0.85,0.9);
-    uhist[0]->hGen->SetMarkerStyle(20);
-    uhist[0]->hGen->SetMarkerColor(kRed);
-    uhist[0]->hRecoMC->SetMarkerStyle(25);
-    uhist[0]->hRecoMC->SetMarkerColor(kBlue);
+    cMC->cd(2);
+    TLegend *MClegend = myLegend(0.52,0.65,0.85,0.75);
+    //uhist[0]->hGen->SetMarkerStyle(20);
+    //uhist[0]->hGen->SetMarkerColor(kRed);
+    //uhist[0]->hRecoMC->SetMarkerStyle(25);
+    //uhist[0]->hRecoMC->SetMarkerColor(kBlue);
     MClegend->AddEntry(uhist[0]->hGen,"Generator Truth","pl");
     MClegend->AddEntry(uhist[0]->hRecoMC,"Generator Reco","pl");
     MClegend->Draw();
@@ -1127,7 +1191,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 	
   // ======================= Reconstructed pp and PbPb spectra =========================================================
   TCanvas * cPbPb = new TCanvas("cPbPb","PbPb",1200,800);
-  cPbPb->Divide(3,1); 
+  cPbPb->Divide(2,1); 
   cPbPb->cd(1);
 	
 	
@@ -1300,7 +1364,10 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     uhist[i]->hMeas->SetMarkerStyle(20);
     uhist[i]->hMeas->SetMarkerColor(kRed);
     uhist[i]->hReco->SetMarkerStyle(25);
-    uhist[i]->hReco->Draw("");    
+    uhist[i]->hReco->SetTitle(" ");
+    uhist[i]->hReco->SetXTitle(" Jet p_{T} GeV/c");
+    uhist[i]->hReco->SetYTitle(" ");
+    uhist[i]->hReco->Draw(""); 
     uhist[i]->hReco->SetAxisRange(50,330);
     //      TH1F *hReproduced = (TH1F*)myUnfolding.hReproduced->Clone(Form("hReproduced_cent%d",i));
     //      hReproduced->SetMarkerColor(4);
@@ -1309,11 +1376,11 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   }	     
   
 
-  cPbPb->cd(3);
-  TLegend *pbpblegend = myLegend(0.52,0.65,0.85,0.9);
-  uhist[0]->hMeas->SetMarkerStyle(20);
-  uhist[0]->hMeas->SetMarkerColor(kRed);
-  uhist[0]->hReco->SetMarkerStyle(25);
+  cPbPb->cd(2);
+  TLegend *pbpblegend = myLegend(0.52,0.65,0.85,0.75);
+  //uhist[0]->hMeas->SetMarkerStyle(20);
+  //uhist[0]->hMeas->SetMarkerColor(kRed);
+  //uhist[0]->hReco->SetMarkerStyle(25);
   pbpblegend->AddEntry(uhist[0]->hMeas,"Measured","pl");
   pbpblegend->AddEntry(uhist[0]->hReco,"Unfolded","pl");
   pbpblegend->Draw();
@@ -1608,8 +1675,15 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   //hRebinBinByBinPP       ->Scale(1./pplumi/64/1000000);
   //hMeasPP                ->Scale(1./pplumi/64/1000000);
   //hRebinGenPP            ->Scale(1./pplumi/64/1000000);
-	
-	
+    /*	
+  hRebinPP               ->Scale(1./);
+  hRebinPP_Npart	 ->Scale(1./);
+  hRebinMeasPP           ->Scale(1./);
+  hRecoPP                ->Scale(1./);
+  hRebinBinByBinPP       ->Scale(1./);
+  hMeasPP                ->Scale(1./);
+  hRebinGenPP            ->Scale(1./);
+    */
   //***************Scale Factor for trackcut correction ************
 	
   float CorFac[6] = {1.0331,1.0331,1.0300,1.0259,1.0217,1.0114};
@@ -1651,7 +1725,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
   //************   MC Closure Test For PP        *************
 	
 	
-  TLine *line = new TLine(100,1,300,1);
+  TLine *line = new TLine(50,1,300,1);
   line->SetLineStyle(2);
   line->SetLineWidth(2);
 	
@@ -1667,7 +1741,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       hRebinPP->Divide(hRebinGenPP);
 		
 		
-      hRebinPP->SetAxisRange(100,300,"X");
+      hRebinPP->SetAxisRange(50,300,"X");
       hRebinPP->SetAxisRange(0,2,"Y");
       hRebinPP ->SetLineColor(kBlack);
       hRebinPP ->SetMarkerColor(kBlack);
@@ -1800,7 +1874,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     ///// Set Histograms of Genjet to Save
     uhist[i]-> hGen->SetName(Form("hGen_cent%i",i));
 		
-    TLine *l = new TLine(100,1,300,1);
+    TLine *l = new TLine(50,1,300,1);
     l->SetLineStyle(2);
     l->SetLineWidth(2);
     TLegend *title=0;
@@ -1927,7 +2001,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       hRecoRAAJECSys->Divide(uhist[i]->hGen);
 			
     }
-    hRebinRAA->SetAxisRange(100,330,"X");
+    hRebinRAA->SetAxisRange(50,330,"X");
     hRebinRAA->SetAxisRange(0,2,"Y");
     hRebinMeasRAA ->SetMarkerStyle(24);
     hMeasRAA ->SetLineColor(5);
@@ -1948,7 +2022,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     hRebinRAAJECSys->SetAxisRange(0.61,1.39,"Y");
     hRebinRAAJECSys->Draw("p");
     makeHistTitle(hRebinRAAJECSys,"","Jet p_{T} (GeV/c)","Ratio",2);
-    hRebinRAAJECSys->SetAxisRange(100,330,"X");
+    hRebinRAAJECSys->SetAxisRange(50,330,"X");
     TF1 *fPol = new TF1("fPol","[0]+[1]*x");
     hRebinRAAJECSys->Fit("fPol","");
 		
@@ -1973,7 +2047,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     hRebinRAASmearSys->SetAxisRange(0.61,1.39,"Y");
     hRebinRAASmearSys->Draw("p");
     makeHistTitle(hRebinRAASmearSys,"","Jet p_{T} (GeV/c)","Ratio",2);
-    hRebinRAASmearSys->SetAxisRange(100,330,"X");
+    hRebinRAASmearSys->SetAxisRange(50,330,"X");
     hRebinRAASmearSys->Fit("fPol","");
     hRebinRAASmearSys->Draw("p");
     checkMaximumSys(systematics.hSysSmear[i],functionHist(fPol,systematics.hSysSmear[i],Form("hist_sysSmear_cent%d",i)));
