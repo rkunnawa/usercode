@@ -159,11 +159,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   // 
   
   //data files - PbPb 
-  TFile *fpbpb0 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_Forest_Track8_Jet21/0.root");
-  //TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
+  TFile *fpbpb0_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_Forest_Track8_Jet21/0.root");
+  TFile *fpbpb1_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
   TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26/0.root");
 
-  //TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
+  TFile *fpbpb2_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
   TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26/0.root");
 
 
@@ -193,33 +193,47 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   */
 
   // grab the trees from the data files. 
-  TTree *jetpbpb0 = (TTree*)fpbpb0->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
+  TTree *jetpbpb0_old = (TTree*)fpbpb0_old->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
   TTree *jetpbpb1 = (TTree*)fpbpb1->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
+  TTree *jetpbpb1_old = (TTree*)fpbpb1_old->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
   TTree *jetpbpb2 = (TTree*)fpbpb2->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
+  TTree *jetpbpb2_old = (TTree*)fpbpb2_old->Get(Form("ak%s%dPFJetAnalyzer/t",algo,radius));
 
-  TTree *evtpbpb0 = (TTree*)fpbpb0->Get("hiEvtAnalyzer/HiTree");
+  TTree *evtpbpb0_old = (TTree*)fpbpb0_old->Get("hiEvtAnalyzer/HiTree");
   TTree *evtpbpb1 = (TTree*)fpbpb1->Get("hiEvtAnalyzer/HiTree");
-  TTree *evtpbpb2 = (TTree*)fpbpb2->Get("hiEvtAnalyzer/HiTree");
+  TTree *evtpbpb1_old = (TTree*)fpbpb1_old->Get("hiEvtAnalyzer/HiTree");
+  TTree *evtpbpb2 = (TTree*)fpbpb2->Get("hiEvtAnalyzer/HiTree");  
+  TTree *evtpbpb2_old = (TTree*)fpbpb2_old->Get("hiEvtAnalyzer/HiTree");
 
-  TTree* hltpbpb0 = (TTree*)fpbpb0->Get("hltanalysis/HltTree");
+  TTree* hltpbpb0_old = (TTree*)fpbpb0_old->Get("hltanalysis/HltTree");
   TTree* hltpbpb1 = (TTree*)fpbpb1->Get("hltanalysis/HltTree");
+  TTree* hltpbpb1_old = (TTree*)fpbpb1_old->Get("hltanalysis/HltTree");
   TTree* hltpbpb2 = (TTree*)fpbpb2->Get("hltanalysis/HltTree");
+  TTree* hltpbpb2_old = (TTree*)fpbpb2_old->Get("hltanalysis/HltTree");
 
-  TTree* skmpbpb0 = (TTree*)fpbpb0->Get("skimanalysis/HltTree");
+  TTree* skmpbpb0_old = (TTree*)fpbpb0_old->Get("skimanalysis/HltTree");
   TTree* skmpbpb1 = (TTree*)fpbpb1->Get("skimanalysis/HltTree");
+  TTree* skmpbpb1_old = (TTree*)fpbpb1_old->Get("skimanalysis/HltTree");
   TTree* skmpbpb2 = (TTree*)fpbpb2->Get("skimanalysis/HltTree");
+  TTree* skmpbpb2_old = (TTree*)fpbpb2_old->Get("skimanalysis/HltTree");
 
-  jetpbpb0->AddFriend(evtpbpb0);
+  jetpbpb0_old->AddFriend(evtpbpb0_old);
   jetpbpb1->AddFriend(evtpbpb1);
+  jetpbpb1_old->AddFriend(evtpbpb1_old);
   jetpbpb2->AddFriend(evtpbpb2);
+  jetpbpb2_old->AddFriend(evtpbpb2_old);
 
-  jetpbpb0->AddFriend(hltpbpb0);
+  jetpbpb0_old->AddFriend(hltpbpb0_old);
   jetpbpb1->AddFriend(hltpbpb1);
+  jetpbpb1_old->AddFriend(hltpbpb1_old);
   jetpbpb2->AddFriend(hltpbpb2);
+  jetpbpb2_old->AddFriend(hltpbpb2_old);
 
-  jetpbpb0->AddFriend(skmpbpb0);
+  jetpbpb0_old->AddFriend(skmpbpb0_old);
   jetpbpb1->AddFriend(skmpbpb1);
+  jetpbpb1_old->AddFriend(skmpbpb1_old);
   jetpbpb2->AddFriend(skmpbpb2);
+  jetpbpb2_old->AddFriend(skmpbpb2_old);
 
 
   //do it for the pp - need to check up on this. 
@@ -315,28 +329,33 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TH1F* htest65 = new TH1F("htest65","",150,0,150);
   TH1F* htest55 = new TH1F("htest55","",150,0,150);
 
+  // check the trigger turn on curve from the MB file. 
+  TH1F* hMB = new TH1F("hMB","",150,0,150);
+  /*
   jetpbpb2->Project("htest80","jtpt","HLT_HIJet80_v1");
   htest80->Print("base");
   jetpbpb1->Project("htest65","jtpt","HLT_HIJet65_v1&&!HLT_HIJet80_v1");
   htest65->Print("base");
   jetpbpb1->Project("htest55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1)");
   htest55->Print("base");
+  */
+  jetpbpb2_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1&&pcollisionEventSelection&&pHBHENoiseFilter");
+  jetpbpb1_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1&&pcollisionEventSelection&&pHBHENoiseFilter");
+  jetpbpb1_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1&&pcollisionEventSelection&&pHBHENoiseFilter");
 
-  jetpbpb2->Project("hTurnon80","jtpt","HLT_HIJet80_v1");
-  jetpbpb1->Project("hTurnon65","jtpt","HLT_HIJet65_v1");
-  jetpbpb1->Project("hTurnon55","jtpt","HLT_HIJet55_v1");
+  jetpbpb0_old->Project("hMB","jtpt","pcollisionEventSelection&&pHBHENoiseFilter");
 
   hTurnon80->Print("base");
   hTurnon65->Print("base");
   hTurnon55->Print("base");
 
-  hTriggerMerged->Add(htest80);
-  hTriggerMerged->Add(htest65);
-  hTriggerMerged->Add(htest55);
+  //hTriggerMerged->Add(htest80);
+  //hTriggerMerged->Add(htest65);
+  //hTriggerMerged->Add(htest55);
 
-  hTurnon80->Divide(hTriggerMerged);
-  hTurnon65->Divide(hTriggerMerged);
-  hTurnon55->Divide(hTriggerMerged);
+  hTurnon80->Divide(hMB);
+  hTurnon65->Divide(hMB);
+  hTurnon55->Divide(hMB);
 
   //plot the trigger turn on curves. 
   TCanvas *ctrig = new TCanvas("ctrig","",800,600);
