@@ -343,6 +343,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb1[i]->Scale(1./4);//delta eta
     hpbpb2[i]->Scale(1./4);
     hpbpb3[i]->Scale(1./4);
+
+    //hpbpb1[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));//centrality bin width. 
+    //hpbpb2[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+    //hpbpb3[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
     
     //add the histograms  
     hpbpbComb[i]->Add(hpbpb1[i]);

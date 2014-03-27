@@ -1000,11 +1000,11 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     cout<<"Plotting MC, Data histograms"<<endl;
 
     cMC = new TCanvas("cMC","MC",1000,800);
-    cMC->Divide(3,2);
+    cMC->Divide(3,3);
     cData = new TCanvas("cData","Data",1000,800);
-    cData->Divide(3,2);
+    cData->Divide(3,3);
     cMCRatio = new TCanvas("cMCRatio","MC ratio Reco to Gen",1000,800);
-    cMCRatio->Divide(3,2);
+    cMCRatio->Divide(3,3);
 
     for(int i = 0;i<=nbins_cent;i++){
 
@@ -1037,7 +1037,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 
       title2 = myLegend(0.18,0.7,0.48,0.8);//data
       title2->SetTextSize(0.06);
-      if(i == 1){
+      if(i == nbins_cent){
 	title2->AddEntry(uhist[i]->hMeas,"PP Data","");
       }else {
 	title2->AddEntry(uhist[i]->hMeas,Form("PbPb Data - %2.0f-%2.0f%%",2.5*boundaries_cent[i],2.5*boundaries_cent[i+1]),"");
@@ -1057,11 +1057,12 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       hMCRecoRatio->SetXTitle("Jet p_T GeV/c");
       hMCRecoRatio->SetYTitle(" ");
       hMCRecoRatio->Draw();
+      if(i<nbins_cent)drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*2.5,boundaries_cent[i+1]*2.5),0.1,0.9,20);
     
 
     }
   
-    cMC->cd(2);
+    cMC->cd(8);
     TLegend *MClegend = myLegend(0.52,0.65,0.85,0.75);
     //uhist[0]->hGen->SetMarkerStyle(20);
     //uhist[0]->hGen->SetMarkerColor(kRed);
@@ -1191,7 +1192,7 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
 	
   // ======================= Reconstructed pp and PbPb spectra =========================================================
   TCanvas * cPbPb = new TCanvas("cPbPb","PbPb",1200,800);
-  cPbPb->Divide(2,1); 
+  cPbPb->Divide(3,3); 
   cPbPb->cd(1);
 	
 	
@@ -1373,10 +1374,11 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
     //      hReproduced->SetMarkerColor(4);
     //      hReproduced->SetMarkerStyle(24);
     uhist[i]->hMeas->Draw("same");    
+    if(i<nbins_cent)drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*2.5,boundaries_cent[i+1]*2.5),0.1,0.9,20);
   }	     
   
 
-  cPbPb->cd(2);
+  cPbPb->cd(8);
   TLegend *pbpblegend = myLegend(0.52,0.65,0.85,0.75);
   //uhist[0]->hMeas->SetMarkerStyle(20);
   //uhist[0]->hMeas->SetMarkerColor(kRed);
@@ -1956,18 +1958,19 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       //hRebinRAAJECSys       ->Scale(1./CorFac[i]/lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       //hRecoRAASmearSys     ->Scale(1./CorFac[i]/lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
       //im commenting this scaling out now due to the scaling in the merge macro. 
-      /*
-      hRebinRAA            ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRebinRAA_Npart      ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRebinMeasRAA        ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRebinBinByBinRAA    ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRecoRAA             ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hMeasRAA             ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRecoRAAJECSys       ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRebinRAASmearSys    ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRebinRAAJECSys      ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      hRecoRAASmearSys     ->Scale(1./lumi/7.65/1000000/0.025/(boundaries_cent[i+1]-boundaries_cent[i])/ncoll[i]);
-      */
+      
+      hRebinRAA            ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRebinRAA_Npart      ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRebinMeasRAA        ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRebinBinByBinRAA    ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRecoRAA             ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hMeasRAA             ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRecoRAAJECSys       ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRebinRAASmearSys    ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRebinRAAJECSys      ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      hRecoRAASmearSys     ->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+      
+      
       hRebinMeasRAA->Divide(hRebinMeasPP);
       hRebinRAA->Divide(hRebinPP);
       hRebinRAA_Npart->Divide(hRebinPP_Npart);
@@ -2186,8 +2189,8 @@ void Unfold_RAA_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, bool
       leg->AddEntry(hRebinRAA,"Bayesian","pl");
       leg->AddEntry(hRebinBinByBinRAA,"Bin-by-bin","pl");
       if (!isMC){
-	leg->AddEntry(smearing,"Smearing","pl");
-	leg->AddEntry(gsvd,"GSVD","pl");
+	//leg->AddEntry(smearing,"Smearing","pl");
+	//leg->AddEntry(gsvd,"GSVD","pl");
       }
       leg->AddEntry(hRebinMeasRAA,"No unfolding","pl");
       leg->Draw();
