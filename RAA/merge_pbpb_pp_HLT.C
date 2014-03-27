@@ -311,6 +311,45 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   const int nbins_cent = 6;
   Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
   Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
+
+  Double_t jet55or65CentWeight[nbins_cent] = {0.3734,0.2509,0.3222,0.0352,0.0066,0.0010}; //total = 0.9983
+  Double_t jet80or90CentWeight[nbins_cent] = {0.2334,0.1764,0.3601,0.1117,0.0283,0.0054}; //total = 0.9153
+
+  /*
+    root [4] evt55->GetEntries()
+    (const Long64_t)766546
+    root [5] evt55->GetEntries("hiBin>=0&&hiBin<=10")
+    (Long64_t)310076
+    root [6] evt55->GetEntries("hiBin>=0&&hiBin<10")
+    (Long64_t)286263
+    root [7] evt55->GetEntries("hiBin>=10&&hiBin<20")
+    (Long64_t)192346
+    root [8] evt55->GetEntries("hiBin>=20&&hiBin<60")
+    (Long64_t)247011
+    root [9] evt55->GetEntries("hiBin>=60&&hiBin<100")
+    (Long64_t)27042
+    root [10] evt55->GetEntries("hiBin>=100&&hiBin<140")
+    (Long64_t)5111
+    root [11] evt55->GetEntries("hiBin>=140&&hiBin<180")
+    (Long64_t)819
+    
+    root [12] evt80->GetEntries()
+    (const Long64_t)369578
+    root [13] evt80->GetEntries("hiBin>=0&&hiBin<10")
+    (Long64_t)86272
+    root [14] evt80->GetEntries("hiBin>=10&&hiBin<20")
+    (Long64_t)65193
+    root [15] evt80->GetEntries("hiBin>=20&&hiBin<60")
+    (Long64_t)133084
+    root [16] evt80->GetEntries("hiBin>=60&&hiBin<100")
+    (Long64_t)41318
+    root [17] evt80->GetEntries("hiBin>=100&&hiBin<140")
+    (Long64_t)10459
+    root [18] evt80->GetEntries("hiBin>=140&&hiBin<180")
+    (Long64_t)2021
+
+  */
+
   //const int nbins_cent = 1;
   //Double_t boundaries_cent[nbins_cent+1] = {0,40};
   //Double_t ncoll[nbins_cent] = {362.24}; //use taa instead of ncoll. 
@@ -400,9 +439,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
     cout<<"centrality boundary = "<<boundaries_cent[i]*2.5<<" - "<<boundaries_cent[i+1]*2.5<<endl;
 
-    pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
+    pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
+    pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
 
     hpbpb1[i] = new TH1F(Form("hpbpb1_%d",i),"",1000,0,1000);
     //hpbpb1[i]->Print("base");
@@ -443,9 +482,16 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb2[i]->Scale(1./4);
     hpbpb3[i]->Scale(1./4);
 
-    hpbpb1[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));//centrality bin width. 
+    //hpbpb1[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i])/jet80or95CentWeight[i]);//centrality bin width and scaling by the centrality events fraction. 
+    //hpbpb2[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i])/jet55or65CentWeight[i]);
+    //hpbpb3[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i])/jet55or65CentWeight[i]);
+
+    hpbpb1[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));//centrality bin width 
     hpbpb2[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
     hpbpb3[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+
+    //might have to end up adding a centrality weight - the ratio of events per centrality class. 
+    
     
     //add the histograms  
     hpbpbComb[i]->Add(hpbpb1[i]);
@@ -588,12 +634,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   }
 
   c3->SaveAs(Form("RAA_March2014_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
-
-
-  
-
-
-
 
   //plot the statistical uncertainty here
   //statistical error/meanvalue as a function of pt for the combined spectra. 
