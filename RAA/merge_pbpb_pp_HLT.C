@@ -246,6 +246,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpp1_v2->AddFriend(evtpp1_v2);
   jetpp2_v2->AddFriend(evtpp2_v2);
 
+  
+  /*
+
   //get all the pp spectra here: 
   TCut pp3 = "abs(eta)<2&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
   
@@ -300,6 +303,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   divideBinWidth(hpp3);
 
 
+  */
+
   //these were for doing it from the forests directly without the proper JEC's 
   //add the centrality cuts: 
 
@@ -339,11 +344,12 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb1->Project("htest55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1)");
   htest55->Print("base");
   */
-  jetpbpb2_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1&&pcollisionEventSelection&&pHBHENoiseFilter");
-  jetpbpb1_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1&&pcollisionEventSelection&&pHBHENoiseFilter");
-  jetpbpb1_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1&&pcollisionEventSelection&&pHBHENoiseFilter");
+  jetpbpb2_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1_Prescl*(HLT_HIJet80_v1&&pcollisionEventSelection&&pHBHENoiseFilter)");
+  jetpbpb1_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1_Prescl*(HLT_HIJet65_v1&&pcollisionEventSelection&&pHBHENoiseFilter)");
+  jetpbpb1_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&pcollisionEventSelection&&pHBHENoiseFilter)");
 
-  jetpbpb0_old->Project("hMB","jtpt","pcollisionEventSelection&&pHBHENoiseFilter");
+  TCut MB_prescl = "HLT_HIMinBiasHfOrBSC_v1_Prescl*(HLT_HIMinBiasHfOrBSC_v1&&pcollisionEventSelection&&pHBHENoiseFilter)";
+  jetpbpb0_old->Project("hMB","jtpt","30"*MB_prescl);
 
   hTurnon80->Print("base");
   hTurnon65->Print("base");
@@ -367,7 +373,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hTurnon55->SetMarkerColor(kYellow);
 
   hTurnon80->SetAxisRange(0,150,"X");
-  hTurnon80->SetAxisRange(0,1.3,"Y");
+  //hTurnon80->SetAxisRange(0,1.3,"Y");
   hTurnon80->SetXTitle("offline Jet p_{T} GeV/c");
   hTurnon80->SetYTitle("Trigger Efficiency");
   hTurnon80->GetXaxis()->SetTitleOffset(1.3);
@@ -376,7 +382,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hTurnon55->Draw("same");
 				
 
-  TLegend *title3 = myLegend(0.68,0.15,0.92,0.45);
+  TLegend *title3 = myLegend(0.28,0.65,0.42,0.85);
 
   title3->AddEntry(hTurnon55,"HLT_HIJet55","pl");
   title3->AddEntry(hTurnon65,"HLT_HIJet65","pl");
@@ -388,7 +394,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   drawText("PbPb #int dt = 149.382 #mu b^{-1}, #sqrt{s_{NN}}=2.76 TeV",0.5,0.93,16);
 
   ctrig->SaveAs("RAA_trigger_turnon.pdf","RECREATE");
-
+  /*
   //centrality loop for the pbpb files/histograms 
   for(int i = 0;i<nbins_cent;i++){
 
@@ -504,7 +510,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
       title->SetTextSize(0.03);
       title->Draw();
       //drawText("PbPb data",0.3,0.65,20);  
-      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.2,0.8,14);
+      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.1,0.83,14);
       
     }
     
@@ -577,11 +583,17 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hRAA[i]->Draw();
     drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*2.5,boundaries_cent[i+1]*2.5),0.1,0.9,20);
 
-    if(i == 5)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,14);
+    if(i == 5)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.2,0.56,14);
     //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
   }
 
   c3->SaveAs(Form("RAA_March2014_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
+
+
+  */
+
+
+
 
   //plot the statistical uncertainty here
   //statistical error/meanvalue as a function of pt for the combined spectra. 
@@ -710,6 +722,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   */
 
   //Create output file and save them. 
+  
+  /*
   TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
   for(int i = 0;i<nbins_cent;i++){
     hpbpb1[i]->Write();
@@ -729,7 +743,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //hPPGen->Write();
   f.Close();
   
-  
+  */
 
 
 }
