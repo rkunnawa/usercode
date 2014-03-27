@@ -247,7 +247,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpp2_v2->AddFriend(evtpp2_v2);
 
   
-  /*
+  
 
   //get all the pp spectra here: 
   TCut pp3 = "abs(eta)<2&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
@@ -303,7 +303,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   divideBinWidth(hpp3);
 
 
-  */
+  
 
   //these were for doing it from the forests directly without the proper JEC's 
   //add the centrality cuts: 
@@ -394,7 +394,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   drawText("PbPb #int dt = 149.382 #mu b^{-1}, #sqrt{s_{NN}}=2.76 TeV",0.5,0.93,16);
 
   ctrig->SaveAs("RAA_trigger_turnon.pdf","RECREATE");
-  /*
+  
   //centrality loop for the pbpb files/histograms 
   for(int i = 0;i<nbins_cent;i++){
 
@@ -590,7 +590,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   c3->SaveAs(Form("RAA_March2014_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
 
 
-  */
+  
 
 
 
