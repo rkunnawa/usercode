@@ -149,6 +149,7 @@ TH1F *rebin(TH1F *h, char *histName)
 void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   
   TH1::SetDefaultSumw2();
+  gStyle->SetOptStat(0);
 
   // number convension:
   // 0 - MB
@@ -159,12 +160,17 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   
   //data files - PbPb 
   TFile *fpbpb0 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_Forest_Track8_Jet21/0.root");
-  TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
-  TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
-  
+  //TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
+  TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26/0.root");
+
+  //TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
+  TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26/0.root");
+
+
   // data files - pp 
   TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet80_v2.root");
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet40_v2.root");
+
   /*
   //loading the files for doing the JEC's on the fly
   string fJECL2AK3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AK3PF_offline.txt";
@@ -244,10 +250,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //(double)2.34995051108819153e+00
   //ive commented this below - to just check for the pbpb histograms to load. 
   
-  jetpp1_v2->Project("hpp1","pt","abs(eta)<2&&jet80&&chMax/pt>0.01");
+  jetpp1_v2->Project("hpp1","pt","abs(eta)<2&&jet80&&(chMax/pt)>0.01");
   hpp1->Print("base");
  
-  jetpp2_v2->Project("hpp2","pt","abs(eta)<2&&jet60&&!jet80&&chMax/pt>0.01");
+  jetpp2_v2->Project("hpp2","pt","abs(eta)<2&&jet60&&!jet80&&(chMax/pt)>0.01");
   hpp2->Print("base");
 
   jetpp2_v2->Project("hpp3","pt","9.25038"*pp3);
@@ -300,14 +306,78 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TH1F *hpbpbComb[nbins_cent];
   //TH1F* htest = new TH1F("htest","",1000,0,1000);
 
+  TH1F* hTurnon80 = new TH1F("hTurnon80","",150,0,150);
+  TH1F* hTurnon65 = new TH1F("hTurnon65","",150,0,150);
+  TH1F* hTurnon55 = new TH1F("hTurnon55","",150,0,150);
+
+  TH1F* hTriggerMerged = new TH1F("hTriggerMerged","",150,0,150);
+  TH1F* htest80 = new TH1F("htest80","",150,0,150);
+  TH1F* htest65 = new TH1F("htest65","",150,0,150);
+  TH1F* htest55 = new TH1F("htest55","",150,0,150);
+
+  jetpbpb2->Project("htest80","jtpt","HLT_HIJet80_v1");
+  htest80->Print("base");
+  jetpbpb1->Project("htest65","jtpt","HLT_HIJet65_v1&&!HLT_HIJet80_v1");
+  htest65->Print("base");
+  jetpbpb1->Project("htest55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1)");
+  htest55->Print("base");
+
+  jetpbpb2->Project("hTurnon80","jtpt","HLT_HIJet80_v1");
+  jetpbpb1->Project("hTurnon65","jtpt","HLT_HIJet65_v1");
+  jetpbpb1->Project("hTurnon55","jtpt","HLT_HIJet55_v1");
+
+  hTurnon80->Print("base");
+  hTurnon65->Print("base");
+  hTurnon55->Print("base");
+
+  hTriggerMerged->Add(htest80);
+  hTriggerMerged->Add(htest65);
+  hTriggerMerged->Add(htest55);
+
+  hTurnon80->Divide(hTriggerMerged);
+  hTurnon65->Divide(hTriggerMerged);
+  hTurnon55->Divide(hTriggerMerged);
+
+  //plot the trigger turn on curves. 
+  TCanvas *ctrig = new TCanvas("ctrig","",800,600);
+  hTurnon80->SetMarkerStyle(20);
+  hTurnon80->SetMarkerColor(kCyan);
+  hTurnon65->SetMarkerStyle(20);
+  hTurnon65->SetMarkerColor(kRed);
+  hTurnon55->SetMarkerStyle(20);
+  hTurnon55->SetMarkerColor(kYellow);
+
+  hTurnon80->SetAxisRange(0,150,"X");
+  hTurnon80->SetAxisRange(0,1.3,"Y");
+  hTurnon80->SetXTitle("offline Jet p_{T} GeV/c");
+  hTurnon80->SetYTitle("Trigger Efficiency");
+  hTurnon80->GetXaxis()->SetTitleOffset(1.3);
+  hTurnon80->Draw();
+  hTurnon65->Draw("same");
+  hTurnon55->Draw("same");
+				
+
+  TLegend *title3 = myLegend(0.68,0.15,0.92,0.45);
+
+  title3->AddEntry(hTurnon55,"HLT_HIJet55","pl");
+  title3->AddEntry(hTurnon65,"HLT_HIJet65","pl");
+  title3->AddEntry(hTurnon80,"HLT_HIJet80","pl");
+  title3->SetTextSize(0.03);
+  title3->Draw();
+  
+  putCMSPrel(0.1,0.92,0.06);
+  drawText("PbPb #int dt = 149.382 #mu b^{-1}, #sqrt{s_{NN}}=2.76 TeV",0.5,0.93,16);
+
+  ctrig->SaveAs("RAA_trigger_turnon.pdf","RECREATE");
+
   //centrality loop for the pbpb files/histograms 
   for(int i = 0;i<nbins_cent;i++){
 
     cout<<"centrality boundary = "<<boundaries_cent[i]*2.5<<" - "<<boundaries_cent[i+1]*2.5<<endl;
 
-    pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&chargedMax/jtpt>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%f&&hiBin<%f",boundaries_cent[i],boundaries_cent[i+1]);
 
     hpbpb1[i] = new TH1F(Form("hpbpb1_%d",i),"",1000,0,1000);
     //hpbpb1[i]->Print("base");
@@ -335,18 +405,22 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     // HLT_65    |   3.195
     // HLT_55    |   2.734
     // 
+
+    // the files which im using now is only a fraction of events of that:
+    // for the PbPb 55 or 65 file its 0.977
+    // for the PbPb 80 file its 0.304
     
-    hpbpb1[i]->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
-    hpbpb2[i]->Scale(1./3.195e6);
-    hpbpb3[i]->Scale(1./2.734e6);
+    hpbpb1[i]->Scale(1./149.382e6/0.304);//respective lumi seen by the trigger all in inverse micro barns 
+    hpbpb2[i]->Scale(1./3.195e6/0.977);
+    hpbpb3[i]->Scale(1./2.734e6/0.977);
     
     hpbpb1[i]->Scale(1./4);//delta eta
     hpbpb2[i]->Scale(1./4);
     hpbpb3[i]->Scale(1./4);
 
-    //hpbpb1[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));//centrality bin width. 
-    //hpbpb2[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
-    //hpbpb3[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+    hpbpb1[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));//centrality bin width. 
+    hpbpb2[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+    hpbpb3[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
     
     //add the histograms  
     hpbpbComb[i]->Add(hpbpb1[i]);
@@ -411,7 +485,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
       title->SetTextSize(0.03);
       title->Draw();
       //drawText("PbPb data",0.3,0.65,20);  
-      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.35,0.56,14);
+      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.2,0.8,14);
       
     }
     
@@ -449,7 +523,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hpp1->Draw("same");
   hppComb->Draw("same");
   TLegend *title2 = myLegend(0.25,0.65,0.55,0.8);
-  title2->AddEntry(hppComb,"PP 2.76 TeV Data  Merged","pl");
+  title2->AddEntry(hppComb,"PP 2.76 TeV Data  Merged with Doga's residual corrections","pl");
   title2->AddEntry(hpp3,"w_{3} * (HLT_40 && !HLT_60 && !HLT_80)","pl");
   title2->AddEntry(hpp2,"HLT_60 && !HLT_80","pl");
   title2->AddEntry(hpp1,"HLT_80","pl");
