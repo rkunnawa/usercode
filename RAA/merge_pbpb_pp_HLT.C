@@ -164,12 +164,16 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26/0.root");
 
   TFile *fpbpb2_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
-  TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26/0.root");
-
+  TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26_full/0.root");
 
   // data files - pp 
   TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet80_v2.root");
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet40_v2.root");
+
+  //declare the output file now: 
+  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
+
+
 
   /*
   //loading the files for doing the JEC's on the fly
@@ -217,6 +221,12 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TTree* skmpbpb2 = (TTree*)fpbpb2->Get("skimanalysis/HltTree");
   TTree* skmpbpb2_old = (TTree*)fpbpb2_old->Get("skimanalysis/HltTree");
 
+  TTree* hltobjpbpb0_old = (TTree*)fpbpb0_old->Get("hltobject/jetObjTree");
+  TTree* hltobjpbpb1 = (TTree*)fpbpb1->Get("hltobject/jetObjTree");
+  TTree* hltobjpbpb1_old = (TTree*)fpbpb1_old->Get("hltobject/jetObjTree");
+  TTree* hltobjpbpb2 = (TTree*)fpbpb2->Get("hltobject/jetObjTree");
+  TTree* hltobjpbpb2_old = (TTree*)fpbpb2_old->Get("hltobject/jetObjTree");
+
   jetpbpb0_old->AddFriend(evtpbpb0_old);
   jetpbpb1->AddFriend(evtpbpb1);
   jetpbpb1_old->AddFriend(evtpbpb1_old);
@@ -234,6 +244,12 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb1_old->AddFriend(skmpbpb1_old);
   jetpbpb2->AddFriend(skmpbpb2);
   jetpbpb2_old->AddFriend(skmpbpb2_old);
+
+  jetpbpb0_old->AddFriend(hltobjpbpb0_old);
+  jetpbpb1->AddFriend(hltobjpbpb1);
+  jetpbpb1_old->AddFriend(hltobjpbpb1_old);
+  jetpbpb2->AddFriend(hltobjpbpb2);
+  jetpbpb2_old->AddFriend(hltobjpbpb2_old);
 
 
   //do it for the pp - need to check up on this. 
@@ -312,9 +328,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
   Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
 
-  Double_t jet55or65CentWeight[nbins_cent] = {0.3734,0.2509,0.3222,0.0352,0.0066,0.0010}; //total = 0.9983
-  Double_t jet80or90CentWeight[nbins_cent] = {0.2334,0.1764,0.3601,0.1117,0.0283,0.0054}; //total = 0.9153
+  //Double_t jet55or65CentWeight[nbins_cent] = {0.3734,0.2509,0.3222,0.0352,0.0066,0.0010}; //total = 0.9983
+  //Double_t jet80or90CentWeight[nbins_cent] = {0.2334,0.1764,0.3601,0.1117,0.0283,0.0054}; //total = 0.9153
 
+  // the following values were for the hiforest with smaller entries. now we have the larger (still nowhere close to the official size) forest and these values are outdated. 
   /*
     root [4] evt55->GetEntries()
     (const Long64_t)766546
@@ -360,9 +377,15 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TCut pbpb2[nbins_cent];
   TCut pbpb3[nbins_cent];
 
+  TCut pbpb80[nbins_cent];
+  TCut pbpb65[nbins_cent];
+  TCut pbpb55[nbins_cent];
+
   TH1F *hpbpb1[nbins_cent],*hpbpb2[nbins_cent],*hpbpb3[nbins_cent];
   TH1F *hpbpbComb[nbins_cent];
   //TH1F* htest = new TH1F("htest","",1000,0,1000);
+  TH1F *hpbpb_80[nbins_cent],*hpbpb_65[nbins_cent],*hpbpb_55[nbins_cent]; //histos to check the separate spectra, weighted by event by event prescl 
+  // I should also add the trigger objects merging method. 
 
   TH1F* hTurnon80 = new TH1F("hTurnon80","",150,0,150);
   TH1F* hTurnon65 = new TH1F("hTurnon65","",150,0,150);
@@ -443,6 +466,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
     pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
 
+    pbpb80[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb65[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb55[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],boundaries_cent[i+1]);
+
     hpbpb1[i] = new TH1F(Form("hpbpb1_%d",i),"",1000,0,1000);
     //hpbpb1[i]->Print("base");
     hpbpb2[i] = new TH1F(Form("hpbpb2_%d",i),"",1000,0,1000);
@@ -462,6 +489,13 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb3[i]->Print("base");
     //divideBinWidth(hpbpb3);
 
+    jetpbpb2->Project("hpbpb_80","jtpt","HLT_HIJet80_v1_Prescl*"pbpb80[i]);
+    hpbpb_80[i]->Print("base");
+    jetpbpb1->Project("hpbpb_65","jtpt","HLT_HIJet65_v1_Prescl*"pbpb65[i]);
+    hpbpb_65[i]->Print("base");
+    jetpbpb1->Project("hpbpb_55","jtpt","HLT_HIJet55_v1_Prescl*"pbpb55[i]);
+    hpbpb_55[i]->Print("base");
+
     //scale the PbPb histograms before adding them
     //we have to scale them according to the lumi of the Jet80 file. 
     // HLT file  |   Lumi inverse micro barns 
@@ -474,7 +508,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     // for the PbPb 55 or 65 file its 0.977
     // for the PbPb 80 file its 0.304
     
-    hpbpb1[i]->Scale(1./149.382e6/0.304);//respective lumi seen by the trigger all in inverse micro barns 
+    hpbpb1[i]->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
     hpbpb2[i]->Scale(1./3.195e6/0.977);
     hpbpb3[i]->Scale(1./2.734e6/0.977);
     
@@ -486,12 +520,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     //hpbpb2[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i])/jet55or65CentWeight[i]);
     //hpbpb3[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i])/jet55or65CentWeight[i]);
 
-    hpbpb1[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));//centrality bin width 
-    hpbpb2[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
-    hpbpb3[i]->Scale(1./0.025/(boundaries_cent[i+1]-boundaries_cent[i]));
+    hpbpb1[i]->Scale(1./0.005/(5*boundaries_cent[i+1]-5*boundaries_cent[i]));//centrality bin width 
+    hpbpb2[i]->Scale(1./0.005/(5*boundaries_cent[i+1]-5*boundaries_cent[i]));
+    hpbpb3[i]->Scale(1./0.005/(5*boundaries_cent[i+1]-5*boundaries_cent[i]));
 
     //might have to end up adding a centrality weight - the ratio of events per centrality class. 
-    
     
     //add the histograms  
     hpbpbComb[i]->Add(hpbpb1[i]);
@@ -510,6 +543,238 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     divideBinWidth(hpbpb1[i]);
     
   }
+
+  // do the trigger object merging here: 
+  // this has to be done in the event loop which means that we have to get the 
+  // create the trees and set the branch address
+  // jet tree
+
+  // similarly here 0 - MB file, 1 - 55or65, 2 - 80or95
+  
+  //file 0:" 
+  // jet tree
+  int nrefe_0;
+  float pt_0[1000];
+  //float old_pt3[1000];
+  float raw_0[1000];
+  float eta_0[1000];
+  float eta_0_CM[1000];
+  float phi_0[1000];
+  float chMax_0[1000];
+  float trkMax_0[1000];
+  float chSum_0[1000];
+  float phSum_0[1000];
+  float neSum_0[1000];
+  float trkSum_0[1000];
+  float phMax_0[1000];
+  float neMax_0[1000];
+
+  // event tree
+  int evt_0;
+  int run_0;
+  int lumi_0;
+  int hiBin_0;
+  float vx_0;
+  float vy_0;
+  float vz_0;
+  int hiNtracks_0;
+  float hiHFminus_0;
+  float hiHFplus_0;
+  float hiHFplusEta4_0;
+  float hiHFminusEta4_0;
+  int pPAcollisionEventSelectionPA_0;
+  int pHBHENoiseFilter_0;
+  int pprimaryvertexFilter_0;
+  int pVertexFilterCutGplus_0;
+
+  // trigger tree
+  int L1_MB_0;
+  int L1_MB_p_0;
+  int jetMB_0;
+  int jet55_0;
+  int jet65_0;
+  int jet80_0;
+  int jetMB_p_0;
+  int jet55_p_0;
+  int jet65_p_0;
+  int jet80_p_0;
+
+  // trigger object tree - this contains the maximum value of the particular trigger object. 
+  float trgObj_id_0;
+  float trgObj_pt_0;
+  float trgObj_eta_0;
+  float trgObj_phi_0;
+  float trgObj_mass_0;
+
+  //file 1: 
+  // jet tree
+  int nrefe_1;
+  float pt_1[1000];
+  //float old_pt3[1000];
+  float raw_1[1000];
+  float eta_1[1000];
+  float eta_1_CM[1000];
+  float phi_1[1000];
+  float chMax_1[1000];
+  float trkMax_1[1000];
+  float chSum_1[1000];
+  float phSum_1[1000];
+  float neSum_1[1000];
+  float trkSum_1[1000];
+  float phMax_1[1000];
+  float neMax_1[1000];
+
+  // event tree
+  int evt_1;
+  int run_1;
+  int lumi_1;
+  int hiBin_1;
+  float vx_1;
+  float vy_1;
+  float vz_1;
+  int hiNtracks_1;
+  float hiHFminus_1;
+  float hiHFplus_1;
+  float hiHFplusEta4_1;
+  float hiHFminusEta4_1;
+  int pPAcollisionEventSelectionPA_1;
+  int pHBHENoiseFilter_1;
+  int pprimaryvertexFilter_1;
+  int pVertexFilterCutGplus_1;
+
+  // trigger tree
+  int L1_MB_1;
+  int L1_MB_p_1;
+  int jetMB_1;
+  int jet55_1;
+  int jet65_1;
+  int jet80_1;
+  int jetMB_p_1;
+  int jet55_p_1;
+  int jet65_p_1;
+  int jet80_p_1;
+
+
+  // trigger object tree - this contains the maximum value of the particular trigger object. 
+  float trgObj_id_1;
+  float trgObj_pt_1;
+  float trgObj_eta_1;
+  float trgObj_phi_1;
+  float trgObj_mass_1;
+  
+  //file 2: 
+  // jet tree
+  int nrefe_2;
+  float pt_2[1000];
+  //float old_pt3[1000];
+  float raw_2[1000];
+  float eta_2[1000];
+  float eta_2_CM[1000];
+  float phi_2[1000];
+  float chMax_2[1000];
+  float trkMax_2[1000];
+  float chSum_2[1000];
+  float phSum_2[1000];
+  float neSum_2[1000];
+  float trkSum_2[1000];
+  float phMax_2[1000];
+  float neMax_2[1000];
+
+  // event tree
+  int evt_2;
+  int run_2;
+  int lumi_2;
+  int hiBin_2;
+  float vx_2;
+  float vy_2;
+  float vz_2;
+  int hiNtracks_2;
+  float hiHFminus_2;
+  float hiHFplus_2;
+  float hiHFplusEta4_2;
+  float hiHFminusEta4_2;
+  int pPAcollisionEventSelectionPA_2;
+  int pHBHENoiseFilter_2;
+  int pprimaryvertexFilter_2;
+  int pVertexFilterCutGplus_2;
+
+  // trigger tree
+  int L1_MB_2;
+  int L1_MB_p_2;
+  int jetMB_2;
+  int jet55_2;
+  int jet65_2;
+  int jet80_2;
+  int jetMB_p_2;
+  int jet55_p_2;
+  int jet65_p_2;
+  int jet80_p_2;
+
+
+  // trigger object tree - this contains the maximum value of the particular trigger object. 
+  float trgObj_id_2;
+  float trgObj_pt_2;
+  float trgObj_eta_2;
+  float trgObj_phi_2;
+  float trgObj_mass_2;
+  
+  
+  //set the branch addresses:  - one of the most boring parts of the code: 
+  jetpbpb0_old->SetBranchAddress("evt",&evt_0);
+  jetpbpb0_old->SetBranchAddress("run",&run_0);
+  jetpbpb0_old->SetBranchAddress("lumi",&lumi_0);
+  jetpbpb0_old->SetBranchAddress("hiBin",&hiBin_0);
+  jetpbpb0_old->SetBranchAddress("vz",&vz_0);
+  jetpbpb0_old->SetBranchAddress("vx",&vx_0);
+  jetpbpb0_old->SetBranchAddress("vy",&vy_0);
+  jetpbpb0_old->SetBranchAddress("hiNtracks",&hiNtracks_0);
+  jetpbpb0_old->SetBranchAddress("hiHFminus",&hiHFminus_0);
+  jetpbpb0_old->SetBranchAddress("hiHFplus",&hiHFplus_0);
+  jetpbpb0_old->SetBranchAddress("hiHFplusEta4",&hiHFplusEta4_0);
+  jetpbpb0_old->SetBranchAddress("hiHFminusEta4",&hiHFminusEta4_0);
+  jetpbpb0_old->SetBranchAddress("pPAcollisionEventSelectionPA",&pPAcollisionEventSelectionPA_0);
+  jetpbpb0_old->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_0);
+  jetpbpb0_old->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_0);
+  jetpbpb0_old->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_0);
+  
+  jetpbpb0_old->SetBranchAddress("nref",&nrefe_0);
+  jetpbpb0_old->SetBranchAddress("jtpt",&pt_0);
+  jetpbpb0_old->SetBranchAddress("jteta",&eta_0);
+  jetpbpb0_old->SetBranchAddress("jtphi",&phi_0);
+  jetpbpb0_old->SetBranchAddress("rawpt",&raw_0);
+  jetpbpb0_old->SetBranchAddress("chargedMax",&chMax_0);
+  jetpbpb0_old->SetBranchAddress("chargedSum",&chSum_0);
+  jetpbpb0_old->SetBranchAddress("trackMax",&trkMax_0);
+  jetpbpb0_old->SetBranchAddress("trackSum",&trkSum_0);
+  jetpbpb0_old->SetBranchAddress("photonMax",&phMax_0);
+  jetpbpb0_old->SetBranchAddress("photonSum",&phSum_0);
+  jetpbpb0_old->SetBranchAddress("neutralMax",&neMax_0);
+  jetpbpb0_old->SetBranchAddress("neutralSum",&neSum_0);
+  /*
+    jetTree->SetBranchAddress("nTrk",&nTrack);
+    jetTree->SetBranchAddress("trkPt",&trkPt);
+    jetTree->SetBranchAddress("trkEta",&trkEta);
+    jetTree->SetBranchAddress("trkPhi",&trkPhi);
+    jetTree->SetBranchAddress("highPurity",&highPurity);
+    jetTree->SetBranchAddress("trkDz1",&trkDz1);
+    jetTree->SetBranchAddress("trkDzError1",&trkDzError1);
+    jetTree->SetBranchAddress("trkDxy1",&trkDxy1);
+    jetTree->SetBranchAddress("trkDxyError1",&trkDxyError1);
+  */
+  jetpbpb0_old->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_0);
+  jetpbpb0_old->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_0);
+  jetpbpb0_old->SetBranchAddress("L1_ZeroBias",&L1_MB_0);
+  jetpbpb0_old->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_0);
+  jetpbpb0_old->SetBranchAddress("HLT_HIJet55_v1",&jet55_0);
+  jetpbpb0_old->SetBranchAddress("HLT_HIJet55_v1_Prescl",&jet55_p_0);
+  jetpbpb0_old->SetBranchAddress("HLT_HIJet65_v1",&jet65_0);
+  jetpbpb0_old->SetBranchAddress("HLT_HIJet65_v1_Prescl",&jet65_p_0);
+  jetpbpb0_old->SetBranchAddress("HLT_HIJet80_v1",&jet80_0);
+  jetpbpb0_old->SetBranchAddress("HLT_HIJet80_v1_Prescl",&jet80_p_0);
+
+  
+  
+
   
   TCanvas *c1 = new TCanvas("c1","",1000,800);
   c1->Divide(3,2);
@@ -763,8 +1028,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   //Create output file and save them. 
   
-  /*
-  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
+  
   for(int i = 0;i<nbins_cent;i++){
     hpbpb1[i]->Write();
     hpbpb2[i]->Write();
@@ -783,7 +1047,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //hPPGen->Write();
   f.Close();
   
-  */
+  
 
 
 }
