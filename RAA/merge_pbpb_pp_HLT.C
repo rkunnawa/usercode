@@ -476,6 +476,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb3[i] = new TH1F(Form("hpbpb3_%d",i),"",1000,0,1000);
     hpbpbComb[i] = new TH1F(Form("hpbpbComb_%d",i),"",1000,0,1000);
 
+    hpbpb_80[i] = new TH1F(Form("hpbpb_80_%d",i),"",1000,0,1000);
+    hpbpb_65[i] = new TH1F(Form("hpbpb_65_%d",i),"",1000,0,1000);
+    hpbpb_55[i] = new TH1F(Form("hpbpb_55_%d",i),"",1000,0,1000);
+
     jetpbpb2->Project(Form("hpbpb1_%d",i),"jtpt",pbpb1[i]);
     hpbpb1[i]->Print("base");
     //divideBinWidth(hpbpb1);
@@ -489,11 +493,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb3[i]->Print("base");
     //divideBinWidth(hpbpb3);
 
-    jetpbpb2->Project("hpbpb_80","jtpt","HLT_HIJet80_v1_Prescl*"pbpb80[i]);
+    jetpbpb2->Project(Form("hpbpb_80_%d",i),"jtpt","HLT_HIJet80_v1_Prescl*"pbpb80[i]);
     hpbpb_80[i]->Print("base");
-    jetpbpb1->Project("hpbpb_65","jtpt","HLT_HIJet65_v1_Prescl*"pbpb65[i]);
+    jetpbpb1->Project(Form("hpbpb_65_%d",i),"jtpt","HLT_HIJet65_v1_Prescl*"pbpb65[i]);
     hpbpb_65[i]->Print("base");
-    jetpbpb1->Project("hpbpb_55","jtpt","HLT_HIJet55_v1_Prescl*"pbpb55[i]);
+    jetpbpb1->Project(Form("hpbpb_55_%d",i),"jtpt","HLT_HIJet55_v1_Prescl*"pbpb55[i]);
     hpbpb_55[i]->Print("base");
 
     //scale the PbPb histograms before adding them
@@ -582,7 +586,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   float hiHFplus_0;
   float hiHFplusEta4_0;
   float hiHFminusEta4_0;
-  int pPAcollisionEventSelectionPA_0;
+  int pcollisionEventSelection_0;
   int pHBHENoiseFilter_0;
   int pprimaryvertexFilter_0;
   int pVertexFilterCutGplus_0;
@@ -637,7 +641,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   float hiHFplus_1;
   float hiHFplusEta4_1;
   float hiHFminusEta4_1;
-  int pPAcollisionEventSelectionPA_1;
+  int pcollisionEventSelection_1;
   int pHBHENoiseFilter_1;
   int pprimaryvertexFilter_1;
   int pVertexFilterCutGplus_1;
@@ -693,7 +697,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   float hiHFplus_2;
   float hiHFplusEta4_2;
   float hiHFminusEta4_2;
-  int pPAcollisionEventSelectionPA_2;
+  int pcollisionEventSelection_2;
   int pHBHENoiseFilter_2;
   int pprimaryvertexFilter_2;
   int pVertexFilterCutGplus_2;
@@ -732,7 +736,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb0_old->SetBranchAddress("hiHFplus",&hiHFplus_0);
   jetpbpb0_old->SetBranchAddress("hiHFplusEta4",&hiHFplusEta4_0);
   jetpbpb0_old->SetBranchAddress("hiHFminusEta4",&hiHFminusEta4_0);
-  jetpbpb0_old->SetBranchAddress("pPAcollisionEventSelectionPA",&pPAcollisionEventSelectionPA_0);
+  jetpbpb0_old->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_0);
   jetpbpb0_old->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_0);
   jetpbpb0_old->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_0);
   jetpbpb0_old->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_0);
@@ -772,8 +776,169 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb0_old->SetBranchAddress("HLT_HIJet80_v1",&jet80_0);
   jetpbpb0_old->SetBranchAddress("HLT_HIJet80_v1_Prescl",&jet80_p_0);
 
+  jetpbpb0_old->SetBranchAddress("id",&trgObj_id_0);
+  jetpbpb0_old->SetBranchAddress("pt",&trgObj_pt_0);
+  jetpbpb0_old->SetBranchAddress("eta",&trgObj_eta_0);
+  jetpbpb0_old->SetBranchAddress("phi",&trgObj_phi_0);
+  jetpbpb0_old->SetBranchAddress("mass",&trgObj_mass_0);
+
+  //set the branch addresses:  - one of the most boring parts of the code: 
+  jetpbpb1->SetBranchAddress("evt",&evt_1);
+  jetpbpb1->SetBranchAddress("run",&run_1);
+  jetpbpb1->SetBranchAddress("lumi",&lumi_1);
+  jetpbpb1->SetBranchAddress("hiBin",&hiBin_1);
+  jetpbpb1->SetBranchAddress("vz",&vz_1);
+  jetpbpb1->SetBranchAddress("vx",&vx_1);
+  jetpbpb1->SetBranchAddress("vy",&vy_1);
+  jetpbpb1->SetBranchAddress("hiNtracks",&hiNtracks_1);
+  jetpbpb1->SetBranchAddress("hiHFminus",&hiHFminus_1);
+  jetpbpb1->SetBranchAddress("hiHFplus",&hiHFplus_1);
+  jetpbpb1->SetBranchAddress("hiHFplusEta4",&hiHFplusEta4_1);
+  jetpbpb1->SetBranchAddress("hiHFminusEta4",&hiHFminusEta4_1);
+  jetpbpb1->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_1);
+  jetpbpb1->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_1);
+  jetpbpb1->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_1);
+  jetpbpb1->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_1);
   
+  jetpbpb1->SetBranchAddress("nref",&nrefe_1);
+  jetpbpb1->SetBranchAddress("jtpt",&pt_1);
+  jetpbpb1->SetBranchAddress("jteta",&eta_1);
+  jetpbpb1->SetBranchAddress("jtphi",&phi_1);
+  jetpbpb1->SetBranchAddress("rawpt",&raw_1);
+  jetpbpb1->SetBranchAddress("chargedMax",&chMax_1);
+  jetpbpb1->SetBranchAddress("chargedSum",&chSum_1);
+  jetpbpb1->SetBranchAddress("trackMax",&trkMax_1);
+  jetpbpb1->SetBranchAddress("trackSum",&trkSum_1);
+  jetpbpb1->SetBranchAddress("photonMax",&phMax_1);
+  jetpbpb1->SetBranchAddress("photonSum",&phSum_1);
+  jetpbpb1->SetBranchAddress("neutralMax",&neMax_1);
+  jetpbpb1->SetBranchAddress("neutralSum",&neSum_1);
+
+  jetpbpb1->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_1);
+  jetpbpb1->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_1);
+  jetpbpb1->SetBranchAddress("L1_ZeroBias",&L1_MB_1);
+  jetpbpb1->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_1);
+  jetpbpb1->SetBranchAddress("HLT_HIJet55_v1",&jet55_1);
+  jetpbpb1->SetBranchAddress("HLT_HIJet55_v1_Prescl",&jet55_p_1);
+  jetpbpb1->SetBranchAddress("HLT_HIJet65_v1",&jet65_1);
+  jetpbpb1->SetBranchAddress("HLT_HIJet65_v1_Prescl",&jet65_p_1);
+  jetpbpb1->SetBranchAddress("HLT_HIJet80_v1",&jet80_1);
+  jetpbpb1->SetBranchAddress("HLT_HIJet80_v1_Prescl",&jet80_p_1);
+
+  jetpbpb1->SetBranchAddress("id",&trgObj_id_1);
+  jetpbpb1->SetBranchAddress("pt",&trgObj_pt_1);
+  jetpbpb1->SetBranchAddress("eta",&trgObj_eta_1);
+  jetpbpb1->SetBranchAddress("phi",&trgObj_phi_1);
+  jetpbpb1->SetBranchAddress("mass",&trgObj_mass_1);
+
+  //set the branch addresses:  - one of the most boring parts of the code: 
+  jetpbpb2->SetBranchAddress("evt",&evt_2);
+  jetpbpb2->SetBranchAddress("run",&run_2);
+  jetpbpb2->SetBranchAddress("lumi",&lumi_2);
+  jetpbpb2->SetBranchAddress("hiBin",&hiBin_2);
+  jetpbpb2->SetBranchAddress("vz",&vz_2);
+  jetpbpb2->SetBranchAddress("vx",&vx_2);
+  jetpbpb2->SetBranchAddress("vy",&vy_2);
+  jetpbpb2->SetBranchAddress("hiNtracks",&hiNtracks_2);
+  jetpbpb2->SetBranchAddress("hiHFminus",&hiHFminus_2);
+  jetpbpb2->SetBranchAddress("hiHFplus",&hiHFplus_2);
+  jetpbpb2->SetBranchAddress("hiHFplusEta4",&hiHFplusEta4_2);
+  jetpbpb2->SetBranchAddress("hiHFminusEta4",&hiHFminusEta4_2);
+  jetpbpb2->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_2);
+  jetpbpb2->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_2);
+  jetpbpb2->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_2);
+  jetpbpb2->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_2);
   
+  jetpbpb2->SetBranchAddress("nref",&nrefe_2);
+  jetpbpb2->SetBranchAddress("jtpt",&pt_2);
+  jetpbpb2->SetBranchAddress("jteta",&eta_2);
+  jetpbpb2->SetBranchAddress("jtphi",&phi_2);
+  jetpbpb2->SetBranchAddress("rawpt",&raw_2);
+  jetpbpb2->SetBranchAddress("chargedMax",&chMax_2);
+  jetpbpb2->SetBranchAddress("chargedSum",&chSum_2);
+  jetpbpb2->SetBranchAddress("trackMax",&trkMax_2);
+  jetpbpb2->SetBranchAddress("trackSum",&trkSum_2);
+  jetpbpb2->SetBranchAddress("photonMax",&phMax_2);
+  jetpbpb2->SetBranchAddress("photonSum",&phSum_2);
+  jetpbpb2->SetBranchAddress("neutralMax",&neMax_2);
+  jetpbpb2->SetBranchAddress("neutralSum",&neSum_2);
+
+  jetpbpb2->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_2);
+  jetpbpb2->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_2);
+  jetpbpb2->SetBranchAddress("L1_ZeroBias",&L1_MB_2);
+  jetpbpb2->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_2);
+  jetpbpb2->SetBranchAddress("HLT_HIJet55_v1",&jet55_2);
+  jetpbpb2->SetBranchAddress("HLT_HIJet55_v1_Prescl",&jet55_p_2);
+  jetpbpb2->SetBranchAddress("HLT_HIJet65_v1",&jet65_2);
+  jetpbpb2->SetBranchAddress("HLT_HIJet65_v1_Prescl",&jet65_p_2);
+  jetpbpb2->SetBranchAddress("HLT_HIJet80_v1",&jet80_2);
+  jetpbpb2->SetBranchAddress("HLT_HIJet80_v1_Prescl",&jet80_p_2);
+
+  jetpbpb2->SetBranchAddress("id",&trgObj_id_2);
+  jetpbpb2->SetBranchAddress("pt",&trgObj_pt_2);
+  jetpbpb2->SetBranchAddress("eta",&trgObj_eta_2);
+  jetpbpb2->SetBranchAddress("phi",&trgObj_phi_2);
+  jetpbpb2->SetBranchAddress("mass",&trgObj_mass_2);
+  
+  //now that we have all the branch addresses set up we can start going through the loop to look at the trigger objects 
+
+  //declare the histograms needed for the hpbpb_TrigObj80, hpbpb_TrigObj65, hpbpb_TrigObj55, hpbpb_TrigObjMB, hpbpb_TrigComb;
+  TH1F *hpbpb_TrigObj80[nbins_cent], *hpbpb_TrigObj65[nbins_cent], *hpbpb_TrigObj55[nbins_cent], *hpbpb_TrigObjMB[nbins_cent], *hpbpb_TrigObjComb[nbins_cent];
+
+  for(int i = 0;i<nbins_cent;i++){
+
+    hpbpb_TrigObj80
+
+  }
+
+  /*8
+  //loop for the jetpbpb0_old tree: 
+  Long64_t nentries_jetMB = jetpbpb0_old->GetEntries();
+  cout<<"nentries_jetMB = "<<nentries_jetMB<<endl;
+
+  for(int i = 0;i<nentries_jetMB;i++){
+    
+    jetpbpb0_old->GetEntry(i);
+    if(i%1000==0)cout<<"Jet MB right"<<endl;
+    if(i%1000==0)cout<<"event = "<<i<<"; run = "<<run_0<<endl;
+    
+    if(!pHBHENoiseFilter_0 || !pprimaryvertexFilter_0 || !pcollisionEventSelection_0) continue;
+
+    if(fabs(vz_0)>15) continue;
+
+    if(!jetMB_0) continue;
+
+    for(int j = 0;j<nrefe_0;j++){
+
+    }
+
+  }
+  */
+
+  // loop for the jetpbpb1 tree 
+  Long64_t nentries_jet55or65 = jetpbpb1->GetEntries();
+  cout<<"nentries_jet55or65 = "<<nentries_jet55or65<<endl;
+
+  for(int i = 0;i<nentries_jet55or65;i++){
+
+    jetpbpb1->GetEntry(i);
+    if(i%1000==0)cout<<"Jet 55or65 right"<<endl;
+    if(i%1000==0)cout<<"event = "<<i<<"; run = "<<run_1<<endl;
+    
+    if(!pHBHENoiseFilter_1 || !pprimaryvertexFilter_1 || !pcollisionEventSelection_1) continue;
+
+    if(fabs(vz_1)>15) continue;
+
+    if(!jetMB_1 && !jet55_1 && !jet65_1 && !jet80_1) continue;
+
+    for(int j = 0;j<nrefe_1;j++){
+      
+      if(jetMB && trgObj_pt_1>=20 && trgObj_pt_1<55) hpbpb
+
+    }
+
+  }
+
 
   
   TCanvas *c1 = new TCanvas("c1","",1000,800);
