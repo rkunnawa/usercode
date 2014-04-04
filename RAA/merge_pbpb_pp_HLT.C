@@ -1357,7 +1357,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   TH1F* hRAA[nbins_cent];
 
-  for(int i = 0;i<nbins_cent;i++){
+  for(int i = 0;i<=nbins_cent;i++){
 
     hpbpbComb[i]->Scale(1./ncoll[i]); // ncoll
     hpbpbComb[i]->Scale(1./7.65);//remember what this is. maybe sigma inelastic
@@ -1613,7 +1613,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   //Create output file and save them. 
   
-  for(int i = 0;i<nbins_cent;i++){
+  for(int i = 0;i<=nbins_cent;i++){
     hpbpb1[i]->Write();
     hpbpb2[i]->Write();
     hpbpb3[i]->Write();
