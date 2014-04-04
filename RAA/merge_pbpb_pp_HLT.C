@@ -4,7 +4,7 @@
 // macro to read in latest PbPb data files and merge those three triggers 
 // effective minbias events is calculated outside(interactively) and then it is hardcoded in the macro
 
-// make the change to centrality  = 6. just increase it.  
+// make the change to centrality  = 6. just increase it.  Made it!!!
 
 #include <iostream>
 #include <stdio.h>
@@ -41,6 +41,7 @@
 //#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 //#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 //#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+
 
 TH1F *functionHist(TF1 *f, TH1F* h,char *fHistname)
 {
@@ -95,7 +96,6 @@ void putCMSPrel(double x, double y, double size){
 	tex->Draw();
 }
 
-
 TLegend *myLegend(double x1,double y1,double x2, double y2)
 {
 	TLegend *leg = new TLegend(x1,y1,x2,y2);
@@ -104,7 +104,6 @@ TLegend *myLegend(double x1,double y1,double x2, double y2)
 	return leg; 
 	
 }
-
 
 // Remove bins with error > central value
 void cleanup(TH1F *h)
@@ -146,6 +145,8 @@ TH1F *rebin(TH1F *h, char *histName)
   return hRebin;
 }
 
+using namespace std;
+
 void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   
   TH1::SetDefaultSumw2();
@@ -161,7 +162,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //data files - PbPb 
   TFile *fpbpb0_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_Forest_Track8_Jet21/0.root");
   TFile *fpbpb1_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
-  TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26/0.root");
+  TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26_TRY2_full/0.root");
 
   TFile *fpbpb2_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
   TFile *fpbpb2 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet80or95_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26_full/0.root");
@@ -169,10 +170,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   // data files - pp 
   TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet80_v2.root");
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet40_v2.root");
-
-  //declare the output file now: 
-  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
-
 
 
   /*
@@ -262,8 +259,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpp1_v2->AddFriend(evtpp1_v2);
   jetpp2_v2->AddFriend(evtpp2_v2);
 
-  
-  
 
   //get all the pp spectra here: 
   TCut pp3 = "abs(eta)<2&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
@@ -318,9 +313,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   divideBinWidth(hpp2);
   divideBinWidth(hpp3);
 
-
-  
-
   //these were for doing it from the forests directly without the proper JEC's 
   //add the centrality cuts: 
 
@@ -370,105 +362,82 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //const int nbins_cent = 1;
   //Double_t boundaries_cent[nbins_cent+1] = {0,40};
   //Double_t ncoll[nbins_cent] = {362.24}; //use taa instead of ncoll. 
+
+  
+  //declare the output file now: 
+  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
+
+  // ok so this is pretty important here: 
+  // the structure of the macro realies heavily on the centrality loop. so histograms arrays from 0 to nbins_cent-1 will have the spectra for the pbpb at different centrality classes. the one at nbins_cent contains the spectra for the 0-200 bin. so its the full spectra. this was it will be a cross check rather than just adding the other histograms. 
+  
   
   TCut pbpb0 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIZeroBiasPizel_SingleTrack_v1&&chargedMax/jtpt>0.01";//this is just for the MB file. not really used here so far. 
 
-  TCut pbpb1[nbins_cent];
-  TCut pbpb2[nbins_cent];
-  TCut pbpb3[nbins_cent];
+  TCut pbpb1[nbins_cent+1];
+  TCut pbpb2[nbins_cent+1];
+  TCut pbpb3[nbins_cent+1];
 
-  TCut pbpb80[nbins_cent];
-  TCut pbpb65[nbins_cent];
-  TCut pbpb55[nbins_cent];
+  TCut pbpb80[nbins_cent+1];
+  TCut pbpb65[nbins_cent+1];
+  TCut pbpb55[nbins_cent+1];
 
-  TH1F *hpbpb1[nbins_cent],*hpbpb2[nbins_cent],*hpbpb3[nbins_cent];
-  TH1F *hpbpbComb[nbins_cent];
+  TH1F *hpbpb1[nbins_cent+1],*hpbpb2[nbins_cent+1],*hpbpb3[nbins_cent+1];
+  TH1F *hpbpbComb[nbins_cent+1];
   //TH1F* htest = new TH1F("htest","",1000,0,1000);
-  TH1F *hpbpb_80[nbins_cent],*hpbpb_65[nbins_cent],*hpbpb_55[nbins_cent]; //histos to check the separate spectra, weighted by event by event prescl 
+  TH1F *hpbpb_80[nbins_cent+1],*hpbpb_65[nbins_cent+1],*hpbpb_55[nbins_cent+1]; //histos to check the separate spectra, weighted by event by event prescl 
   // I should also add the trigger objects merging method. 
 
-  TH1F* hTurnon80 = new TH1F("hTurnon80","",150,0,150);
-  TH1F* hTurnon65 = new TH1F("hTurnon65","",150,0,150);
-  TH1F* hTurnon55 = new TH1F("hTurnon55","",150,0,150);
+  //TH1F* hTurnon80 = new TH1F("hTurnon80","",150,0,150);
+  //TH1F* hTurnon65 = new TH1F("hTurnon65","",150,0,150);
+  //TH1F* hTurnon55 = new TH1F("hTurnon55","",150,0,150);
 
-  TH1F* hTriggerMerged = new TH1F("hTriggerMerged","",150,0,150);
-  TH1F* htest80 = new TH1F("htest80","",150,0,150);
-  TH1F* htest65 = new TH1F("htest65","",150,0,150);
-  TH1F* htest55 = new TH1F("htest55","",150,0,150);
+  //TH1F* hTriggerMerged = new TH1F("hTriggerMerged","",150,0,150);
+  //TH1F* htest80 = new TH1F("htest80","",150,0,150);
+  //TH1F* htest65 = new TH1F("htest65","",150,0,150);
+  //TH1F* htest55 = new TH1F("htest55","",150,0,150);
 
   // check the trigger turn on curve from the MB file. 
-  TH1F* hMB = new TH1F("hMB","",150,0,150);
-  /*
-  jetpbpb2->Project("htest80","jtpt","HLT_HIJet80_v1");
-  htest80->Print("base");
-  jetpbpb1->Project("htest65","jtpt","HLT_HIJet65_v1&&!HLT_HIJet80_v1");
-  htest65->Print("base");
-  jetpbpb1->Project("htest55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1)");
-  htest55->Print("base");
-  */
-  jetpbpb2_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1_Prescl*(HLT_HIJet80_v1&&pcollisionEventSelection&&pHBHENoiseFilter)");
-  jetpbpb1_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1_Prescl*(HLT_HIJet65_v1&&pcollisionEventSelection&&pHBHENoiseFilter)");
-  jetpbpb1_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&pcollisionEventSelection&&pHBHENoiseFilter)");
+  //TH1F* hMB = new TH1F("hMB","",150,0,150);
+  
+  //jetpbpb2->Project("htest80","jtpt","HLT_HIJet80_v1");
+  //htest80->Print("base");
+  //jetpbpb1->Project("htest65","jtpt","HLT_HIJet65_v1&&!HLT_HIJet80_v1");
+  //htest65->Print("base");
+  //jetpbpb1->Project("htest55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1)");
+  //htest55->Print("base");
+  
+  //jetpbpb2_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1_Prescl*HLT_HIJet80_v1");
+  //jetpbpb1_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1_Prescl*HLT_HIJet65_v1");
+  //jetpbpb1_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1_Prescl*HLT_HIJet55_v1");
 
-  TCut MB_prescl = "HLT_HIMinBiasHfOrBSC_v1_Prescl*(HLT_HIMinBiasHfOrBSC_v1&&pcollisionEventSelection&&pHBHENoiseFilter)";
-  jetpbpb0_old->Project("hMB","jtpt","30"*MB_prescl);
+  //TCut MB_prescl = "HLT_HIMinBiasHfOrBSC_v1_Prescl*HLT_HIMinBiasHfOrBSC_v1";
+  //jetpbpb0_old->Project("hMB","jtpt","30"*MB_prescl);
 
-  hTurnon80->Print("base");
-  hTurnon65->Print("base");
-  hTurnon55->Print("base");
+  //hTurnon80->Print("base");
+  //hTurnon65->Print("base");
+  //hTurnon55->Print("base");
 
   //hTriggerMerged->Add(htest80);
   //hTriggerMerged->Add(htest65);
   //hTriggerMerged->Add(htest55);
 
-  hTurnon80->Divide(hMB);
-  hTurnon65->Divide(hMB);
-  hTurnon55->Divide(hMB);
+  //hTurnon80->Divide(hMB);
+  //hTurnon65->Divide(hMB);
+  //hTurnon55->Divide(hMB);
 
-  //plot the trigger turn on curves. 
-  TCanvas *ctrig = new TCanvas("ctrig","",800,600);
-  hTurnon80->SetMarkerStyle(20);
-  hTurnon80->SetMarkerColor(kCyan);
-  hTurnon65->SetMarkerStyle(20);
-  hTurnon65->SetMarkerColor(kRed);
-  hTurnon55->SetMarkerStyle(20);
-  hTurnon55->SetMarkerColor(kYellow);
-
-  hTurnon80->SetAxisRange(0,150,"X");
-  //hTurnon80->SetAxisRange(0,1.3,"Y");
-  hTurnon80->SetXTitle("offline Jet p_{T} GeV/c");
-  hTurnon80->SetYTitle("Trigger Efficiency");
-  hTurnon80->GetXaxis()->SetTitleOffset(1.3);
-  hTurnon80->Draw();
-  hTurnon65->Draw("same");
-  hTurnon55->Draw("same");
-				
-
-  TLegend *title3 = myLegend(0.28,0.65,0.42,0.85);
-
-  title3->AddEntry(hTurnon55,"HLT_HIJet55","pl");
-  title3->AddEntry(hTurnon65,"HLT_HIJet65","pl");
-  title3->AddEntry(hTurnon80,"HLT_HIJet80","pl");
-  title3->SetTextSize(0.03);
-  title3->Draw();
-  
-  putCMSPrel(0.1,0.92,0.06);
-  drawText("PbPb #int dt = 149.382 #mu b^{-1}, #sqrt{s_{NN}}=2.76 TeV",0.5,0.93,16);
-
-  ctrig->SaveAs("RAA_trigger_turnon.pdf","RECREATE");
   
   //centrality loop for the pbpb files/histograms 
   for(int i = 0;i<nbins_cent;i++){
 
-    cout<<"centrality boundary = "<<boundaries_cent[i]*2.5<<" - "<<boundaries_cent[i+1]*2.5<<endl;
+    cout<<"centrality boundary = "<<boundaries_cent[i]*5<<" - "<<boundaries_cent[i+1]*5<<endl;
 
     pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
     pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
     pbpb3[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
 
-    pbpb80[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb65[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],boundaries_cent[i+1]);
-    pbpb55[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],boundaries_cent[i+1]);
+    pbpb80[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
+    pbpb65[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
+    pbpb55[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
 
     hpbpb1[i] = new TH1F(Form("hpbpb1_%d",i),"",1000,0,1000);
     //hpbpb1[i]->Print("base");
@@ -493,11 +462,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb3[i]->Print("base");
     //divideBinWidth(hpbpb3);
 
-    jetpbpb2->Project(Form("hpbpb_80_%d",i),"jtpt","HLT_HIJet80_v1_Prescl*"pbpb80[i]);
+    jetpbpb2->Project(Form("hpbpb_80_%d",i),"jtpt","HLT_HIJet80_v1_Prescl"*pbpb80[i]);
     hpbpb_80[i]->Print("base");
-    jetpbpb1->Project(Form("hpbpb_65_%d",i),"jtpt","HLT_HIJet65_v1_Prescl*"pbpb65[i]);
+    jetpbpb1->Project(Form("hpbpb_65_%d",i),"jtpt","HLT_HIJet65_v1_Prescl"*pbpb65[i]);
     hpbpb_65[i]->Print("base");
-    jetpbpb1->Project(Form("hpbpb_55_%d",i),"jtpt","HLT_HIJet55_v1_Prescl*"pbpb55[i]);
+    jetpbpb1->Project(Form("hpbpb_55_%d",i),"jtpt","HLT_HIJet55_v1_Prescl"*pbpb55[i]);
     hpbpb_55[i]->Print("base");
 
     //scale the PbPb histograms before adding them
@@ -511,10 +480,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     // the files which im using now is only a fraction of events of that:
     // for the PbPb 55 or 65 file its 0.977
     // for the PbPb 80 file its 0.304
+    // now using the full sample file 
     
     hpbpb1[i]->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
-    hpbpb2[i]->Scale(1./3.195e6/0.977);
-    hpbpb3[i]->Scale(1./2.734e6/0.977);
+    hpbpb2[i]->Scale(1./3.195e6);
+    hpbpb3[i]->Scale(1./2.734e6);
     
     hpbpb1[i]->Scale(1./4);//delta eta
     hpbpb2[i]->Scale(1./4);
@@ -548,6 +518,88 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     
   }
 
+  // doing it the 0-200 centrality bin 
+
+  pbpb1[nbins_cent] = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01";
+  pbpb2[nbins_cent] = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01";
+  pbpb3[nbins_cent] = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01";
+  
+  pbpb80[nbins_cent] = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt>0.01)";
+  pbpb65[nbins_cent] = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&(chargedMax/jtpt>0.01";
+  pbpb55[nbins_cent] = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet55_v1&&(chargedMax/jtpt)>0.01";
+
+  hpbpb1[nbins_cent] = new TH1F(Form("hpbpb1_%d",nbins_cent),"",1000,0,1000);
+  //hpbpb1[i]->Print("base");
+  hpbpb2[nbins_cent] = new TH1F(Form("hpbpb2_%d",nbins_cent),"",1000,0,1000);
+  hpbpb3[nbins_cent] = new TH1F(Form("hpbpb3_%d",nbins_cent),"",1000,0,1000);
+  hpbpbComb[nbins_cent] = new TH1F(Form("hpbpbComb_%d",nbins_cent),"",1000,0,1000);
+  
+  hpbpb_80[nbins_cent] = new TH1F(Form("hpbpb_80_%d",nbins_cent),"",1000,0,1000);
+  hpbpb_65[nbins_cent] = new TH1F(Form("hpbpb_65_%d",nbins_cent),"",1000,0,1000);
+  hpbpb_55[nbins_cent] = new TH1F(Form("hpbpb_55_%d",nbins_cent),"",1000,0,1000);
+  
+  jetpbpb2->Project(Form("hpbpb1_%d",nbins_cent),"jtpt",pbpb1[nbins_cent]);
+  hpbpb1[nbins_cent]->Print("base");
+  //divideBinWidth(hpbpb1);
+    
+  jetpbpb1->Project(Form("hpbpb2_%d",nbins_cent),"jtpt",pbpb2[nbins_cent]);
+  hpbpb2[nbins_cent]->Print("base");
+  //divideBinWidth(hpbpb2);
+  
+  jetpbpb1->Project(Form("hpbpb3_%d",nbins_cent),"jtpt","HLT_HIJet55_v1_Prescl"*pbpb3[nbins_cent]);
+  //jetpbpb1->Project("hpbpb3","jtpt","2.34995"*pbpb3);
+  hpbpb3[nbins_cent]->Print("base");
+  //divideBinWidth(hpbpb3);
+  
+  jetpbpb2->Project(Form("hpbpb_80_%d",nbins_cent),"jtpt","HLT_HIJet80_v1_Prescl*HLT_HIJet80_v1");
+  hpbpb_80[nbins_cent]->Print("base");
+  jetpbpb1->Project(Form("hpbpb_65_%d",nbins_cent),"jtpt","HLT_HIJet65_v1_Prescl*HLT_HIJet65_v1");
+  hpbpb_65[nbins_cent]->Print("base");
+  jetpbpb1->Project(Form("hpbpb_55_%d",nbins_cent),"jtpt","HLT_HIJet55_v1_Prescl*HLT_HIJet55_v1");
+  hpbpb_55[nbins_cent]->Print("base");
+  
+  //scale the PbPb histograms before adding them
+  //we have to scale them according to the lumi of the Jet80 file. 
+  // HLT file  |   Lumi inverse micro barns 
+  // HLT_80    |   149.382 
+  // HLT_65    |   3.195
+  // HLT_55    |   2.734
+  // 
+  
+  // the files which im using now is only a fraction of events of that:
+  // for the PbPb 55 or 65 file its 0.977
+  // for the PbPb 80 file its 0.304
+  // now using the full sample file 
+  
+  hpbpb1[nbins_cent]->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
+  hpbpb2[nbins_cent]->Scale(1./3.195e6);
+  hpbpb3[nbins_cent]->Scale(1./2.734e6);
+  
+  hpbpb1[nbins_cent]->Scale(1./4);//delta eta
+  hpbpb2[nbins_cent]->Scale(1./4);
+  hpbpb3[nbins_cent]->Scale(1./4);
+  
+  //might have to end up adding a centrality weight - the ratio of events per centrality class. 
+  
+  //add the histograms  
+  hpbpbComb[nbins_cent]->Add(hpbpb1[nbins_cent]);
+  hpbpbComb[nbins_cent]->Add(hpbpb2[nbins_cent]);
+  hpbpbComb[nbins_cent]->Add(hpbpb3[nbins_cent]);
+  hpbpbComb[nbins_cent]->Print("base");
+  
+  hpbpbComb[nbins_cent] = (TH1F*)hpbpbComb[nbins_cent]->Rebin(nbins_yaxian,Form("hpbpbComb_%d",nbins_cent),boundaries_yaxian);
+  hpbpb3[nbins_cent] = (TH1F*)hpbpb3[nbins_cent]->Rebin(nbins_yaxian,Form("hpbpb3_%d",nbins_cent),boundaries_yaxian);
+  hpbpb2[nbins_cent] = (TH1F*)hpbpb2[nbins_cent]->Rebin(nbins_yaxian,Form("hpbpb2_%d",nbins_cent),boundaries_yaxian);
+  hpbpb1[nbins_cent] = (TH1F*)hpbpb1[nbins_cent]->Rebin(nbins_yaxian,Form("hpbpb1_%d",nbins_cent),boundaries_yaxian);
+  
+  divideBinWidth(hpbpbComb[nbins_cent]);
+  divideBinWidth(hpbpb3[nbins_cent]);
+  divideBinWidth(hpbpb2[nbins_cent]);
+  divideBinWidth(hpbpb1[nbins_cent]);
+  
+  //ok now we have the spectra for the 0-200% centrality. 
+  
+  
   // do the trigger object merging here: 
   // this has to be done in the event loop which means that we have to get the 
   // create the trees and set the branch address
@@ -555,7 +607,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   // similarly here 0 - MB file, 1 - 55or65, 2 - 80or95
   
-  //file 0:" 
+  //file 0:
   // jet tree
   int nrefe_0;
   float pt_0[1000];
@@ -738,8 +790,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb0_old->SetBranchAddress("hiHFminusEta4",&hiHFminusEta4_0);
   jetpbpb0_old->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_0);
   jetpbpb0_old->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_0);
-  jetpbpb0_old->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_0);
-  jetpbpb0_old->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_0);
+  //jetpbpb0_old->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_0);
+  //jetpbpb0_old->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_0);
   
   jetpbpb0_old->SetBranchAddress("nref",&nrefe_0);
   jetpbpb0_old->SetBranchAddress("jtpt",&pt_0);
@@ -765,22 +817,23 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     jetTree->SetBranchAddress("trkDxy1",&trkDxy1);
     jetTree->SetBranchAddress("trkDxyError1",&trkDxyError1);
   */
-  jetpbpb0_old->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_0);
-  jetpbpb0_old->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_0);
-  jetpbpb0_old->SetBranchAddress("L1_ZeroBias",&L1_MB_0);
-  jetpbpb0_old->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_0);
+  //jetpbpb0_old->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_0);
+  //jetpbpb0_old->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_0);
+  //jetpbpb0_old->SetBranchAddress("L1_ZeroBias",&L1_MB_0);
+  //jetpbpb0_old->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_0);
   jetpbpb0_old->SetBranchAddress("HLT_HIJet55_v1",&jet55_0);
   jetpbpb0_old->SetBranchAddress("HLT_HIJet55_v1_Prescl",&jet55_p_0);
   jetpbpb0_old->SetBranchAddress("HLT_HIJet65_v1",&jet65_0);
   jetpbpb0_old->SetBranchAddress("HLT_HIJet65_v1_Prescl",&jet65_p_0);
   jetpbpb0_old->SetBranchAddress("HLT_HIJet80_v1",&jet80_0);
   jetpbpb0_old->SetBranchAddress("HLT_HIJet80_v1_Prescl",&jet80_p_0);
-
+  /*
   jetpbpb0_old->SetBranchAddress("id",&trgObj_id_0);
   jetpbpb0_old->SetBranchAddress("pt",&trgObj_pt_0);
   jetpbpb0_old->SetBranchAddress("eta",&trgObj_eta_0);
   jetpbpb0_old->SetBranchAddress("phi",&trgObj_phi_0);
   jetpbpb0_old->SetBranchAddress("mass",&trgObj_mass_0);
+  */
 
   //set the branch addresses:  - one of the most boring parts of the code: 
   jetpbpb1->SetBranchAddress("evt",&evt_1);
@@ -797,8 +850,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb1->SetBranchAddress("hiHFminusEta4",&hiHFminusEta4_1);
   jetpbpb1->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_1);
   jetpbpb1->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_1);
-  jetpbpb1->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_1);
-  jetpbpb1->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_1);
+  //jetpbpb1->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_1);
+  //jetpbpb1->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_1);
   
   jetpbpb1->SetBranchAddress("nref",&nrefe_1);
   jetpbpb1->SetBranchAddress("jtpt",&pt_1);
@@ -814,10 +867,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb1->SetBranchAddress("neutralMax",&neMax_1);
   jetpbpb1->SetBranchAddress("neutralSum",&neSum_1);
 
-  jetpbpb1->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_1);
-  jetpbpb1->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_1);
-  jetpbpb1->SetBranchAddress("L1_ZeroBias",&L1_MB_1);
-  jetpbpb1->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_1);
+  //jetpbpb1->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_1);
+  //jetpbpb1->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_1);
+  //jetpbpb1->SetBranchAddress("L1_ZeroBias",&L1_MB_1);
+  //jetpbpb1->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_1);
   jetpbpb1->SetBranchAddress("HLT_HIJet55_v1",&jet55_1);
   jetpbpb1->SetBranchAddress("HLT_HIJet55_v1_Prescl",&jet55_p_1);
   jetpbpb1->SetBranchAddress("HLT_HIJet65_v1",&jet65_1);
@@ -846,8 +899,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb2->SetBranchAddress("hiHFminusEta4",&hiHFminusEta4_2);
   jetpbpb2->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_2);
   jetpbpb2->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_2);
-  jetpbpb2->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_2);
-  jetpbpb2->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_2);
+  //jetpbpb2->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_2);
+  //jetpbpb2->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_2);
   
   jetpbpb2->SetBranchAddress("nref",&nrefe_2);
   jetpbpb2->SetBranchAddress("jtpt",&pt_2);
@@ -863,10 +916,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb2->SetBranchAddress("neutralMax",&neMax_2);
   jetpbpb2->SetBranchAddress("neutralSum",&neSum_2);
 
-  jetpbpb2->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_2);
-  jetpbpb2->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_2);
-  jetpbpb2->SetBranchAddress("L1_ZeroBias",&L1_MB_2);
-  jetpbpb2->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_2);
+  //jetpbpb2->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&jetMB_2);
+  //jetpbpb2->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&jetMB_p_2);
+  //jetpbpb2->SetBranchAddress("L1_ZeroBias",&L1_MB_2);
+  //jetpbpb2->SetBranchAddress("L1_ZeroBias_Prescl",&L1_MB_p_2);
   jetpbpb2->SetBranchAddress("HLT_HIJet55_v1",&jet55_2);
   jetpbpb2->SetBranchAddress("HLT_HIJet55_v1_Prescl",&jet55_p_2);
   jetpbpb2->SetBranchAddress("HLT_HIJet65_v1",&jet65_2);
@@ -883,63 +936,328 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //now that we have all the branch addresses set up we can start going through the loop to look at the trigger objects 
 
   //declare the histograms needed for the hpbpb_TrigObj80, hpbpb_TrigObj65, hpbpb_TrigObj55, hpbpb_TrigObjMB, hpbpb_TrigComb;
-  TH1F *hpbpb_TrigObj80[nbins_cent], *hpbpb_TrigObj65[nbins_cent], *hpbpb_TrigObj55[nbins_cent], *hpbpb_TrigObjMB[nbins_cent], *hpbpb_TrigObjComb[nbins_cent];
+  TH1F *hpbpb_TrgObj80[nbins_cent+1], *hpbpb_TrgObj65[nbins_cent+1], *hpbpb_TrgObj55[nbins_cent+1], *hpbpb_TrgObjMB[nbins_cent+1], *hpbpb_TrgObjComb[nbins_cent+1];
 
-  for(int i = 0;i<nbins_cent;i++){
+  for(int i = 0;i<=nbins_cent;i++){
 
-    hpbpb_TrigObj80
+    hpbpb_TrgObj80[i] = new TH1F(Form("hpbpb_TrgObj80_%d",i),"",1000,0,1000);
+    hpbpb_TrgObj65[i] = new TH1F(Form("hpbpb_TrgObj65_%d",i),"",1000,0,1000);
+    hpbpb_TrgObj55[i] = new TH1F(Form("hpbpb_TrgObj55_%d",i),"",1000,0,1000);
+    hpbpb_TrgObjMB[i] = new TH1F(Form("hpbpb_TrgObjMB_%d",i),"",1000,0,1000);
+    hpbpb_TrgObjComb[i] = new TH1F(Form("hpbpb_TrgObjComb_%d",i),"",1000,0,1000);
 
   }
-
-  /*8
+    
+  /*
   //loop for the jetpbpb0_old tree: 
   Long64_t nentries_jetMB = jetpbpb0_old->GetEntries();
   cout<<"nentries_jetMB = "<<nentries_jetMB<<endl;
-
-  for(int i = 0;i<nentries_jetMB;i++){
-    
-    jetpbpb0_old->GetEntry(i);
-    if(i%1000==0)cout<<"Jet MB right"<<endl;
-    if(i%1000==0)cout<<"event = "<<i<<"; run = "<<run_0<<endl;
-    
-    if(!pHBHENoiseFilter_0 || !pprimaryvertexFilter_0 || !pcollisionEventSelection_0) continue;
-
-    if(fabs(vz_0)>15) continue;
-
-    if(!jetMB_0) continue;
-
-    for(int j = 0;j<nrefe_0;j++){
-
-    }
-
-  }
+  
+  for(int ij = 0;ij<nentries_jetMB;ij++){
+  
+  jetpbpb0_old->GetEntry(ij);
+  if(ij%1000==0)cout<<"Jet MB right"<<endl;
+  if(ij%1000==0)cout<<ij<<": event = "<<evt_0<<"; run = "<<run_0<<endl;
+  
+  if(!pHBHENoiseFilter_0 || !pcollisionEventSelection_0) continue;
+  
+  if(fabs(vz_0)>15) continue;
+  
+  if(!jetMB_0) continue;
+  
+  if(hiBin_0>=5*boundaries_cent[i] && hiBin_0<5*boundaries_cent[i]){
+  
+  for(int j = 0;j<nrefe_0;j++){
+  
+  if(fabs(eta_0[j])>2) continue;
+  
+  if(chMax_1[j]/pt_1[j]>0.01) continue;
+  
+  }// jet loop
+  
+  }// checking centrality class statement
+  
+  }// nentries_jetMB loop. 
   */
-
+  
   // loop for the jetpbpb1 tree 
   Long64_t nentries_jet55or65 = jetpbpb1->GetEntries();
   cout<<"nentries_jet55or65 = "<<nentries_jet55or65<<endl;
-
-  for(int i = 0;i<nentries_jet55or65;i++){
-
-    jetpbpb1->GetEntry(i);
-    if(i%1000==0)cout<<"Jet 55or65 right"<<endl;
-    if(i%1000==0)cout<<"event = "<<i<<"; run = "<<run_1<<endl;
+  
+  for(int ij = 0;ij<nentries_jet55or65;ij++){
+  //for(int ij = 0;ij<10;ij++){
     
-    if(!pHBHENoiseFilter_1 || !pprimaryvertexFilter_1 || !pcollisionEventSelection_1) continue;
+    jetpbpb1->GetEntry(ij);
+    if(ij%100000==0)cout<<"Jet 55or65 right"<<endl;
+    if(ij%100000==0)cout<<ij<<": event = "<<evt_1<<"; run = "<<run_1<<endl;
 
-    if(fabs(vz_1)>15) continue;
-
-    if(!jetMB_1 && !jet55_1 && !jet65_1 && !jet80_1) continue;
-
+    // before the cuts get the spectra for the 0-200 centrality bin without any cuts. for trigger turn on curve    
     for(int j = 0;j<nrefe_1;j++){
       
-      if(jetMB && trgObj_pt_1>=20 && trgObj_pt_1<55) hpbpb
+      if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65) hpbpb_TrgObj55[nbins_cent]->Fill(pt_1[j],jet55_p_1);
+	
+      if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80) hpbpb_TrgObj65[nbins_cent]->Fill(pt_1[j],jet65_p_1);
+    }
+    
+    //include the cuts for analysis. 
+    if(!pHBHENoiseFilter_1 || !pcollisionEventSelection_1) continue;
+    //cout<<"A"<<endl;
+    
+    if(fabs(vz_1)>15) continue;
+    //cout<<"B"<<endl;
+    //cout<<"vz = "<<vz_1<<endl;
+    
+    if(!jet55_1 && !jet65_1) continue;
+    //cout<<"C"<<endl;
+    
+    //cout<<"hiBin = "<<hiBin_1<<endl;
+    //cout<<5*boundaries_cent[0]<<" "<<5*boundaries_cent[1]<<endl;
+    //cout<<5*boundaries_cent[1]<<" "<<5*boundaries_cent[2]<<endl;
+    //cout<<5*boundaries_cent[2]<<" "<<5*boundaries_cent[3]<<endl;
+    //cout<<5*boundaries_cent[3]<<" "<<5*boundaries_cent[4]<<endl;
+    //cout<<5*boundaries_cent[4]<<" "<<5*boundaries_cent[5]<<endl;
+    //cout<<5*boundaries_cent[5]<<" "<<5*boundaries_cent[6]<<endl;
+	
+    //cout<<"nrefe = "<<nrefe_1<<endl;
+    
+    // checking the centrality class statement
+    if(hiBin_1>=5*boundaries_cent[0]&&hiBin_1<5*boundaries_cent[1]){
+      //cout<<"inside 0-1"<<endl;
+      for(int j = 0;j<nrefe_1;j++){
+	
+	if(fabs(eta_1[j])>2) continue;
+	  
+	if(chMax_1[j]/pt_1[j]<0.01) continue;	
+	
+	if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65) hpbpb_TrgObj55[0]->Fill(pt_1[j],jet55_p_1);
+	
+	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80) hpbpb_TrgObj65[0]->Fill(pt_1[j],jet65_p_1);
+	
+      } // jet loop
+      
+    }
+    if(hiBin_1>=5*boundaries_cent[1]&&hiBin_1<5*boundaries_cent[2]){
+      //cout<<"inside 1-2"<<endl;
+
+      for(int j = 0;j<nrefe_1;j++){
+	
+	if(fabs(eta_1[j])>2) continue;
+	
+	if(chMax_1[j]/pt_1[j]<0.01) continue;
+	
+	if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65) hpbpb_TrgObj55[1]->Fill(pt_1[j],jet55_p_1);
+	
+	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80) hpbpb_TrgObj65[1]->Fill(pt_1[j],jet65_p_1);
+	
+      } // jet loop
+      
+    }
+    if(hiBin_1>=5*boundaries_cent[2]&&hiBin_1<5*boundaries_cent[3]){
+      //cout<<"inside 2-3"<<endl;
+      for(int j = 0;j<nrefe_1;j++){
+	
+	if(fabs(eta_1[j])>2) continue;
+	
+	if(chMax_1[j]/pt_1[j]<0.01) continue;
+     	
+	if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65) hpbpb_TrgObj55[2]->Fill(pt_1[j],jet55_p_1);
+	
+	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80) hpbpb_TrgObj65[2]->Fill(pt_1[j],jet65_p_1);
+      } // jet loop
+      
+    }
+    if(hiBin_1>=5*boundaries_cent[3]&&hiBin_1<5*boundaries_cent[4]){
+      //cout<<"inside 3-4"<<endl;
+
+      for(int j = 0;j<nrefe_1;j++){
+	
+	if(fabs(eta_1[j])>2) continue;
+	
+	if(chMax_1[j]/pt_1[j]<0.01) continue;
+		
+	if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65) hpbpb_TrgObj55[3]->Fill(pt_1[j],jet55_p_1);
+	
+	if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80) hpbpb_TrgObj65[3]->Fill(pt_1[j],jet65_p_1);
+      } // jet loop
+      
+    }
+    if(hiBin_1>=5*boundaries_cent[4] && hiBin_1<5*boundaries_cent[5]){
+      //cout<<"inside 4-5"<<endl;
+
+      for(int j = 0;j<nrefe_1;j++){
+	
+	if(fabs(eta_1[j])>2) continue;	
+	if(chMax_1[j]/pt_1[j]<0.01) continue;
+		
+	if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65) hpbpb_TrgObj55[4]->Fill(pt_1[j],jet55_p_1);
+	
+	if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80) hpbpb_TrgObj65[4]->Fill(pt_1[j],jet65_p_1);
+      } // jet loop
+      
+    }
+    if(hiBin_1>=5*boundaries_cent[5] && hiBin_1<5*boundaries_cent[6]){
+      //cout<<"inside 5-6"<<endl;
+
+      for(int j = 0;j<nrefe_1;j++){
+	
+	if(fabs(eta_1[j])>2) continue;
+	
+	if(chMax_1[j]/pt_1[j]<0.01) continue;
+		
+	if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65) hpbpb_TrgObj55[5]->Fill(pt_1[j],jet55_p_1);
+	
+	if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80) hpbpb_TrgObj65[5]->Fill(pt_1[j],jet65_p_1);
+      } // jet loop
+      
+    }
+    
+  } // nentries_jet55or65 loop
+  
+  
+    //loop for jetpbpb2 tree
+  Long64_t nentries_jet80or95 = jetpbpb2->GetEntries();
+  cout<<"nentries_jet80or95 = "<<nentries_jet80or95<<endl;
+  
+  for(int ij = 0;ij<nentries_jet80or95;ij++){
+  //for(int ij = 0;ij<10;ij++){
+    
+    jetpbpb2->GetEntry(ij);
+    if(ij%100000==0)cout<<"Jet 80 or 95 file"<<endl;
+    if(ij%100000==0)cout<<ij<<": event = "<<evt_2<<", run = "<<run_2<<endl;
+
+    for(int j = 0;j<nrefe_2;j++){
+
+      if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[nbins_cent]->Fill(pt_2[j],jet80_p_2);
 
     }
+    
+    
+    if(!pHBHENoiseFilter_2 || !pcollisionEventSelection_2) continue;
+    
+    if(fabs(vz_2)>15) continue;
+    
+    if(!jet80_2) continue;
+    
+    // checking the centrality class statement
+    if(hiBin_2>=5*boundaries_cent[0] && hiBin_2<5*boundaries_cent[1]){
+      //cout<<"inside 0-1"<<endl;
+      for(int j = 0;j<nrefe_2;j++){
+	
+	if(fabs(eta_2[j])>2) continue;
+	
+	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	
+	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[0]->Fill(pt_2[j],jet80_p_2);
+	
+      } // jet loop
+      
+    }
+    if(hiBin_2>=5*boundaries_cent[1] && hiBin_2<5*boundaries_cent[2]){
+      //cout<<"inside 1-2"<<endl;
+      for(int j = 0;j<nrefe_2;j++){
+	
+	if(fabs(eta_2[j])>2) continue;
+	
+	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	       	
+	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[1]->Fill(pt_2[j],jet80_p_2);
+	
+      } // jet loop
+      
+    }
+    if(hiBin_2>=5*boundaries_cent[2] && hiBin_2<5*boundaries_cent[3]){
+      //cout<<"inside 2-3"<<endl;
+      for(int j = 0;j<nrefe_2;j++){
+	
+	if(fabs(eta_2[j])>2) continue;
+	
+	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	       	
+	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[2]->Fill(pt_2[j],jet80_p_2);
+	
+      } // jet loop
+      
+    }
+    if(hiBin_2>=5*boundaries_cent[3] && hiBin_2<5*boundaries_cent[4]){
+      //cout<<"inside 3-4"<<endl;
+      for(int j = 0;j<nrefe_2;j++){
+	
+	if(fabs(eta_2[j])>2) continue;
+	
+	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	       	
+	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[3]->Fill(pt_2[j],jet80_p_2);
+	
+      } // jet loop
+      
+    }
+    if(hiBin_2>=5*boundaries_cent[4] && hiBin_2<5*boundaries_cent[5]){
+      //cout<<"inside 4-4"<<endl;
+      for(int j = 0;j<nrefe_2;j++){
+	
+	if(fabs(eta_2[j])>2) continue;
+	
+	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	       	
+	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[4]->Fill(pt_2[j],jet80_p_2);
+	
+      } // jet loop
+      
+    }
+    if(hiBin_2>=5*boundaries_cent[5] && hiBin_2<5*boundaries_cent[6]){
+      //cout<<"inside 5-5"<<endl;
+      for(int j = 0;j<nrefe_2;j++){
+	
+	if(fabs(eta_2[j])>2) continue;
+	
+	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	       	
+	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[5]->Fill(pt_2[j],jet80_p_2);
+	
+      } // jet loop
+      
+    }
+    
+  } // nentries_jet80or95 loop
+  
+  
+  for(int i = 0;i<=nbins_cent;i++){
+
+    hpbpb_TrgObj80[i]->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
+    hpbpb_TrgObj65[i]->Scale(1./3.195e6);
+    hpbpb_TrgObj55[i]->Scale(1./2.734e6);
+    
+    hpbpb_TrgObj80[i]->Scale(1./4);//delta eta
+    hpbpb_TrgObj65[i]->Scale(1./4);
+    hpbpb_TrgObj55[i]->Scale(1./4);
+
+    if(i!=nbins_cent){
+      hpbpb_TrgObj80[i]->Scale(1./0.005/(5*boundaries_cent[i+1]-5*boundaries_cent[i]));//centrality bin width 
+      hpbpb_TrgObj65[i]->Scale(1./0.005/(5*boundaries_cent[i+1]-5*boundaries_cent[i]));
+      hpbpb_TrgObj55[i]->Scale(1./0.005/(5*boundaries_cent[i+1]-5*boundaries_cent[i]));
+    }
+
+    hpbpb_TrgObjComb[i]->Add(hpbpb_TrgObj80[i]);
+    hpbpb_TrgObjComb[i]->Add(hpbpb_TrgObj65[i]);
+    hpbpb_TrgObjComb[i]->Add(hpbpb_TrgObj55[i]);
+
+    hpbpb_TrgObjComb[i] = (TH1F*)hpbpb_TrgObjComb[i]->Rebin(nbins_yaxian,Form("hpbpb_TrgObjComb_%d",i),boundaries_yaxian);
+    hpbpb_TrgObj80[i] = (TH1F*)hpbpb_TrgObj80[i]->Rebin(nbins_yaxian,Form("hpbpb_TrfObj80_%d",i),boundaries_yaxian);
+    hpbpb_TrgObj65[i] = (TH1F*)hpbpb_TrgObj65[i]->Rebin(nbins_yaxian,Form("hpbpb_TrgObj65_%d",i),boundaries_yaxian);
+    hpbpb_TrgObj55[i] = (TH1F*)hpbpb_TrgObj55[i]->Rebin(nbins_yaxian,Form("hpbpb_TrgObj55_%d",i),boundaries_yaxian);
+
+    divideBinWidth(hpbpbComb[i]);
+    divideBinWidth(hpbpb3[i]);
+    divideBinWidth(hpbpb2[i]);
+    divideBinWidth(hpbpb1[i]);
+    
+    hpbpb_TrgObjComb[i]->Print("base");
+    hpbpb_TrgObj80[i]->Print("base");
+    hpbpb_TrgObj65[i]->Print("base");
+    hpbpb_TrgObj55[i]->Print("base");
 
   }
-
-
+  
   
   TCanvas *c1 = new TCanvas("c1","",1000,800);
   c1->Divide(3,2);
@@ -958,8 +1276,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     //hpbpbComb->Fit("fPowerLaw","","",30,300);
     //hpbpbComb->Fit("fPowerLaw","","",30,300);
     //hpbpbComb->Fit("fPowerLaw","","",30,300);
-    //hpbpbComb->Fit("fPowerLaw","","",30,300);
-    //hpbpbComb->Fit("fPowerLaw","","",30,300);
+
     hpbpbComb[i]->SetAxisRange(50,300,"X");
     //hpbpbComb[i]->SetAxisRange(1e-4,1e-12,"Y");
     hpbpbComb[i]->Draw();
@@ -974,7 +1291,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb1[i]->Draw("same");
     hpbpbComb[i]->Draw("same");
 
-    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*2.5,boundaries_cent[i+1]*2.5),0.1,0.9,20);
+    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
 
     if(i == nbins_cent-1){
        
@@ -1008,8 +1325,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //hppComb->Fit("fPowerLaw2","","",30,300);
   //hppComb->Fit("fPowerLaw2","","",30,300);
   //hppComb->Fit("fPowerLaw2","","",30,300);
-  //hppComb->Fit("fPowerLaw2","","",30,300);
-  //hppComb->Fit("fPowerLaw2","","",30,300);
+
   hppComb->SetAxisRange(20,300,"X");
   //hppComb->SetAxisRange(1e-4,1e-12,"Y");
   hppComb->Draw();
@@ -1057,13 +1373,117 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hRAA[i]->SetMarkerColor(kBlack);
     hRAA[i]->SetAxisRange(0,2,"Y");
     hRAA[i]->Draw();
-    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*2.5,boundaries_cent[i+1]*2.5),0.1,0.9,20);
+    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
 
     if(i == 5)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.2,0.56,14);
     //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
   }
 
   c3->SaveAs(Form("RAA_March2014_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
+
+  //lets plot the spectra from the trigger object combination method. 
+  TCanvas *c4 = new TCanvas("c4","",1000,800);
+  c4->Divide(3,3);
+
+  for(int i = 0;i<nbins_cent;i++){
+    
+    c4->cd(i+1);
+    hpbpb_TrgObjComb[i]->SetMarkerStyle(20);
+    hpbpb_TrgObjComb[i]->SetMarkerColor(kBlack);
+    hpbpb_TrgObj80[i]->SetMarkerStyle(20);
+    hpbpb_TrgObj80[i]->SetMarkerColor(kGreen);
+    hpbpb_TrgObj65[i]->SetMarkerStyle(20);
+    hpbpb_TrgObj65[i]->SetMarkerColor(kBlue);
+    hpbpb_TrgObj55[i]->SetMarkerStyle(20);
+    hpbpb_TrgObj55[i]->SetMarkerColor(kRed);
+
+    hpbpb_TrgObjComb[i]->SetYTitle("#frac{d^{2} #sigma}{d p_{T} d#eta} #mu barns");
+    hpbpb_TrgObjComb[i]->SetXTitle("Jet p_{T} (GeV/c)");
+
+    hpbpb_TrgObjComb[i]->SetAxisRange(30,300,"X");
+
+    hpbpb_TrgObjComb[i]->Draw();
+    hpbpb_TrgObj80[i]->Draw("same");
+    hpbpb_TrgObj65[i]->Draw("same");
+    hpbpb_TrgObj55[i]->Draw("same");
+    hpbpb_TrgObjComb[i]->Draw("same");
+
+    
+    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
+
+  }
+
+  
+  c4->cd(8);  
+  TLegend *title3 = myLegend(0.25,0.65,0.55,0.8);
+  title3->AddEntry(hpbpb_TrgObjComb[nbins_cent-1],"PbPb 2.76 TeV Data Merged","pl");
+  title3->AddEntry(hpbpb_TrgObj80[nbins_cent-1],"HLT_80 && 80 <= Max trigger object (GeV/c)","pl");
+  title3->AddEntry(hpbpb_TrgObj65[nbins_cent-1],"HLT_65 && 65 <= Max trigger object < 80 (GeV/c)","pl");
+  title3->AddEntry(hpbpb_TrgObj55[nbins_cent-1],"HLT_55 && 55 <= Max trigger object < 65 (GeV/c)","pl");
+  title3->SetTextSize(0.03);
+  title3->Draw();
+  //drawText("PbPb data",0.3,0.65,20);  
+  drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.1,0.83,14);
+  
+  c4->SaveAs("RAA_voronoi_trigger_object_merge.pdf","RECREATE");
+
+
+  // have to think about this a little bit here: 
+  // in the RpA analysis, the turn on curves were plotted by looking at the individual spectra vs the merged spectra using the trigger object method.
+  //an important point here is that there were no cuts in teh trigger turn on curve. 
+  //and also it was with 0-100% centrality bin or in this case from 0-200. the issue here is that i also have to make the spectra without the centrality cuts. 
+  //ok that may not be a problem since the loops for that already exist, i just have to fill the required histograms at the corresponding point in the loop. 
+  // this will make it faster to run since i dont have to go thorugh the entire structure again. 
+  // or a way bette way to do this would be to run the macro twice, - but its not set up that way. god damn 
+  // ok i'll do it the first way. kk
+  
+  //plot the trigger turn on curves. 
+  TCanvas *ctrig = new TCanvas("ctrig","",800,600);
+
+  const int nbins_turnon = 119;
+  Double_t boundaries_turnon[nbins_turnon+1] = {30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150};
+
+  TH1F* hTurnon80 = (TH1F*)hpbpb_80[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
+  TH1F* hTurnon65 = (TH1F*)hpbpb_65[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
+  TH1F* hTurnon55 = (TH1F*)hpbpb_55[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
+
+  TH1F* hFullSpectra = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hFullSpectra",boundaries_turnon);
+
+  hTurnon80->Divide(hFullSpectra);
+  hTurnon65->Divide(hFullSpectra);
+  hTurnon55->Divide(hFullSpectra);
+
+  hTurnon80->SetMarkerStyle(20);
+  hTurnon80->SetMarkerColor(kCyan);
+  hTurnon65->SetMarkerStyle(20);
+  hTurnon65->SetMarkerColor(kRed);
+  hTurnon55->SetMarkerStyle(20);
+  hTurnon55->SetMarkerColor(kYellow);
+
+  hTurnon80->SetAxisRange(0,150,"X");
+  //hTurnon80->SetAxisRange(0,1.3,"Y");
+  hTurnon80->SetXTitle("offline Jet p_{T} GeV/c");
+  hTurnon80->SetYTitle("Trigger Efficiency");
+  hTurnon80->GetXaxis()->SetTitleOffset(1.3);
+  hTurnon80->Draw();
+  hTurnon65->Draw("same");
+  hTurnon55->Draw("same");
+				
+
+  TLegend *title4 = myLegend(0.28,0.65,0.42,0.85);
+
+  title4->AddEntry(hTurnon55,"HLT_HIJet55","pl");
+  title4->AddEntry(hTurnon65,"HLT_HIJet65","pl");
+  title4->AddEntry(hTurnon80,"HLT_HIJet80","pl");
+  title4->SetTextSize(0.03);
+  title4->Draw();
+  
+  putCMSPrel(0.1,0.92,0.06);
+  drawText("PbPb #int dt = 149.382 #mu b^{-1}, #sqrt{s_{NN}}=2.76 TeV",0.5,0.93,16);
+
+  ctrig->SaveAs("RAA_trigger_turnon.pdf","RECREATE");
+
+
 
   //plot the statistical uncertainty here
   //statistical error/meanvalue as a function of pt for the combined spectra. 
@@ -1089,7 +1509,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   drawText("PbPb 2011, 55,65 scaled",0.3,0.65,20);  
   drawText("Anti-k_{T} PU PF Jets R = 0.3, |#eta|<2, |vz|<15",0.3,0.56,20);
   c2->SaveAs("pbpb_2013_hlt_merge_scaled_uncert.gif","RECREATE");
-  */
+  
   /*
   TCanvas *c2 = new TCanvas("c2","",800,600);
   c2->SetLogy();
@@ -1136,8 +1556,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hPPRatio->SetMarkerColor(4);
   hPPRatio->Draw();
   c5->SaveAs("pp_2013_merged_spectra_fit_comp.gif","RECREATE");
-  
-
+  */
+  /*
   
   TFile *fpbpbunfo = TFile::Open("result-2013-akPu3PF-cent-6-isFineBin-0/pbpb_pp_merged_chmx_pt_Unfo_2013_akPu3PF_cent_6_isFineBin_0.root");
   TH1F* hppUnfo = (TH1F*)fpbpbunfo->Get("Unfolded_cent6");
@@ -1162,9 +1582,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hppUnfo->Draw();
   // hPPGen->Draw("same");
   c6->SaveAs("pp_2760GeV_unfold_vs_mc.gif","RECREATE");
-  */
   
-  /*
+  
+  
   TCanvas *c7 = new TCanvas("c7","",800,600);
   c7->SetLogy();
   hPPComb->Draw();
@@ -1193,13 +1613,19 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   //Create output file and save them. 
   
-  
   for(int i = 0;i<nbins_cent;i++){
     hpbpb1[i]->Write();
     hpbpb2[i]->Write();
     hpbpb3[i]->Write();
     hpbpbComb[i]->Write();
     hRAA[i]->Write();
+    hpbpb_TrgObjComb[i]->Write();
+    hpbpb_TrgObj80[i]->Write();
+    hpbpb_TrgObj65[i]->Write();
+    hpbpb_TrgObj55[i]->Write();
+    hpbpb_80[i]->Write();
+    hpbpb_65[i]->Write();
+    hpbpb_55[i]->Write();
   }
   //hPPComb_bins->Write();
   hpp1->Write();
