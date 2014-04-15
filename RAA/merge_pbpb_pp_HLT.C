@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <stdio.h>
-
+#include <fstream.h>
 #include <TRandom.h>
 #include <TH1F.h>
 #include <TH1F.h>
@@ -171,7 +171,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet80_v2.root");
   TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet40_v2.root");
 
-
   /*
   //loading the files for doing the JEC's on the fly
   string fJECL2AK3PF = "HI_PythiaZ2_2760GeV_5316_v14_L2Relative_AK3PF_offline.txt";
@@ -316,9 +315,14 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //these were for doing it from the forests directly without the proper JEC's 
   //add the centrality cuts: 
 
-  const int nbins_cent = 6;
-  Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
-  Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
+  //const int nbins_cent = 6;
+  //Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
+  //Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
+
+  const int nbins_cent = 1;
+  Double_t boundaries_cent[nbins_cent+1] = {0,40};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
+  Double_t ncoll[nbins_cent] = { 362.24};
+
 
   //Double_t jet55or65CentWeight[nbins_cent] = {0.3734,0.2509,0.3222,0.0352,0.0066,0.0010}; //total = 0.9983
   //Double_t jet80or90CentWeight[nbins_cent] = {0.2334,0.1764,0.3601,0.1117,0.0283,0.0054}; //total = 0.9153
@@ -359,16 +363,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   */
 
-  //const int nbins_cent = 1;
-  //Double_t boundaries_cent[nbins_cent+1] = {0,40};
-  //Double_t ncoll[nbins_cent] = {362.24}; //use taa instead of ncoll. 
-
-  
-  //declare the output file now: 
-  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
 
   // ok so this is pretty important here: 
-  // the structure of the macro realies heavily on the centrality loop. so histograms arrays from 0 to nbins_cent-1 will have the spectra for the pbpb at different centrality classes. the one at nbins_cent contains the spectra for the 0-200 bin. so its the full spectra. this was it will be a cross check rather than just adding the other histograms. 
+  // the structure of the macro realies heavily on the centrality loop. so histograms arrays from 0 to nbins_cent-1 will have the spectra for the pbpb at different centrality classes. the one at nbins_cent contains the spectra for the 0-200 bin. so its the full spectra. this was done as a cross check rather than just adding the other histograms. 
   
   
   TCut pbpb0 = "abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIZeroBiasPizel_SingleTrack_v1&&chargedMax/jtpt>0.01";//this is just for the MB file. not really used here so far. 
@@ -387,17 +384,19 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TH1F *hpbpb_80[nbins_cent+1],*hpbpb_65[nbins_cent+1],*hpbpb_55[nbins_cent+1]; //histos to check the separate spectra, weighted by event by event prescl 
   // I should also add the trigger objects merging method. 
 
-  //TH1F* hTurnon80 = new TH1F("hTurnon80","",150,0,150);
-  //TH1F* hTurnon65 = new TH1F("hTurnon65","",150,0,150);
-  //TH1F* hTurnon55 = new TH1F("hTurnon55","",150,0,150);
+  //old way of finding trigger turn on which didnt work since we dont have a good MB sample. 
 
-  //TH1F* hTriggerMerged = new TH1F("hTriggerMerged","",150,0,150);
-  //TH1F* htest80 = new TH1F("htest80","",150,0,150);
-  //TH1F* htest65 = new TH1F("htest65","",150,0,150);
-  //TH1F* htest55 = new TH1F("htest55","",150,0,150);
+  TH1F* hTurnon80_old = new TH1F("hTurnon80_old","",150,0,150);
+  TH1F* hTurnon65_old = new TH1F("hTurnon65_old","",150,0,150);
+  TH1F* hTurnon55_old = new TH1F("hTurnon55_old","",150,0,150);
+
+  TH1F* hTriggerMerged_old = new TH1F("hTriggerMerged_old","",150,0,150);
+  TH1F* htest80_old = new TH1F("htest80_old","",150,0,150);
+  TH1F* htest65_old = new TH1F("htest65_old","",150,0,150);
+  TH1F* htest55_old = new TH1F("htest55_old","",150,0,150);
 
   // check the trigger turn on curve from the MB file. 
-  //TH1F* hMB = new TH1F("hMB","",150,0,150);
+  TH1F* hMB = new TH1F("hMB","",150,0,150);
   
   //jetpbpb2->Project("htest80","jtpt","HLT_HIJet80_v1");
   //htest80->Print("base");
@@ -406,12 +405,12 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //jetpbpb1->Project("htest55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1)");
   //htest55->Print("base");
   
-  //jetpbpb2_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1_Prescl*HLT_HIJet80_v1");
-  //jetpbpb1_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1_Prescl*HLT_HIJet65_v1");
-  //jetpbpb1_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1_Prescl*HLT_HIJet55_v1");
+  jetpbpb0_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1_Prescl*HLT_HIJet80_v1");
+  jetpbpb0_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1_Prescl*HLT_HIJet65_v1");
+  jetpbpb0_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1_Prescl*HLT_HIJet55_v1");
 
-  //TCut MB_prescl = "HLT_HIMinBiasHfOrBSC_v1_Prescl*HLT_HIMinBiasHfOrBSC_v1";
-  //jetpbpb0_old->Project("hMB","jtpt","30"*MB_prescl);
+  TCut MB_prescl = "HLT_HIMinBiasHfOrBSC_v1_Prescl*HLT_HIMinBiasHfOrBSC_v1";
+  jetpbpb0_old->Project("hMB","jtpt","30"*MB_prescl);
 
   //hTurnon80->Print("base");
   //hTurnon65->Print("base");
@@ -421,15 +420,28 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //hTriggerMerged->Add(htest65);
   //hTriggerMerged->Add(htest55);
 
-  //hTurnon80->Divide(hMB);
-  //hTurnon65->Divide(hMB);
-  //hTurnon55->Divide(hMB);
+  hTurnon80->Divide(hMB);
+  hTurnon65->Divide(hMB);
+  hTurnon55->Divide(hMB);
 
   
   //centrality loop for the pbpb files/histograms 
   for(int i = 0;i<nbins_cent;i++){
 
     cout<<"centrality boundary = "<<boundaries_cent[i]*5<<" - "<<boundaries_cent[i+1]*5<<endl;
+
+    /*
+      Ok so i screwed up the convention here. the tcuts and the histogram has the number appendage going from 
+      1 - 80
+      2 - 65
+      3 - 55
+
+      but thats the reverse for the jet trees. 
+      2 - HLT_80 or HLT_95
+      1 - HLT_55 or HLT_65
+
+      so be careful when moving through the code. 
+    */
 
     pbpb1[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
     pbpb2[i] = Form("abs(vz)<15&&pcollisionEventSelection&&pHBHENoiseFilter&&abs(jteta)<2&&HLT_HIJet65_v1&&!HLT_HIJet80_v1&&(chargedMax/jtpt)>0.01&&hiBin>=%2.0f&&hiBin<%2.0f",5*boundaries_cent[i],5*boundaries_cent[i+1]);
@@ -551,6 +563,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hpbpb3[nbins_cent]->Print("base");
   //divideBinWidth(hpbpb3);
   
+  //following histograms are for the trigger turnon curve. no cuts apart from the trigger selection. 
   jetpbpb2->Project(Form("hpbpb_80_%d",nbins_cent),"jtpt","HLT_HIJet80_v1_Prescl*HLT_HIJet80_v1");
   hpbpb_80[nbins_cent]->Print("base");
   jetpbpb1->Project(Form("hpbpb_65_%d",nbins_cent),"jtpt","HLT_HIJet65_v1_Prescl*HLT_HIJet65_v1");
@@ -934,6 +947,22 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   jetpbpb2->SetBranchAddress("mass",&trgObj_mass_2);
   
   //now that we have all the branch addresses set up we can start going through the loop to look at the trigger objects 
+  
+  //before we go and do the trigger object merging lets do the text file information here: 
+  //we need one text file per spectra, which means we need 3 -> one for each trigger object 
+  //and we also need one for the high pt jets with low trigger objects 
+  // and these files will have the following structure: 
+  // run lumi evt HLTobjpt HLTobjeta HLTobjphi jtpt jteta jtphi
+
+  ofstream fHLT_80,fHLT_65,fHLT_55,fHLT_high;
+  fHLT_80.open(Form("pbpb_%s_R%d_max_trgObj_80_jets.txt",algo,radius));
+  fHLT_65.open(Form("pbpb_%s_R%d_80_max_trgObj_65_jets.txt",algo,radius));
+  fHLT_55.open(Form("pbpb_%s_R%d_65_max_trgObj_55_jets.txt",algo,radius));
+  fHLT_high.open(Form("pbpb_%s_R%d_abnormal_highpt_jets_maxtrigObj_jtpt_less_0.3",algo,radius));
+  // the actual cut we are going to be using is 
+  // TMath::Max(chargedMax,neutralMax)/(TMath::Max(chargedSum,neutralSum))<0.975
+  // which is pretty much the same as doing the one mentioned above.  
+
 
   //declare the histograms needed for the hpbpb_TrigObj80, hpbpb_TrigObj65, hpbpb_TrigObj55, hpbpb_TrigObjMB, hpbpb_TrigComb;
   TH1F *hpbpb_TrgObj80[nbins_cent+1], *hpbpb_TrgObj65[nbins_cent+1], *hpbpb_TrgObj55[nbins_cent+1], *hpbpb_TrgObjMB[nbins_cent+1], *hpbpb_TrgObjComb[nbins_cent+1];
@@ -947,7 +976,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb_TrgObjComb[i] = new TH1F(Form("hpbpb_TrgObjComb_%d",i),"",1000,0,1000);
 
   }
-    
+  
+  
+
+
   /*
   //loop for the jetpbpb0_old tree: 
   Long64_t nentries_jetMB = jetpbpb0_old->GetEntries();
@@ -1001,114 +1033,140 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     
     //include the cuts for analysis. 
     if(!pHBHENoiseFilter_1 || !pcollisionEventSelection_1) continue;
-    //cout<<"A"<<endl;
     
     if(fabs(vz_1)>15) continue;
-    //cout<<"B"<<endl;
-    //cout<<"vz = "<<vz_1<<endl;
     
     if(!jet55_1 && !jet65_1) continue;
-    //cout<<"C"<<endl;
-    
-    //cout<<"hiBin = "<<hiBin_1<<endl;
-    //cout<<5*boundaries_cent[0]<<" "<<5*boundaries_cent[1]<<endl;
-    //cout<<5*boundaries_cent[1]<<" "<<5*boundaries_cent[2]<<endl;
-    //cout<<5*boundaries_cent[2]<<" "<<5*boundaries_cent[3]<<endl;
-    //cout<<5*boundaries_cent[3]<<" "<<5*boundaries_cent[4]<<endl;
-    //cout<<5*boundaries_cent[4]<<" "<<5*boundaries_cent[5]<<endl;
-    //cout<<5*boundaries_cent[5]<<" "<<5*boundaries_cent[6]<<endl;
-	
-    //cout<<"nrefe = "<<nrefe_1<<endl;
-    
-    // checking the centrality class statement
-    if(hiBin_1>=5*boundaries_cent[0]&&hiBin_1<5*boundaries_cent[1]){
+
+    if(nbins_cent==1){
+
       //cout<<"inside 0-1"<<endl;
       for(int j = 0;j<nrefe_1;j++){
-	
+	  
 	if(fabs(eta_1[j])>2) continue;
 	  
 	if(chMax_1[j]/pt_1[j]<0.01) continue;	
-	
-	if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65) hpbpb_TrgObj55[0]->Fill(pt_1[j],jet55_p_1);
-	
-	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80) hpbpb_TrgObj65[0]->Fill(pt_1[j],jet65_p_1);
-	
-      } // jet loop
-      
-    }
-    if(hiBin_1>=5*boundaries_cent[1]&&hiBin_1<5*boundaries_cent[2]){
-      //cout<<"inside 1-2"<<endl;
+	  
+	if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65){ hpbpb_TrgObj55[nbins_cent-1]->Fill(pt_1[j],jet55_p_1);
+	  fHLT_55<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
+	  
+	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80){ hpbpb_TrgObj65[nbins_cent-1]->Fill(pt_1[j],jet65_p_1);
+	  fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
 
-      for(int j = 0;j<nrefe_1;j++){
-	
-	if(fabs(eta_1[j])>2) continue;
-	
-	if(chMax_1[j]/pt_1[j]<0.01) continue;
-	
-	if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65) hpbpb_TrgObj55[1]->Fill(pt_1[j],jet55_p_1);
-	
-	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80) hpbpb_TrgObj65[1]->Fill(pt_1[j],jet65_p_1);
-	
+	if(TMath::Max(chMax_1,neMax_1)/(TMath::Max(chSum_1,neSum_1))<0.975)
+	  fHLT_high<<<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;
+
       } // jet loop
+	
+    }else if(nbins_cent==6){
       
-    }
-    if(hiBin_1>=5*boundaries_cent[2]&&hiBin_1<5*boundaries_cent[3]){
-      //cout<<"inside 2-3"<<endl;
-      for(int j = 0;j<nrefe_1;j++){
+      // checking the centrality class statement
+      if(hiBin_1>=5*boundaries_cent[0]&&hiBin_1<5*boundaries_cent[1]){
+	//cout<<"inside 0-1"<<endl;
+	for(int j = 0;j<nrefe_1;j++){
+	  
+	  if(fabs(eta_1[j])>2) continue;
+	  
+	  if(chMax_1[j]/pt_1[j]<0.01) continue;	
+	  
+	  if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65){ 
+	    hpbpb_TrgObj55[0]->Fill(pt_1[j],jet55_p_1);
+	    fHLT_55<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;
+	  }
+	  
+	  if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80){
+	    hpbpb_TrgObj65[0]->Fill(pt_1[j],jet65_p_1);
+	    fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;
+	  }
+	  
+	} // jet loop
 	
-	if(fabs(eta_1[j])>2) continue;
+      }
+      if(hiBin_1>=5*boundaries_cent[1]&&hiBin_1<5*boundaries_cent[2]){
+	//cout<<"inside 1-2"<<endl;
+
+	for(int j = 0;j<nrefe_1;j++){
 	
-	if(chMax_1[j]/pt_1[j]<0.01) continue;
+	  if(fabs(eta_1[j])>2) continue;
+	
+	  if(chMax_1[j]/pt_1[j]<0.01) continue;
+	
+	  if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65){ hpbpb_TrgObj55[1]->Fill(pt_1[j],jet55_p_1);
+	    fHLT_55<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
+	
+	  if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80){ hpbpb_TrgObj65[1]->Fill(pt_1[j],jet65_p_1);
+	    fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
+	
+	} // jet loop
+      
+      }
+      if(hiBin_1>=5*boundaries_cent[2]&&hiBin_1<5*boundaries_cent[3]){
+	//cout<<"inside 2-3"<<endl;
+	for(int j = 0;j<nrefe_1;j++){
+	
+	  if(fabs(eta_1[j])>2) continue;
+	
+	  if(chMax_1[j]/pt_1[j]<0.01) continue;
      	
-	if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65) hpbpb_TrgObj55[2]->Fill(pt_1[j],jet55_p_1);
+	  if(jet55_1&&trgObj_pt_1>=55&&trgObj_pt_1<65){ hpbpb_TrgObj55[2]->Fill(pt_1[j],jet55_p_1);
+	    fHLT_55<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
 	
-	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80) hpbpb_TrgObj65[2]->Fill(pt_1[j],jet65_p_1);
-      } // jet loop
+	  if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80){ hpbpb_TrgObj65[2]->Fill(pt_1[j],jet65_p_1);
+	    fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
+	} // jet loop
       
-    }
-    if(hiBin_1>=5*boundaries_cent[3]&&hiBin_1<5*boundaries_cent[4]){
-      //cout<<"inside 3-4"<<endl;
+      }
+      if(hiBin_1>=5*boundaries_cent[3]&&hiBin_1<5*boundaries_cent[4]){
+	//cout<<"inside 3-4"<<endl;
 
-      for(int j = 0;j<nrefe_1;j++){
+	for(int j = 0;j<nrefe_1;j++){
 	
-	if(fabs(eta_1[j])>2) continue;
+	  if(fabs(eta_1[j])>2) continue;
 	
-	if(chMax_1[j]/pt_1[j]<0.01) continue;
+	  if(chMax_1[j]/pt_1[j]<0.01) continue;
 		
-	if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65) hpbpb_TrgObj55[3]->Fill(pt_1[j],jet55_p_1);
+	  if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65){ hpbpb_TrgObj55[3]->Fill(pt_1[j],jet55_p_1);
+	    fHLT_55<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
 	
-	if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80) hpbpb_TrgObj65[3]->Fill(pt_1[j],jet65_p_1);
-      } // jet loop
+	  if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80){ hpbpb_TrgObj65[3]->Fill(pt_1[j],jet65_p_1);
+	    fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
+	} // jet loop
       
-    }
-    if(hiBin_1>=5*boundaries_cent[4] && hiBin_1<5*boundaries_cent[5]){
-      //cout<<"inside 4-5"<<endl;
+      }
+      if(hiBin_1>=5*boundaries_cent[4] && hiBin_1<5*boundaries_cent[5]){
+	//cout<<"inside 4-5"<<endl;
 
-      for(int j = 0;j<nrefe_1;j++){
+	for(int j = 0;j<nrefe_1;j++){
 	
-	if(fabs(eta_1[j])>2) continue;	
-	if(chMax_1[j]/pt_1[j]<0.01) continue;
+	  if(fabs(eta_1[j])>2) continue;	
+	  if(chMax_1[j]/pt_1[j]<0.01) continue;
 		
-	if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65) hpbpb_TrgObj55[4]->Fill(pt_1[j],jet55_p_1);
+	  if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65){ hpbpb_TrgObj55[4]->Fill(pt_1[j],jet55_p_1);
+	    fHLT_55<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
 	
-	if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80) hpbpb_TrgObj65[4]->Fill(pt_1[j],jet65_p_1);
-      } // jet loop
+	  if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80){ hpbpb_TrgObj65[4]->Fill(pt_1[j],jet65_p_1);
+	    fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
+	} // jet loop
       
-    }
-    if(hiBin_1>=5*boundaries_cent[5] && hiBin_1<5*boundaries_cent[6]){
-      //cout<<"inside 5-6"<<endl;
+      }
+      if(hiBin_1>=5*boundaries_cent[5] && hiBin_1<5*boundaries_cent[6]){
+	//cout<<"inside 5-6"<<endl;
 
-      for(int j = 0;j<nrefe_1;j++){
+	for(int j = 0;j<nrefe_1;j++){
 	
-	if(fabs(eta_1[j])>2) continue;
+	  if(fabs(eta_1[j])>2) continue;
 	
-	if(chMax_1[j]/pt_1[j]<0.01) continue;
+	  if(chMax_1[j]/pt_1[j]<0.01) continue;
 		
-	if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65) hpbpb_TrgObj55[5]->Fill(pt_1[j],jet55_p_1);
+	  if(jet55_1 && trgObj_pt_1>=55 && trgObj_pt_1<65){ hpbpb_TrgObj55[5]->Fill(pt_1[j],jet55_p_1);
+	    fHLT_55<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
 	
-	if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80) hpbpb_TrgObj65[5]->Fill(pt_1[j],jet65_p_1);
-      } // jet loop
+	  if(jet65_1 && trgObj_pt_1>=65 && trgObj_pt_1<80){ hpbpb_TrgObj65[5]->Fill(pt_1[j],jet65_p_1);
+	    fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
+	} // jet loop
       
+      }
+
     }
     
   } // nentries_jet55or65 loop
@@ -1131,15 +1189,13 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
     }
     
-    
     if(!pHBHENoiseFilter_2 || !pcollisionEventSelection_2) continue;
     
     if(fabs(vz_2)>15) continue;
     
     if(!jet80_2) continue;
-    
-    // checking the centrality class statement
-    if(hiBin_2>=5*boundaries_cent[0] && hiBin_2<5*boundaries_cent[1]){
+
+    if(nbins_cent==1){
       //cout<<"inside 0-1"<<endl;
       for(int j = 0;j<nrefe_2;j++){
 	
@@ -1147,81 +1203,118 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 	
 	if(chMax_2[j]/pt_2[j]<0.01) continue;
 	
-	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[0]->Fill(pt_2[j],jet80_p_2);
+	if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[nbins_cent-1]->Fill(pt_2[j],jet80_p_2);
+	  fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
 	
+	if(TMath::Max(chMax_2,neMax_2)/(TMath::Max(chSum_2,neSum_2))<0.975)
+	  fHLT_high<<<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;
+
       } // jet loop
+     
+    }else if(nbins_cent==6){
+    
+      // checking the centrality class statement
+      if(hiBin_2>=5*boundaries_cent[0] && hiBin_2<5*boundaries_cent[1]){
+	//cout<<"inside 0-1"<<endl;
+	for(int j = 0;j<nrefe_2;j++){
+	
+	  if(fabs(eta_2[j])>2) continue;
+	
+	  if(chMax_2[j]/pt_2[j]<0.01) continue;
+	
+	  if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[0]->Fill(pt_2[j],jet80_p_2);
+	    fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
+	
+	} // jet loop
       
-    }
-    if(hiBin_2>=5*boundaries_cent[1] && hiBin_2<5*boundaries_cent[2]){
-      //cout<<"inside 1-2"<<endl;
-      for(int j = 0;j<nrefe_2;j++){
+      }
+      if(hiBin_2>=5*boundaries_cent[1] && hiBin_2<5*boundaries_cent[2]){
+	//cout<<"inside 1-2"<<endl;
+	for(int j = 0;j<nrefe_2;j++){
 	
-	if(fabs(eta_2[j])>2) continue;
+	  if(fabs(eta_2[j])>2) continue;
 	
-	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	  if(chMax_2[j]/pt_2[j]<0.01) continue;
 	       	
-	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[1]->Fill(pt_2[j],jet80_p_2);
+	  if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[1]->Fill(pt_2[j],jet80_p_2);
+	    fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
 	
-      } // jet loop
+	} // jet loop
       
-    }
-    if(hiBin_2>=5*boundaries_cent[2] && hiBin_2<5*boundaries_cent[3]){
-      //cout<<"inside 2-3"<<endl;
-      for(int j = 0;j<nrefe_2;j++){
+      }
+      if(hiBin_2>=5*boundaries_cent[2] && hiBin_2<5*boundaries_cent[3]){
+	//cout<<"inside 2-3"<<endl;
+	for(int j = 0;j<nrefe_2;j++){
 	
-	if(fabs(eta_2[j])>2) continue;
+	  if(fabs(eta_2[j])>2) continue;
 	
-	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	  if(chMax_2[j]/pt_2[j]<0.01) continue;
 	       	
-	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[2]->Fill(pt_2[j],jet80_p_2);
+	  if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[2]->Fill(pt_2[j],jet80_p_2);
+	    fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
 	
-      } // jet loop
+	} // jet loop
       
-    }
-    if(hiBin_2>=5*boundaries_cent[3] && hiBin_2<5*boundaries_cent[4]){
-      //cout<<"inside 3-4"<<endl;
-      for(int j = 0;j<nrefe_2;j++){
+      }
+      if(hiBin_2>=5*boundaries_cent[3] && hiBin_2<5*boundaries_cent[4]){
+	//cout<<"inside 3-4"<<endl;
+	for(int j = 0;j<nrefe_2;j++){
 	
-	if(fabs(eta_2[j])>2) continue;
+	  if(fabs(eta_2[j])>2) continue;
 	
-	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	  if(chMax_2[j]/pt_2[j]<0.01) continue;
 	       	
-	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[3]->Fill(pt_2[j],jet80_p_2);
+	  if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[3]->Fill(pt_2[j],jet80_p_2);
+	    fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
 	
-      } // jet loop
+	} // jet loop
       
-    }
-    if(hiBin_2>=5*boundaries_cent[4] && hiBin_2<5*boundaries_cent[5]){
-      //cout<<"inside 4-4"<<endl;
-      for(int j = 0;j<nrefe_2;j++){
+      }
+      if(hiBin_2>=5*boundaries_cent[4] && hiBin_2<5*boundaries_cent[5]){
+	//cout<<"inside 4-4"<<endl;
+	for(int j = 0;j<nrefe_2;j++){
 	
-	if(fabs(eta_2[j])>2) continue;
+	  if(fabs(eta_2[j])>2) continue;
 	
-	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	  if(chMax_2[j]/pt_2[j]<0.01) continue;
 	       	
-	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[4]->Fill(pt_2[j],jet80_p_2);
+	  if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[4]->Fill(pt_2[j],jet80_p_2);
+	    fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
 	
-      } // jet loop
+	} // jet loop
       
-    }
-    if(hiBin_2>=5*boundaries_cent[5] && hiBin_2<5*boundaries_cent[6]){
-      //cout<<"inside 5-5"<<endl;
-      for(int j = 0;j<nrefe_2;j++){
+      }
+      if(hiBin_2>=5*boundaries_cent[5] && hiBin_2<5*boundaries_cent[6]){
+	//cout<<"inside 5-5"<<endl;
+	for(int j = 0;j<nrefe_2;j++){
 	
-	if(fabs(eta_2[j])>2) continue;
+	  if(fabs(eta_2[j])>2) continue;
 	
-	if(chMax_2[j]/pt_2[j]<0.01) continue;
+	  if(chMax_2[j]/pt_2[j]<0.01) continue;
 	       	
-	if(jet80_2 && trgObj_pt_2>=80) hpbpb_TrgObj80[5]->Fill(pt_2[j],jet80_p_2);
+	  if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[5]->Fill(pt_2[j],jet80_p_2);
+	    fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
 	
-      } // jet loop
+	} // jet loop
       
+      }
+
     }
     
   } // nentries_jet80or95 loop
+
+  fHLT_80.close();
+  fHLT_65.close();
+  fHLT_55.close();
+  fHLT_high.close();
+
+  //add the hpbpb_TrgObjComb[nbins_cent] for the trigger turn on curve here. remember no cuts for this histogram 
+  hpbpb_TrgObjComb[nbins_cent]->Add(hpbpb_TrgObj80[nbins_cent]);
+  hpbpb_TrgObjComb[nbins_cent]->Add(hpbpb_TrgObj65[nbins_cent]);
+  hpbpb_TrgObjComb[nbins_cent]->Add(hpbpb_TrgObj55[nbins_cent]);
   
-  
-  for(int i = 0;i<=nbins_cent;i++){
+
+  for(int i = 0;i<nbins_cent;i++){
 
     hpbpb_TrgObj80[i]->Scale(1./149.382e6);//respective lumi seen by the trigger all in inverse micro barns 
     hpbpb_TrgObj65[i]->Scale(1./3.195e6);
@@ -1260,9 +1353,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   
   
   TCanvas *c1 = new TCanvas("c1","",1000,800);
-  c1->Divide(3,2);
+  c1->Divide(3,3);
 
-  for(int i = 0;i<nbins_cent;i++){
+  for(int i = 0;i<=nbins_cent;i++){
     c1->cd(i+1);
     c1->cd(i+1)->SetLogy();
     hpbpbComb[i]->SetMarkerStyle(20);
@@ -1291,24 +1384,22 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb1[i]->Draw("same");
     hpbpbComb[i]->Draw("same");
 
-    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
+    if(i<nbins_cent)drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,16);
+    if(i==nbins_cent)drawText("0-200%",0.1,0.9,16);
 
-    if(i == nbins_cent-1){
-       
-      TLegend *title = myLegend(0.25,0.65,0.55,0.8);
-      title->AddEntry(hpbpbComb[nbins_cent-1],"PbPb 2.76 TeV Data Merged","pl");
-      title->AddEntry(hpbpb3[nbins_cent-1],"w_{3} * (HLT_55 && !HLT_65 && !HLT_80)","pl");
-      title->AddEntry(hpbpb2[nbins_cent-1],"HLT_65 && !HLT_80","pl");
-      title->AddEntry(hpbpb1[nbins_cent-1],"HLT_80","pl");
-      title->SetTextSize(0.03);
-      title->Draw();
-      //drawText("PbPb data",0.3,0.65,20);  
-      drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.1,0.83,14);
-      
-    }
-    
   }
-  
+
+  c1->cd(8);
+  TLegend *title = myLegend(0.25,0.65,0.55,0.8);
+  title->AddEntry(hpbpbComb[nbins_cent-1],"PbPb 2.76 TeV Data Merged","pl");
+  title->AddEntry(hpbpb3[nbins_cent-1],"w_{3} * (HLT_55 && !HLT_65 && !HLT_80)","pl");
+  title->AddEntry(hpbpb2[nbins_cent-1],"HLT_65 && !HLT_80","pl");
+  title->AddEntry(hpbpb1[nbins_cent-1],"HLT_80","pl");
+  title->SetTextSize(0.03);
+  title->Draw();
+  //drawText("PbPb data",0.3,0.65,20);  
+  drawText(Form("Anti-k_{T} %s PF Jets R = 0.%d, |#eta|<2, |vz|<15",algo,radius),0.1,0.83,16);
+ 
  
   c1->SaveAs(Form("pbpb_2011_vs_pt_combined_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
 
@@ -1347,15 +1438,15 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   title2->SetTextSize(0.03);
   title2->Draw();
   //drawText("PP data",0.3,0.65,20);  
-  drawText(Form("Anti-k_{T} PF Jets R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,20);
+  drawText(Form("Anti-k_{T} PF Jets R = 0.%d, |#eta|<2, |vz|<15",radius),0.35,0.56,16);
   c2->SaveAs("pp_2011_pt_combined.pdf","RECREATE");
 
   // calculate the measured RAA here just as a simple calculation 
   hppComb->Scale(1./64); //sigma pp
   TCanvas *c3 = new TCanvas("c3","",800,600);
-  c3->Divide(3,2);
+  c3->Divide(3,3);
 
-  TH1F* hRAA[nbins_cent];
+  TH1F* hRAA[nbins_cent+1];
 
   for(int i = 0;i<=nbins_cent;i++){
 
@@ -1373,21 +1464,25 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hRAA[i]->SetMarkerColor(kBlack);
     hRAA[i]->SetAxisRange(0,2,"Y");
     hRAA[i]->Draw();
-    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
+    if(i<nbins_cent)drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
+    if(i==nbins_cent)drawText("0-200%",0.1,0.9,20);
 
     if(i == 5)drawText(Form("R = 0.%d, |#eta|<2, |vz|<15",radius),0.2,0.56,14);
     //drawText("|#eta|<2, |vz|<15 0-100%",0.35,0.76,20);
+    if(i<nbins_cent)drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
+    if(i==nbins_cent)drawText("0-200%",0.1,0.9,20);
   }
 
-  c3->SaveAs(Form("RAA_March2014_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
+  c3->SaveAs(Form("RAA_measured_voronoi_nbins_cent_%d.pdf",nbins_cent),"RECREATE");
 
   //lets plot the spectra from the trigger object combination method. 
   TCanvas *c4 = new TCanvas("c4","",1000,800);
   c4->Divide(3,3);
 
-  for(int i = 0;i<nbins_cent;i++){
+  for(int i = 0;i<=nbins_cent;i++){
     
     c4->cd(i+1);
+    c4->cd(i+1)->SetLogy();
     hpbpb_TrgObjComb[i]->SetMarkerStyle(20);
     hpbpb_TrgObjComb[i]->SetMarkerColor(kBlack);
     hpbpb_TrgObj80[i]->SetMarkerStyle(20);
@@ -1408,14 +1503,13 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
     hpbpb_TrgObj55[i]->Draw("same");
     hpbpb_TrgObjComb[i]->Draw("same");
 
-    
-    drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
+    if(i<nbins_cent)drawText(Form("%2.0f-%2.0f",boundaries_cent[i]*5,boundaries_cent[i+1]*5),0.1,0.9,20);
+    if(i==nbins_cent)drawText("0-200%",0.1,0.9,20);
 
   }
 
-  
   c4->cd(8);  
-  TLegend *title3 = myLegend(0.25,0.65,0.55,0.8);
+  TLegend *title3 = myLegend(0.1,0.1,0.9,0.9);
   title3->AddEntry(hpbpb_TrgObjComb[nbins_cent-1],"PbPb 2.76 TeV Data Merged","pl");
   title3->AddEntry(hpbpb_TrgObj80[nbins_cent-1],"HLT_80 && 80 <= Max trigger object (GeV/c)","pl");
   title3->AddEntry(hpbpb_TrgObj65[nbins_cent-1],"HLT_65 && 65 <= Max trigger object < 80 (GeV/c)","pl");
@@ -1440,14 +1534,25 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //plot the trigger turn on curves. 
   TCanvas *ctrig = new TCanvas("ctrig","",800,600);
 
-  const int nbins_turnon = 119;
-  Double_t boundaries_turnon[nbins_turnon+1] = {30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150};
+  const int nbins_turnon = 120;
+  Double_t boundaries_turnon[] = {30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150};
 
-  TH1F* hTurnon80 = (TH1F*)hpbpb_80[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
-  TH1F* hTurnon65 = (TH1F*)hpbpb_65[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
-  TH1F* hTurnon55 = (TH1F*)hpbpb_55[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
+  //TH1F* hTurnon80 = (TH1F*)hpbpb_80[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
+  //TH1F* hTurnon65 = (TH1F*)hpbpb_65[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
+  //TH1F* hTurnon55 = (TH1F*)hpbpb_55[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
 
-  TH1F* hFullSpectra = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hFullSpectra",boundaries_turnon);
+  TH1F* hTurnon80 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon80",boundaries_turnon)
+  TH1F* hTurnon65 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon65",boundaries_turnon)
+  TH1F* hTurnon55 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon55",boundaries_turnon)
+
+  hTurnon80->Print();
+  hTurnon65->Print();
+  hTurnon55->Print();
+
+  TH1F* h80Spectra = (TH1F*)hpbpb_TrgObj80[nbins_cent]->Rebin(nbins_turnon,"h80Spectra",boundaries_turnon);
+  TH1F* h65Spectra = (TH1F*)hpbpb_TrgObj65[nbins_cent]->Rebin(nbins_turnon,"h65Spectra",boundaries_turnon);
+  TH1F* h55Spectra = (TH1F*)hpbpb_TrgObj55[nbins_cent]->Rebin(nbins_turnon,"h55Spectra",boundaries_turnon);
+  hFullSpectra->Print("base");
 
   hTurnon80->Divide(hFullSpectra);
   hTurnon65->Divide(hFullSpectra);
@@ -1462,13 +1567,13 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   hTurnon80->SetAxisRange(0,150,"X");
   //hTurnon80->SetAxisRange(0,1.3,"Y");
-  hTurnon80->SetXTitle("offline Jet p_{T} GeV/c");
+  hTurnon80->SetXTitle("offline Jet p_{T} (GeV/c)");
   hTurnon80->SetYTitle("Trigger Efficiency");
   hTurnon80->GetXaxis()->SetTitleOffset(1.3);
   hTurnon80->Draw();
   hTurnon65->Draw("same");
   hTurnon55->Draw("same");
-				
+  
 
   TLegend *title4 = myLegend(0.28,0.65,0.42,0.85);
 
@@ -1482,7 +1587,6 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   drawText("PbPb #int dt = 149.382 #mu b^{-1}, #sqrt{s_{NN}}=2.76 TeV",0.5,0.93,16);
 
   ctrig->SaveAs("RAA_trigger_turnon.pdf","RECREATE");
-
 
 
   //plot the statistical uncertainty here
@@ -1613,6 +1717,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   //Create output file and save them. 
   
+  //declare the output file
+  TFile f(Form("merge_pbpb_ak%d_%s_HLT_V2_nbins_cent_%d.root",radius,algo,nbins_cent),"RECREATE");
+
+  f.cd();
+  
   for(int i = 0;i<=nbins_cent;i++){
     hpbpb1[i]->Write();
     hpbpb2[i]->Write();
@@ -1632,10 +1741,18 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hpp2->Write();
   hpp3->Write();
   hppComb->Write();
+
+  hTurnon80->Write();
+  hTurnon65->Write();
+  hTurnon55->Write();
+
   //hPPComb->Write();
   //hPbPb_Uncert->Write();
   //hPPComb->Write();
   //hPPGen->Write();
+  
+  f.Write();
+
   f.Close();
   
   
