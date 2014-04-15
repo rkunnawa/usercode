@@ -204,7 +204,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	
 
   if (!yinglu) {
-		
+    /* //5.02 TeV		
     boundariesPP_pthat[0] = 15;
     fileNamePP_pthat[0] = "/mnt/hadoop/cms/store/user/dgulhan/pPb/HP04/prod16/Signal_Pythia_pt15/HiForest_v77_v2_merged01/pt15_HP04_hiforest77_hiSignal.root";
     xsectionPP[0] = 5.335e-01;// make sure that you have the correct one here.
@@ -239,7 +239,54 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 		
     boundariesPP_pthat[8] = 2000;
     xsectionPP[8] = 0;
+    
+    */
+    // 2.76 TeV
 
+    boundariesPP_pthat[0]=15;
+    fileNamePP_pthat[0]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt15/HiForest_v81_merged01/pt15_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[0]= 1.079e-02;
+    xsectionPP[0]= 2.034e-01;
+	
+    boundariesPP_pthat[1]=30;
+    fileNamePP_pthat[1]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt30/HiForest_v81_merged01/pt30_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[1]= 1.021e-03;
+    xsectionPP[1]= 1.075e-02;
+	
+    boundariesPP_pthat[2]=50;
+    fileNamePP_pthat[2]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt50/HiForest_v81_merged01/pt50_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[2]= 9.913e-05;
+    xsectionPP[2]= 1.025e-03;
+	
+    boundariesPP_pthat[3]=80;
+    fileNamePP_pthat[3]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt80/HiForest_v81_merged01/pt80_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[3]= 1.128e-05;
+    xsectionPP[3]= 9.865e-05;
+	
+    boundariesPP_pthat[4]=120;
+    fileNamePP_pthat[4]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt120/HiForest_v81_merged01/pt120_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[4]= 1.470e-06;
+    xsectionPP[4]= 1.129e-05;
+	
+    boundariesPP_pthat[5]=170;
+    fileNamePP_pthat[5]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt170/HiForest_v81_merged01/pt170_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[5]= 5.310e-07;
+    xsectionPP[5]= 1.465e-06;
+	
+    boundariesPP_pthat[6]=220;
+    fileNamePP_pthat[6]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt220/HiForest_v81_merged01/pt220_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[6]= 1.192e-07;	
+    xsectionPP[6]= 2.837e-07;
+
+    boundariesPP_pthat[7]=280;
+    fileNamePP_pthat[7]="/mnt/hadoop/cms/store/user/dgulhan/pp2013/P01/prod22/Signal_Pythia_pt280/HiForest_v81_merged01/pt280_pp2013_P01_prod22_v81_merged_forest_0.root";
+    //xsectionPP[7]= 3.176e-08;
+    xsectionPP[7]= 5.323e-08;
+	
+    xsectionPP[8] = 0;
+    boundariesPP_pthat[8]=2000;
+
+ 
   }
   
   //*******************lumi number for the sample***************************
@@ -250,8 +297,16 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //*************************************************************************
 	
   // Output file
-  TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_correctedMC_weighting_eta_CM_1_mc__%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
+  //TFile *ppb_Unfo = new TFile(Form("result-2013-ppb-%s-cent-%d/ppb_merge_correctedMC_weighting_eta_CM_1_mc__%s_cent_%d.root",algoName[algo],nbins_cent,algoName[algo],nbins_cent),"RECREATE");
   // Histograms used by RooUnfold
+  //new output file 
+  //TFile *ppb_Unfo = new TFile(Form("pp_2013_2760_abs_eta_25_30_mc_ak%dPF.root",algo),"RECREATE");
+  //TFile *ppb_Unfo = new TFile(Form("pp_2013_2760_abs_eta_20_25_mc_ak%dPF.root",algo),"RECREATE");
+  //TFile *ppb_Unfo = new TFile(Form("pp_2013_2760_abs_eta_15_20_mc_ak%dPF.root",algo),"RECREATE");
+  //TFile *ppb_Unfo = new TFile(Form("pp_2013_2760_abs_eta_10_15_mc_ak%dPF.root",algo),"RECREATE");
+  //TFile *ppb_Unfo = new TFile(Form("pp_2013_2760_abs_eta_05_10_mc_ak%dPF.root",algo),"RECREATE");
+  TFile *ppb_Unfo = new TFile(Form("pp_2013_2760_abs_eta_05_mc_ak%dPF.root",algo),"RECREATE");
+  
   UnfoldingHistos *uhist[nbins_cent+1];
 	
   // Define RooUnfold response
@@ -264,7 +319,6 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     uhist[i] = new UnfoldingHistos(i);
     response[i] = new RooUnfoldResponse(uhist[i]->hResMeas,uhist[i]->hResTrue);
   }
-  
   
   // Initialize reweighting functions
 	
@@ -306,10 +360,15 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //TF1 *fVzPP = new TF1("fVzPP","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
   //fVzPP->SetParameters(8.41684e-01,-2.58609e-02,4.86550e-03,-3.10581e-04,2.07918e-05);
 	
-  //this is from yaxian's file 
-  TF1 * fVz = new TF1("fVz","[0]+[1]*x+[2]*TMath::Power(x,2)+[3]*TMath::Power(x,3)+[4]*TMath::Power(x,4)", -15., 15.);  
-  fVz->SetParameters(1.60182e+00,1.08425e-03,-1.29156e-02,-7.24899e-06,2.80750e-05);
+  //this is from yaxian's file - for 5.02GeV 
+  //TF1 * fVz = new TF1("fVz","[0]+[1]*x+[2]*TMath::Power(x,2)+[3]*TMath::Power(x,3)+[4]*TMath::Power(x,4)", -15., 15.);  
+  //fVz->SetParameters(1.60182e+00,1.08425e-03,-1.29156e-02,-7.24899e-06,2.80750e-05);
   
+  //pp - 2.76 TeV 
+  TF1 *fVz = new TF1("fVz","[0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x");
+  fVz->SetParameters(7.62788e-01,-1.13228e-02,5.85199e-03,-3.04550e-04,4.43440e-05);  
+
+  cout<<"HI READING THE DATA FILE NOW"<<endl;
    	
   // Read data file
   TFile *infData;
@@ -317,8 +376,8 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //TH1F *htest = (TH1F*)infData->Get("hpPb_Comb_20");
   uhist[nbins_cent-1]->hMeas = (TH1F*)infData->Get("hpPb_Comb_20");
 
-  uhist[0]->hMeas = (TH1F*)uhist[0]->hMeas->Rebin(nbins_yaxian,"hMeas_cent0",boundaries_yaxian);
-  uhist[1]->hMeas = (TH1F*)uhist[1]->hMeas->Rebin(nbins_yaxian,"hMeas_cent1",boundaries_yaxian);
+  uhist[nbins_cent-1]->hMeas = (TH1F*)uhist[nbins_cent-1]->hMeas->Rebin(nbins_yaxian,Form("hMeas_cent%d",nbins_cent-1),boundaries_yaxian);
+  //uhist[1]->hMeas = (TH1F*)uhist[1]->hMeas->Rebin(nbins_yaxian,"hMeas_cent1",boundaries_yaxian);
 
   //for(int ij = 0;ij<nbins_yaxian;ij++){
 
@@ -329,7 +388,78 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   //}
 
   uhist[nbins_cent-1]->hMeas->Print("base");
- 
+
+  //read the pp 2.76 data here: just for the data comparisons 
+
+  // data files - pp 
+  TFile *fpp1_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet80_v2.root");
+  TFile *fpp2_v2 = TFile::Open("/mnt/hadoop/cms/store/user/rkunnawa/rootfiles/PP/2013/data/ntuple_2013_JEC_applied_ppJet40_v2.root");
+  
+  //do it for the pp - need to check up on this. 
+  TTree *jetpp1_v2 = (TTree*)fpp1_v2->Get(Form("jetR%d",algo));
+  TTree *jetpp2_v2 = (TTree*)fpp2_v2->Get(Form("jetR%d",algo));
+
+  TTree *evtpp1_v2 = (TTree*)fpp1_v2->Get("evt");
+  TTree *evtpp2_v2 = (TTree*)fpp2_v2->Get("evt");
+
+  jetpp1_v2->AddFriend(evtpp1_v2);
+  jetpp2_v2->AddFriend(evtpp2_v2);
+
+  //get all the pp spectra here: 
+  //TCut pp3 = "abs(eta)>2.5&&abs(eta)<3.0&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
+  //TCut pp3 = "abs(eta)>2.0&&abs(eta)<2.5&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
+  //TCut pp3 = "abs(eta)>1.5&&abs(eta)<2.0&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
+  //TCut pp3 = "abs(eta)>1.0&&abs(eta)<1.5&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
+  //TCut pp3 = "abs(eta)>0.5&&abs(eta)<1.0&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
+  TCut pp3 = "abs(eta)<0.5&&jet40&&!jet60&&!jet80&&chMax/pt>0.01";
+
+  //TCut pp2 = "abs(eta)>2.5&&abs(eta)<3.0&&jet60&&!jet80&&(chMax/pt)>0.01";
+  //TCut pp2 = "abs(eta)>2.0&&abs(eta)<2.5&&jet60&&!jet80&&(chMax/pt)>0.01";
+  //TCut pp2 = "abs(eta)>1.5&&abs(eta)<2.0&&jet60&&!jet80&&(chMax/pt)>0.01";
+  //TCut pp2 = "abs(eta)>1.0&&abs(eta)<1.5&&jet60&&!jet80&&(chMax/pt)>0.01";
+  //TCut pp2 = "abs(eta)>0.5&&abs(eta)<1.0&&jet60&&!jet80&&(chMax/pt)>0.01";
+  TCut pp2 = "abs(eta)<0.5&&jet60&&!jet80&&(chMax/pt)>0.01";
+
+  //TCut pp1 = "abs(eta)>2.5&&abs(eta)<3.0&&jet80&&(chMax/pt)>0.01";
+  //TCut pp1 = "abs(eta)>2.0&&abs(eta)<2.5&&jet80&&(chMax/pt)>0.01";
+  //TCut pp1 = "abs(eta)>1.5&&abs(eta)<2.0&&jet80&&(chMax/pt)>0.01";
+  //TCut pp1 = "abs(eta)>1.0&&abs(eta)<1.5&&jet80&&(chMax/pt)>0.01";
+  //TCut pp1 = "abs(eta)>0.5&&abs(eta)<1.0&&jet80&&(chMax/pt)>0.01";
+  TCut pp1 = "abs(eta)<0.5&&jet80&&(chMax/pt)>0.01";
+  
+  TH1F *hpp1 = new TH1F("hpp1","",2000,0,2000);
+  TH1F *hpp2 = new TH1F("hpp2","",2000,0,2000);
+  TH1F *hpp3 = new TH1F("hpp3","",2000,0,2000);
+  TH1F *hppComb = new TH1F("hppComb","",2000,0,2000);
+  
+  //get the prescl factor information. 
+  //Float_t presclpbpb3 = (Float_t)jetpbpb1_v2->GetEntries("jet80")/jetpbpb1_v2->GetEntries("jet55&&jet80");
+  //cout<<"pbpb prescl3 = "<<presclpbpb3<<endl;//1.99871
+  //Float_t presclpp3 = (Float_t)jetpp1_v2->GetEntries("jet80")/jetpp1_v2->GetEntries("jet40&&jet80");
+  //cout<<"pp prescl3 = "<<presclpp3<<endl; //9.24968
+
+  //root [9] (Float_t)jet->GetEntries("HLT_HIJet80_v1")/jet->GetEntries("HLT_HIJet80_v1&&HLT_HIJet55_v1")
+  //(double)2.34995051108819153e+00
+  //ive commented this below - to just check for the pbpb histograms to load. 
+  
+  jetpp1_v2->Project("hpp1","pt",pp1);
+  hpp1->Print("base");
+  
+  jetpp2_v2->Project("hpp2","pt",pp2);
+  hpp2->Print("base");
+  
+  jetpp2_v2->Project("hpp3","pt","9.25038"*pp3);
+  // 9.25038 was the value. 
+  //jetpp2_v2->Project("hpp3","pt","jet40_p"*pp3);
+  hpp3->Print("base");
+
+  hppComb->Add(hpp1,1);
+  hppComb->Add(hpp2,1);
+  hppComb->Add(hpp3,1);
+  hppComb->Print("base");
+
+  uhist[nbins_cent]->hMeas = (TH1F*)hppComb->Rebin(nbins_yaxian,Form("hMeas_cent%d",nbins_cent),boundaries_yaxian);
+  
 	
   // Setup jet data branches
   JetData *data[nbins_pthat];
@@ -412,7 +542,42 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
   f_pp->SetParameters(0.5688,0.4867);//for ak3PF in MC for pp
 
   Float_t smeared_pt_ppb = 0,smeared_pt_pp = 0;
-  
+
+  //declare the histograms and ntuples required to plot the different eta ranges and the rapidity 
+  TH1F* hpp_pythia_gen_n10p10 = new TH1F("hpp_pythia_gen_n10p10","",nbins_yaxian,boundaries_yaxian);
+  TH1F* hpp_pythia_gen_n03p03 = new TH1F("hpp_pythia_gen_n03p03","",nbins_yaxian,boundaries_yaxian);
+  TH1F* hpp_pythia_gen_n22n12 = new TH1F("hpp_pythia_gen_n22n12","",nbins_yaxian,boundaries_yaxian);
+  TH1F* hpp_pythia_gen_n12n07 = new TH1F("hpp_pythia_gen_n12n07","",nbins_yaxian,boundaries_yaxian);
+  TH1F* hpp_pythia_gen_n07n03 = new TH1F("hpp_pythia_gen_n07n03","",nbins_yaxian,boundaries_yaxian);
+  TH1F* hpp_pythia_gen_p03p07 = new TH1F("hpp_pythia_gen_p03p07","",nbins_yaxian,boundaries_yaxian);  
+  TH1F* hpp_pythia_gen_p07p12 = new TH1F("hpp_pythia_gen_p07p12","",nbins_yaxian,boundaries_yaxian);
+  TH1F* hpp_pythia_gen_p12p22 = new TH1F("hpp_pythia_gen_p12p22","",nbins_yaxian,boundaries_yaxian);
+
+  // ntuple for the rapidity pPb
+  float rapidity_pPb = 0;
+  float eta_pPb = 0;
+  float mass_pPb = 0;
+  float pt_pPb = 0;
+
+  TTree* jet_val_pPb_gen = new TTree("jet_val_pPb_gen","Gen Jet tree containing pt, mass, eta and rapidity");
+  jet_val_pPb_gen->Branch("jetpt",&pt_pPb,"jetpt/F");
+  jet_val_pPb_gen->Branch("jeteta",&eta_pPb,"jeteta/F");
+  jet_val_pPb_gen->Branch("jetrap",&rapidity_pPb,"jetrap/F");
+  jet_val_pPb_gen->Branch("jetmass",&mass_pPb,"jetmass/F");
+
+  // ntuple for the rapidity pp
+  float rapidity_pp = 0;
+  float eta_pp = 0;
+  float mass_pp = 0;
+  float pt_pp = 0;
+
+  TTree* jet_val_pp_gen = new TTree("jet_val_pp_gen","Gen Jet tree containing pt, mass, eta and rapidity");
+  jet_val_pp_gen->Branch("jetpt",&pt_pp,"jetpt/F");
+  jet_val_pp_gen->Branch("jeteta",&eta_pp,"jeteta/F");
+  jet_val_pp_gen->Branch("jetrap",&rapidity_pp,"jetrap/F");
+  jet_val_pp_gen->Branch("jetmass",&mass_pp,"jetmass/F");
+
+
   if (!useMatrixFromFile) {
 
     // Fill PPb MC
@@ -445,7 +610,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 
 
 	//if(fabs(data[i]->vz)>15) continue;
-	//if(!data[i]->pPAcollisionEventSelectionPA || !data[i]->pHBHENoiseFilter) continue;
+	if(!data[i]->pPAcollisionEventSelectionPA || !data[i]->pHBHENoiseFilter) continue;
 	
 	//weight_cent = fCentralityWeight->Eval(data[i]->bin);
 	//weight_vz = fVz->Eval(data[i]->vz);
@@ -471,9 +636,31 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
     
 	for (int k= 0; k < data[i]->njets; k++) {
 	  int subEvt=-1;
+
+	  //get the rapidity information here for the whole range. 
+	  eta_pPb = data[i]->jteta[k]+0.465;
+	  mass_pPb = data[i]->jtmass[k];
+	  pt_pPb = data[i]->refpt[k];
+	  
+	  float temp1 = (float)TMath::Sqrt(mass_pPb*mass_pPb + pt_pPb*pt_pPb*TMath::CosH(eta_pPb)*TMath::CosH(eta_pPb));
+	  float temp2 = (float)pt_pPb*TMath::SinH(eta_pPb);
+	  float temp3 = (float)TMath::Sqrt(mass_pPb*mass_pPb + pt_pPb*pt_pPb);
+	  
+	  rapidity_pPb = (float)log((temp1+temp2)/(temp3));
+
+	  jet_val_pPb_gen->Fill();
+	  
+
 	  if ( data[i]->refpt[k]  < 30. ) continue;
 	  //if ( data[i]->jteta[k]  > 1.465 || data[i]->jteta[k] < -0.535 ) continue; //eta CM assuming that pPb MC is forward beam
+
+	  
+
+
 	  if( abs(data[i]->jteta[k]+0.465) > 1) continue;
+
+	  
+
 	  //if ( data[i]->chargedMax[k]/data[i]->jtpt[k]<0.01) continue;
 	  //if (  ) continue;
 	  //for (int l= 0; l< data[i]->ngen;l++) {
@@ -563,7 +750,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
       for (Long64_t jentry2=0; jentry2<dataPP[i]->tJet->GetEntries();jentry2++) {
 	dataPP[i]->tEvt->GetEntry(jentry2);
 	dataPP[i]->tJet->GetEntry(jentry2);
-	dataPP[i]->tGenJet->GetEntry(jentry2);
+	//dataPP[i]->tGenJet->GetEntry(jentry2);
 	//if(dataPP[i]->pthat<boundariesPP_pthat[i] || dataPP[i]->pthat>boundariesPP_pthat[i+1]) continue;
 	//if(dataPP[i]->bin<=28) continue;//figure out why this cut is there? ask Yen-Jie 
 	int pthatBin = hPtHatPP->FindBin(dataPP[i]->pthat);
@@ -607,6 +794,39 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  int subEvt=-1;
 	  if ( dataPP[i]->refpt[k]  < 30. ) continue; //i had 15 before. kurt had 30. dont know which is better. 
 	  //if ( dataPP[i]->jteta[k]+0.465  > 1. || dataPP[i]->jteta[k]-0.465 < -1. ) continue;
+
+	  //if(fabs(dataPP[i]->jteta[k])>3.0 || fabs(dataPP[i]->jteta[k])<2.5)continue;
+	  //if(fabs(dataPP[i]->jteta[k])>2.5 || fabs(dataPP[i]->jteta[k])<2.0)continue;
+	  //if(fabs(dataPP[i]->jteta[k])>2.0 || fabs(dataPP[i]->jteta[k])<1.5)continue;
+	  //if(fabs(dataPP[i]->jteta[k])>1.5 || fabs(dataPP[i]->jteta[k])<1.0)continue;
+	  //if(fabs(dataPP[i]->jteta[k])>1.0 || fabs(dataPP[i]->jteta[k])<0.5)continue;
+	  if(fabs(dataPP[i]->jteta[k])>0.5)continue;
+
+	  if (dataPP[i]->chargedMax[k]/dataPP[i]->jtpt[k]<0.01) continue;
+	  /*
+	  //get the rapidity information here for the whole range. 
+	  eta_pp = dataPP[i]->jteta[k]+0.465;
+	  mass_pp = dataPP[i]->jtmass[k];
+	  pt_pp = dataPP[i]->refpt[k];
+	  
+	  float temp1 = (float)TMath::Sqrt(mass_pp*mass_pp + pt_pp*pt_pp*TMath::CosH(eta_pp)*TMath::CosH(eta_pp));
+	  float temp2 = (float)pt_pp*TMath::SinH(eta_pp);
+	  float temp3 = (float)TMath::Sqrt(mass_pp*mass_pp + pt_pp*pt_pp);
+	  
+	  rapidity_pp = (float)log((temp1+temp2)/(temp3));
+	  
+	  jet_val_pp_gen->Fill();
+	  
+	  //fill the histograms for the different eta bins here: 
+	  if(eta_pp>=-2.2 && eta_pp<-1.2) hpp_pythia_gen_n22n12->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	  if(eta_pp>=-1.2 && eta_pp<-0.7) hpp_pythia_gen_n12n07->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	  if(eta_pp>=-0.7 && eta_pp<-0.3) hpp_pythia_gen_n07n03->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	  if(eta_pp>=-0.3 && eta_pp<+0.3) hpp_pythia_gen_n03p03->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	  if(eta_pp>=+0.3 && eta_pp<+0.7) hpp_pythia_gen_p03p07->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	  if(eta_pp>=+0.7 && eta_pp<+1.2) hpp_pythia_gen_p07p12->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	  if(eta_pp>=+1.2 && eta_pp<+2.2) hpp_pythia_gen_p12p22->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	  
+	  
 	  if( abs(dataPP[i]->jteta[k]+0.465) > 1) continue;
 	  //if ( dataPP[i]->chargedMax[k]/dataPP[i]->jtpt[k]<0.01) continue;
 	  //if (uhist[nbins_cent]->hMeasMatch!=0) {
@@ -614,11 +834,15 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	  //   int ratio = uhist[nbins_cent]->hMeasMatch->GetBinContent(ptBinNumber);
 	  //if (ratio!=0) weight_pt = 1./ratio;
 	  //}
+	  */
+
+	  //added this change here to just to read the pp2.76 MC since unfold_RAA was behaving like a little bitch
 	  
 	  //if (!isMC||jentry2<dataPP[i]->tJet->GetEntries()/2.) {
 	  if(!isMC){
-
+	    
 	    hGen_check->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	    //hpp_pythia_gen_n10p10->Fill(dataPP[i]->refpt[k],scale*weight_vz);
 	    
 	    //if(dataPP[i]->jtpt[k]>=50 && dataPP[i]->jtpt[k]<=300){
 	    //smeared_pt_pp = dataPP[i]->jtpt[k]*(1+(f_pp->Eval(dataPP[i]->jtpt[k]))*fgaus_pp->GetRandom());
@@ -627,14 +851,14 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 	    //uhist[nbins_cent]-> hGen->Fill(dataPP[i]->refpt[k],scale*weight_vz);
 	    //uhist[nbins_cent]-> hRecoMC->Fill(smeared_pt_pp,scale*weight_vz);
 	    //}else{
-	      response[nbins_cent]->Fill(dataPP[i]->jtpt[k],dataPP[i]->refpt[k],scale*weight_vz);
-	      uhist[nbins_cent]-> hMatrix->Fill(dataPP[i]->refpt[k],dataPP[i]->jtpt[k],scale*weight_vz);
-	      uhist[nbins_cent]-> hGen->Fill(dataPP[i]->refpt[k],scale*weight_vz);
-	      uhist[nbins_cent]-> hRecoMC->Fill(dataPP[i]->jtpt[k],scale*weight_vz);
-	      //}
+	    response[nbins_cent]->Fill(dataPP[i]->jtpt[k],dataPP[i]->refpt[k],scale*weight_vz);
+	    uhist[nbins_cent]-> hMatrix->Fill(dataPP[i]->refpt[k],dataPP[i]->jtpt[k],scale*weight_vz);
+	    uhist[nbins_cent]-> hGen->Fill(dataPP[i]->refpt[k],scale*weight_vz);
+	    uhist[nbins_cent]-> hRecoMC->Fill(dataPP[i]->jtpt[k],scale*weight_vz);
+	    //}
 	  }
 	  if (isMC&&jentry2>dataPP[i]->tJet->GetEntries()/2.) {
-						
+	    
 	    uhist[nbins_cent]-> hGen->Fill(dataPP[i]->refpt[k],scale*weight_vz);
 	    uhist[nbins_cent]-> hMeas->Fill(dataPP[i]->jtpt[k],scale*weight_vz);
 	  }
@@ -814,7 +1038,7 @@ void Unfold_RpPb_V0(int method = 1,int algo = 3,bool useSpectraFromFile = 0, boo
 
 
   
-  for (int i=0;i<nbins_cent;i++) {
+  for (int i=0;i<=nbins_cent;i++) {
     cPPb->cd(i+1)->SetLogy();
     
     // Do Bin-by-bin
