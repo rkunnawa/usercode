@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <stdio.h>
-#include <fstream.h>
+#include <fstream>
 #include <TRandom.h>
 #include <TH1F.h>
 #include <TH1F.h>
@@ -160,7 +160,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   // 
   
   //data files - PbPb 
-  TFile *fpbpb0_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_Forest_Track8_Jet21/0.root");
+  //TFile *fpbpb0_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_Forest_Track8_Jet21/0.root");
+  //this one is actually new, but im not going to change the title of the TFile for now. 
+  TFile *fpbpb0_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/HIMinBias2011_GR_R_53_LV6_CMSSW_5_3_16_lumi2_FOREST_TRY2merged/0.root");
   TFile *fpbpb1_old = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_12Mar2014_0000CET_Track8_Jet21/0.root");
   TFile *fpbpb1 = TFile::Open("/mnt/hadoop/cms/store/user/velicanu/hiForest_Jet55or65_GR_R_53_LV6_25Mar2014_0200CET_Track8_Jet26_TRY2_full/0.root");
 
@@ -1053,8 +1055,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 	if(jet65_1&&trgObj_pt_1>=65&&trgObj_pt_1<80){ hpbpb_TrgObj65[nbins_cent-1]->Fill(pt_1[j],jet65_p_1);
 	  fHLT_65<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;}
 
-	if(TMath::Max(chMax_1,neMax_1)/(TMath::Max(chSum_1,neSum_1))<0.975)
-	  fHLT_high<<<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;
+	if(TMath::Max(chMax_1[j],neMax_1[j])/(TMath::Max(chSum_1[j],neSum_1[j]))<0.975)
+	  fHLT_high<<run_1<<" "<<evt_1<<" "<<lumi_1<<" "<<trgObj_pt_1<<" "<<trgObj_eta_1<<" "<<trgObj_phi_1<<" "<<hiBin_1<<" "<<pt_1[j]<<" "<<eta_1[j]<<" "<<phi_1[j]<<endl;
 
       } // jet loop
 	
@@ -1206,8 +1208,8 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 	if(jet80_2 && trgObj_pt_2>=80){ hpbpb_TrgObj80[nbins_cent-1]->Fill(pt_2[j],jet80_p_2);
 	  fHLT_80<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;}
 	
-	if(TMath::Max(chMax_2,neMax_2)/(TMath::Max(chSum_2,neSum_2))<0.975)
-	  fHLT_high<<<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;
+	if(TMath::Max(chMax_2[j],neMax_2[j])/(TMath::Max(chSum_2[j],neSum_2[j]))<0.975)
+	  fHLT_high<<run_2<<" "<<evt_2<<" "<<lumi_2<<" "<<trgObj_pt_2<<" "<<trgObj_eta_2<<" "<<trgObj_phi_2<<" "<<hiBin_2<<" "<<pt_2[j]<<" "<<eta_2[j]<<" "<<phi_2[j]<<endl;
 
       } // jet loop
      
@@ -1541,9 +1543,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //TH1F* hTurnon65 = (TH1F*)hpbpb_65[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
   //TH1F* hTurnon55 = (TH1F*)hpbpb_55[nbins_cent]->Rebin(nbins_turnon,"hturnon80",boundaries_turnon);
 
-  TH1F* hTurnon80 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon80",boundaries_turnon)
-  TH1F* hTurnon65 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon65",boundaries_turnon)
-  TH1F* hTurnon55 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon55",boundaries_turnon)
+  TH1F* hTurnon80 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon80",boundaries_turnon);
+  TH1F* hTurnon65 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon65",boundaries_turnon);
+  TH1F* hTurnon55 = (TH1F*)hpbpb_TrgObjComb[nbins_cent]->Rebin(nbins_turnon,"hTurnon55",boundaries_turnon);
 
   hTurnon80->Print();
   hTurnon65->Print();
@@ -1552,11 +1554,11 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TH1F* h80Spectra = (TH1F*)hpbpb_TrgObj80[nbins_cent]->Rebin(nbins_turnon,"h80Spectra",boundaries_turnon);
   TH1F* h65Spectra = (TH1F*)hpbpb_TrgObj65[nbins_cent]->Rebin(nbins_turnon,"h65Spectra",boundaries_turnon);
   TH1F* h55Spectra = (TH1F*)hpbpb_TrgObj55[nbins_cent]->Rebin(nbins_turnon,"h55Spectra",boundaries_turnon);
-  hFullSpectra->Print("base");
+  //hFullSpectra->Print("base");
 
-  hTurnon80->Divide(hFullSpectra);
-  hTurnon65->Divide(hFullSpectra);
-  hTurnon55->Divide(hFullSpectra);
+  hTurnon80->Divide(h80Spectra);
+  hTurnon65->Divide(h65Spectra);
+  hTurnon55->Divide(h55Spectra);
 
   hTurnon80->SetMarkerStyle(20);
   hTurnon80->SetMarkerColor(kCyan);
@@ -1745,6 +1747,10 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   hTurnon80->Write();
   hTurnon65->Write();
   hTurnon55->Write();
+  
+  hTurnon80_old->Write();
+  hTurnon65_old->Write();
+  hTurnon55_old->Write();
 
   //hPPComb->Write();
   //hPbPb_Uncert->Write();
