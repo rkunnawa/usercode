@@ -396,7 +396,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   TH1F* htest55_old = new TH1F("htest55_old","",150,0,150);
 
   // check the trigger turn on curve from the MB file. 
-  TH1F* hMB = new TH1F("hMB","",150,0,150);
+  TH1F* hMB_old = new TH1F("hMB_old","",150,0,150);
   
   //jetpbpb2->Project("htest80","jtpt","HLT_HIJet80_v1");
   //htest80->Print("base");
@@ -405,12 +405,12 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //jetpbpb1->Project("htest55","jtpt","HLT_HIJet55_v1_Prescl*(HLT_HIJet55_v1&&!HLT_HIJet65_v1&&!HLT_HIJet80_v1)");
   //htest55->Print("base");
   
-  jetpbpb0_old->Project("hTurnon80","jtpt","HLT_HIJet80_v1_Prescl*HLT_HIJet80_v1");
-  jetpbpb0_old->Project("hTurnon65","jtpt","HLT_HIJet65_v1_Prescl*HLT_HIJet65_v1");
-  jetpbpb0_old->Project("hTurnon55","jtpt","HLT_HIJet55_v1_Prescl*HLT_HIJet55_v1");
+  jetpbpb0_old->Project("hTurnon80_old","jtpt","HLT_HIJet80_v1_Prescl*HLT_HIJet80_v1");
+  jetpbpb0_old->Project("hTurnon65_old","jtpt","HLT_HIJet65_v1_Prescl*HLT_HIJet65_v1");
+  jetpbpb0_old->Project("hTurnon55_old","jtpt","HLT_HIJet55_v1_Prescl*HLT_HIJet55_v1");
 
   TCut MB_prescl = "HLT_HIMinBiasHfOrBSC_v1_Prescl*HLT_HIMinBiasHfOrBSC_v1";
-  jetpbpb0_old->Project("hMB","jtpt","30"*MB_prescl);
+  jetpbpb0_old->Project("hMB_old","jtpt","30"*MB_prescl);
 
   //hTurnon80->Print("base");
   //hTurnon65->Print("base");
@@ -420,9 +420,9 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //hTriggerMerged->Add(htest65);
   //hTriggerMerged->Add(htest55);
 
-  hTurnon80->Divide(hMB);
-  hTurnon65->Divide(hMB);
-  hTurnon55->Divide(hMB);
+  hTurnon80_old->Divide(hMB_old);
+  hTurnon65_old->Divide(hMB_old);
+  hTurnon55_old->Divide(hMB_old);
 
   
   //centrality loop for the pbpb files/histograms 
