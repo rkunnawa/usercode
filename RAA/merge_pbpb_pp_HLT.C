@@ -147,7 +147,7 @@ TH1F *rebin(TH1F *h, char *histName)
 
 using namespace std;
 
-void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
+void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Pu"){
   
   TH1::SetDefaultSumw2();
   gStyle->SetOptStat(0);
@@ -317,13 +317,13 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
   //these were for doing it from the forests directly without the proper JEC's 
   //add the centrality cuts: 
 
-  //const int nbins_cent = 6;
-  //Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
-  //Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
+  const int nbins_cent = 6;
+  Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
+  Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
 
-  const int nbins_cent = 1;
-  Double_t boundaries_cent[nbins_cent+1] = {0,40};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
-  Double_t ncoll[nbins_cent] = { 362.24};
+  //const int nbins_cent = 1;
+  //Double_t boundaries_cent[nbins_cent+1] = {0,40};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
+  //Double_t ncoll[nbins_cent] = { 362.24};
 
 
   //Double_t jet55or65CentWeight[nbins_cent] = {0.3734,0.2509,0.3222,0.0352,0.0066,0.0010}; //total = 0.9983
@@ -1545,7 +1545,7 @@ void merge_pbpb_pp_HLT(int radius = 3, char *algo = "Vs"){
 
   // have to think about this a little bit here: 
   // in the RpA analysis, the turn on curves were plotted by looking at the individual spectra vs the merged spectra using the trigger object method.
-  //an important point here is that there were no cuts in teh trigger turn on curve. 
+  //an important point here is that there were no cuts in the trigger turn on curve. 
   //and also it was with 0-100% centrality bin or in this case from 0-200. the issue here is that i also have to make the spectra without the centrality cuts. 
   //ok that may not be a problem since the loops for that already exist, i just have to fill the required histograms at the corresponding point in the loop. 
   // this will make it faster to run since i dont have to go thorugh the entire structure again. 
