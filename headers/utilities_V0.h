@@ -925,19 +925,19 @@ void DrawNpartTAABand(){
 */
  
 
-void dumpDatatoTxt(const char *centbin,TH1F *h, TH1F *hsys, TH1F *htotStat, const char *txtfile)
-{
-ofstream outf(txtfile,ios::out);
-for(int ix=1;ix<=h->GetNbinsX();ix++){
-double pt = h->GetBinCenter(ix);
-double val = h->GetBinContent(ix);
-double Uncorerr = h->GetBinError(ix);
-double syserr = hsys->GetBinContent(ix)-1;
-double totStaterr = htotStat->GetBinError(ix);
+void dumpDatatoTxt(const char *centbin,TH1F *h, TH1F *hsys, TH1F *htotStat, const char *txtfile){
+	ofstream outf(txtfile,ios::out);
+	for(int ix=1;ix<=h->GetNbinsX();ix++){
+		double pt = h->GetBinCenter(ix);
+		double val = h->GetBinContent(ix);
+		double Uncorerr = h->GetBinError(ix);
+		double syserr = hsys->GetBinContent(ix)-1;
+		double totStaterr = htotStat->GetBinError(ix);
 
-outf<<setprecision(0) << fixed <<pt<<"\t" << setprecision(3) << fixed <<val<<"\t" << setprecision(5) << fixed << totStaterr<<"\t"<< setprecision(4) << fixed << syserr*val << endl;
-}
-outf.close();
+		outf<<setprecision(0) << fixed <<pt<<"\t" << setprecision(3) << fixed <<val<<"\t" << setprecision(5) << fixed << totStaterr<<"\t"<< setprecision(4) << fixed << syserr*val << endl;
+	}
+
+	outf.close();
 }
 
 
